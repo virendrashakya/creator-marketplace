@@ -1,0 +1,4 @@
+<%= link_to visit_product_link_path(card), class: "public-card", target: "_blank", rel: "noopener" do %>
+  <% if card.image_url.present? %><%= image_tag card.image_url, class: "public-image", alt: "" %><% else %><div class="public-image"></div><% end %>
+  <div><div class="public-title"><%= "★ " if card.featured? %><%= card.title %></div><div class="public-note"><%= [card.merchant, card.price, card.description].compact.join(" · ") %></div></div><span class="arrow">→</span>
+<% end %>

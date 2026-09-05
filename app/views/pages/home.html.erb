@@ -1,0 +1,15 @@
+<style>
+  .hero { min-height:520px; display:grid; grid-template-columns:1.05fr .95fr; align-items:center; gap:55px; padding:55px 0 75px }.eyebrow { color:#bd3d5a; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:1.2px }.hero h1 { font-size:clamp(44px,6vw,76px); line-height:.98; letter-spacing:-4px; margin:14px 0 22px }.hero p { max-width:490px; font-size:18px; line-height:1.55; color:var(--muted); margin-bottom:28px }.phone { max-width:355px; margin:auto; padding:16px; border-radius:36px; color:#2b242a; background:#f5dae0; box-shadow:16px 20px 0 #e7c8d0 }.phone-in { border-radius:26px; padding:35px 20px 22px; background:#fffaf7; text-align:center }.avatar { width:68px; height:68px; margin:auto; display:grid; place-items:center; background:#ffca71; border-radius:50%; font-size:28px }.phone h3 { margin:13px 0 4px }.mini-link { display:block; text-align:left; margin-top:11px; border-radius:12px; padding:13px; background:#fff; box-shadow:0 2px 10px #dfcfd155; font-size:13px; font-weight:700 }.steps { background:var(--lav); margin:0 -30px; padding:56px max(30px, calc((100vw - 1120px)/2)); }.steps h2 { font-size:34px; letter-spacing:-1.8px; text-align:center }.step-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:28px }.step { background:#fff; border-radius:16px; padding:24px }.step b { color:var(--pink); font-size:13px }.step h3 { margin:10px 0 }.step p { color:var(--muted); line-height:1.5; font-size:14px } @media(max-width:700px){.hero{grid-template-columns:1fr;padding-top:25px}.phone{display:none}.step-grid{grid-template-columns:1fr}.steps{margin:0 -18px;padding:40px 18px}}
+</style>
+<main class="page">
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Your taste has a home</div>
+      <h1>Share what you love. Earn as you grow.</h1>
+      <p>Create a beautiful page for every product, place, and find your community asks you about—then see what resonates.</p>
+      <%= link_to "Create your free page", sign_up_path, class: "button pink" %>
+    </div>
+    <div class="phone"><div class="phone-in"><div class="avatar">✦</div><h3>@miraedits</h3><small class="muted">Little things I’m loving lately</small><span class="mini-link">☼ Summer skincare favourites</span><span class="mini-link">◌ The everyday gold stack</span><span class="mini-link">✷ My travel essentials</span></div></div>
+  </section>
+  <section class="steps"><h2>Made for your recommendations</h2><div class="step-grid"><article class="step"><b>01</b><h3>Build your page</h3><p>Add the links, products, and collections your audience already asks for.</p></article><article class="step"><b>02</b><h3>Share anywhere</h3><p>One link for your social bios, video descriptions, and newsletters.</p></article><article class="step"><b>03</b><h3>Learn what lands</h3><p>See clicks at a glance and give your best finds the spotlight.</p></article></div></section>
+</main>
