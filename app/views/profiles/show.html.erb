@@ -6,7 +6,9 @@
     <% @collections.each do |collection| %><% next if collection.product_links.empty? %><div class="collection-title"><%= collection.name %></div><%= render partial: "product_links/card", collection: collection.product_links %><% end %>
     <% if @uncategorized_links.any? %><div class="collection-title">My current favorites</div><%= render partial: "product_links/card", collection: @uncategorized_links %><% end %>
   <% else %><div class="empty-profile">@<%= @user.handle %> is curating their first recommendations.</div><% end %>
-  <% if @paid_media_posts.any? %><div class="collection-title">Exclusive media</div><%= render partial: "paid_media_posts/card", collection: @paid_media_posts, locals: { unlocked_post_ids: @unlocked_post_ids } %><% end %>
+  <% if @paid_media_posts.any? %><div class="collection-title">Exclusive media</div><%= render partial: "paid_media_posts/card", collection: @paid_media_posts %><% end %>
+  <% if @meet_offers.any? %><div class="collection-title">Meet me</div><%= render partial: "meet_offers/card", collection: @meet_offers %><% end %>
+  <% if @contact_reveals.any? %><div class="collection-title">Get in touch</div><%= render partial: "contact_reveals/card", collection: @contact_reveals %><% end %>
   <% @wishlists.each do |wishlist| %><% if wishlist.wishlist_items.any? %><div class="collection-title">Gift my wishlist · <%= wishlist.title %></div><%= render partial: "wishlists/item", collection: wishlist.wishlist_items %><% end %><% end %>
   <% if @creator_posts.any? %><div class="collection-title">Latest posts</div><%= render partial: "creator_posts/post", collection: @creator_posts %><% end %>
 </section></main>

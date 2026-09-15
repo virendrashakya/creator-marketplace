@@ -1,0 +1,16 @@
+<article class="public-card">
+  <div class="public-image" style="display:grid;place-items:center">☕</div>
+  <div><div class="public-title"><%= card.title %></div><div class="public-note"><%= [card.location, "#{card.duration_minutes} min", card.price_label].compact.join(" · ") %><%= " · #{card.description}" if card.description.present? %></div>
+    <% slots = card.meet_slots.bookable.limit(5) %>
+    <% if slots.any? %>
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">
+        <% slots.each do |slot| %>
+          <% if !signed_in? %><%= link_to slot.starts_at.strftime("%d %b, %-I:%M %p"), sign_in_path, class: "button pink", style: "padding:8px 11px;font-size:12px" %><% elsif card.user.accepts_upi_manual? %><%= link_to slot.starts_at.strftime("%d %b, %-I:%M %p"), new_payment_claim_path(purchasable_type: "MeetSlot", purchasable_id: slot.id), class: "button pink", style: "padding:8px 11px;font-size:12px" %><% else %><%= button_to slot.starts_at.strftime("%d %b, %-I:%M %p"), book_meet_slot_path(slot), class: "button pink", style: "padding:8px 11px;font-size:12px" %><% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="public-note" style="margin-top:6px">No times available right now.</div>
+    <% end %>
+  </div>
+  <span class="arrow">→</span>
+</article>

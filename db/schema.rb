@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_05_009000) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_05_011000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -66,6 +66,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_05_009000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_contact_reveals_on_user_id"
+  end
+
+  create_table "creator_blocks", force: :cascade do |t|
+    t.bigint "creator_id", null: false
+    t.string "identifier_type", null: false
+    t.string "identifier_value", null: false
+    t.string "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id", "identifier_type", "identifier_value"], name: "index_creator_blocks_unique_identifier", unique: true
+    t.index ["creator_id"], name: "index_creator_blocks_on_creator_id"
   end
 
   create_table "creator_post_comments", force: :cascade do |t|
@@ -224,6 +235,31 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_05_009000) do
     t.index ["user_id"], name: "index_paid_media_posts_on_user_id"
   end
 
+  create_table "payment_claims", force: :cascade do |t|
+    t.bigint "claimant_id", null: false
+    t.bigint "creator_id", null: false
+    t.string "purchasable_type", null: false
+    t.bigint "purchasable_id", null: false
+    t.integer "amount_cents", null: false
+    t.integer "claimed_amount_cents"
+    t.string "currency", default: "INR", null: false
+    t.string "payment_method", default: "upi_manual", null: false
+    t.string "utr"
+    t.text "note"
+    t.string "status", default: "pending", null: false
+    t.datetime "reviewed_at"
+    t.bigint "reviewed_by_id"
+    t.string "reject_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["claimant_id", "purchasable_type", "purchasable_id"], name: "index_payment_claims_on_claimant_and_purchasable"
+    t.index ["claimant_id"], name: "index_payment_claims_on_claimant_id"
+    t.index ["creator_id", "status"], name: "index_payment_claims_on_creator_id_and_status"
+    t.index ["creator_id", "utr"], name: "index_payment_claims_unique_utr_per_creator", unique: true, where: "(utr IS NOT NULL)"
+    t.index ["creator_id"], name: "index_payment_claims_on_creator_id"
+    t.index ["purchasable_type", "purchasable_id"], name: "index_payment_claims_on_purchasable"
+  end
+
   create_table "product_links", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "link_collection_id"
@@ -278,6 +314,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_05_009000) do
     t.string "location"
     t.string "public_email"
     t.date "date_of_birth"
+    t.string "phone_number"
+    t.string "upi_id"
+    t.string "upi_payee_name"
+    t.boolean "accepts_upi_manual", default: false, null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["handle"], name: "index_users_on_handle", unique: true
   end
@@ -310,6 +350,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_05_009000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "contact_reveals", "users"
+  add_foreign_key "creator_blocks", "users", column: "creator_id"
   add_foreign_key "creator_post_comments", "creator_posts"
   add_foreign_key "creator_post_comments", "users"
   add_foreign_key "creator_post_likes", "creator_posts"
@@ -332,6 +373,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_05_009000) do
   add_foreign_key "paid_media_posts", "paid_media_collections"
   add_foreign_key "paid_media_posts", "subscription_plans"
   add_foreign_key "paid_media_posts", "users"
+  add_foreign_key "payment_claims", "users", column: "claimant_id"
+  add_foreign_key "payment_claims", "users", column: "creator_id"
+  add_foreign_key "payment_claims", "users", column: "reviewed_by_id"
   add_foreign_key "product_links", "link_collections"
   add_foreign_key "product_links", "users"
   add_foreign_key "subscription_plans", "users"

@@ -1,0 +1,19 @@
+<main class="page"><section class="auth"><h1>Edit meet offer</h1><%= render "form" %></section></main>
+<main class="page" style="padding-top:0"><section class="panel">
+  <h2>Time slots</h2>
+  <% if @meet_offer.meet_slots.order(:starts_at).any? %>
+    <% @meet_offer.meet_slots.order(:starts_at).each do |slot| %>
+      <div class="collection-row"><div><strong><%= slot.starts_at.strftime("%d %b %Y, %-I:%M %p") %></strong><span class="muted"> — <%= slot.ends_at.strftime("%-I:%M %p") %><%= slot.booked? ? " · booked" : "" %></span></div><% unless slot.booked? %><%= button_to "Remove", meet_offer_meet_slot_path(@meet_offer, slot), method: :delete, class: "danger", data: { turbo_confirm: "Remove this slot?" } %><% end %></div>
+    <% end %>
+  <% else %>
+    <div class="empty">No slots yet. Add one below so people can book.</div>
+  <% end %>
+  <%= form_with model: [@meet_offer, @meet_slot || @meet_offer.meet_slots.new] do |f| %>
+    <%= render "shared/errors", record: (@meet_slot || @meet_offer.meet_slots.new) %>
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end">
+      <div class="field"><%= f.label :starts_at, "Starts" %><%= f.datetime_field :starts_at %></div>
+      <div class="field"><%= f.label :ends_at, "Ends" %><%= f.datetime_field :ends_at %></div>
+      <div class="field"><%= f.submit "Add slot", class: "button pink" %></div>
+    </div>
+  <% end %>
+</section></main>

@@ -1,6 +1,7 @@
 class CreatorPostLikesController < ApplicationController
   before_action :require_user
   before_action :set_post
+  before_action -> { deny_if_blocked_by(@creator_post.user) }
 
   def create
     current_user.creator_post_likes.find_or_create_by!(creator_post: @creator_post)

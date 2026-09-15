@@ -1,4 +1,7 @@
 class User < ApplicationRecord
+  # e.g. "name@okhdfcbank" - handle@psp
+  UPI_ID_FORMAT = /\A[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}\z/
+
   has_secure_password
 
   has_many :link_collections, dependent: :destroy
@@ -17,8 +20,11 @@ class User < ApplicationRecord
   has_many :creator_post_likes, dependent: :destroy
   has_many :creator_post_comments, dependent: :destroy
   has_many :creator_blocks, foreign_key: :creator_id, dependent: :destroy, inverse_of: :creator
+  has_many :payment_claims, foreign_key: :claimant_id, dependent: :destroy, inverse_of: :claimant
+  has_many :received_payment_claims, class_name: "PaymentClaim", foreign_key: :creator_id, dependent: :destroy, inverse_of: :creator
   has_one_attached :profile_picture
   has_one_attached :banner
+  has_one_attached :upi_qr
 
   before_validation :normalize_handle
 
@@ -28,8 +34,17 @@ class User < ApplicationRecord
   validates :theme, inclusion: { in: %w[minimal luxury adventure after_dark] }
   validates :profile_layout, inclusion: { in: %w[classic editorial gallery] }
   validates :account_type, inclusion: { in: %w[creator personal business] }
+  validates :upi_id, format: { with: UPI_ID_FORMAT, message: "should look like yourname@bank" }, allow_blank: true
+  validate :upi_details_present_when_accepting
 
   private
+
+  def upi_details_present_when_accepting
+    return unless accepts_upi_manual?
+    return if upi_id.present? || upi_qr.attached?
+
+    errors.add(:base, "Add a UPI ID or upload a QR code before accepting payments.")
+  end
 
   def normalize_handle
     self.email = email.to_s.downcase.strip
@@ -43,10 +58,16 @@ class User < ApplicationRecord
   end
 
   def blocks?(other_user)
-    return false unless other_user
+    return false if other_user.blank? || other_user == self
 
-    creator_blocks.exists?(identifier_type: "username", identifier_value: other_user.handle.downcase) ||
-      creator_blocks.exists?(identifier_type: "email", identifier_value: other_user.email.downcase) ||
-      (other_user.phone_number.present? && creator_blocks.exists?(identifier_type: "phone", identifier_value: other_user.phone_number.gsub(/\D/, "")))
+    identifiers = [
+      [ "username", other_user.handle.to_s.downcase ],
+      [ "email", other_user.email.to_s.downcase ],
+      [ "phone", other_user.phone_number.to_s.gsub(/[^0-9]/, "") ]
+    ].reject { |_type, value| value.blank? }
+    return false if identifiers.empty?
+
+    clause = identifiers.map { "(identifier_type = ? AND identifier_value = ?)" }.join(" OR ")
+    creator_blocks.where(clause, *identifiers.flatten).exists?
   end
 end

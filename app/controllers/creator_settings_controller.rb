@@ -17,6 +17,6 @@ class CreatorSettingsController < ApplicationController
   private
 
   def settings_params
-    params.require(:user).permit(:name, :email, :bio, :avatar_url, :profile_picture, :banner, :account_type, :pronouns, :location, :public_email, :date_of_birth, :creator_category, :creator_subcategory, :theme, :profile_layout, :instagram_handle, :youtube_handle, :x_handle, :reddit_handle, :tiktok_handle, :website_url)
+    params.require(:user).permit(:name, :email, :bio, :avatar_url, :profile_picture, :banner, :account_type, :pronouns, :location, :public_email, :date_of_birth, :creator_category, :creator_subcategory, :theme, :profile_layout, :instagram_handle, :youtube_handle, :x_handle, :reddit_handle, :tiktok_handle, :website_url, :upi_id, :upi_payee_name, :accepts_upi_manual, :upi_qr)
   end
 end

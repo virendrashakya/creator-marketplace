@@ -1,0 +1,9 @@
+<%= form_with model: @meet_offer do |f| %>
+  <%= render "shared/errors", record: @meet_offer %>
+  <div class="field"><%= f.label :title, "What are you offering?" %><%= f.text_field :title, placeholder: "Coffee and a portfolio review" %></div>
+  <div class="field"><%= f.label :description %><%= f.text_area :description, placeholder: "What to expect" %></div>
+  <div class="field"><%= f.label :location %><%= f.text_field :location, placeholder: "Bandra, Mumbai — or 'Video call'" %></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"><div class="field"><%= f.label :price_cents, "Price (paise/cents)" %><%= f.number_field :price_cents, min: 1, placeholder: "150000" %></div><div class="field"><%= f.label :currency %><%= f.select :currency, [["INR", "INR"], ["USD", "USD"]] %></div><div class="field"><%= f.label :duration_minutes, "Minutes" %><%= f.number_field :duration_minutes, min: 1, placeholder: "30" %></div></div>
+  <div class="field"><label><%= f.check_box :published %> Show on my public profile</label></div>
+  <div class="form-actions"><%= f.submit class: "button pink" %><%= link_to "Cancel", dashboard_path, class: "button light" %></div>
+<% end %>

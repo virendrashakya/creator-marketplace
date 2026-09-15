@@ -22,6 +22,8 @@ Rails.application.routes.draw do
   get "go/:id", to: "product_links#visit", as: :visit_product_link
   resources :paid_media_posts, except: %i[index show] do
     post :purchase, on: :member
+    get :media, on: :member
+    get :preview, on: :member
   end
   resources :subscription_plans, except: %i[index show] do
     post :subscribe, on: :member
@@ -33,10 +35,19 @@ Rails.application.routes.draw do
   resources :meet_offers, except: %i[index show] do
     resources :meet_slots, only: %i[create destroy]
   end
+  post "meet_slots/:id/book", to: "meet_slots#book", as: :book_meet_slot
   resources :wishlists, except: %i[index show] do
     resources :wishlist_items, except: %i[index show]
   end
   post "wishlist_items/:id/contribute", to: "wishlist_items#contribute", as: :contribute_wishlist_item
+  get "pay/:purchasable_type/:purchasable_id", to: "payment_claims#new", as: :new_payment_claim
+  post "pay/:purchasable_type/:purchasable_id", to: "payment_claims#create", as: :payment_claims_create
+  resources :payment_claims, only: :index do
+    member do
+      post :approve
+      post :reject
+    end
+  end
   resources :creator_posts, except: %i[index show] do
     resource :creator_post_like, only: %i[create destroy]
     resources :creator_post_comments, only: :create

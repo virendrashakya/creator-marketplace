@@ -32,6 +32,12 @@ class ProductLinksController < ApplicationController
 
   def visit
     link = ProductLink.find(params[:id])
+    # Re-checked at redirect time: validation only covers rows written after it
+    # was added, and a creator may have edited the row in between.
+    if ProductLink.http_url_error(link.url)
+      return redirect_to profile_path(link.user.handle), alert: "That link is no longer available."
+    end
+
     link.link_clicks.create(referrer: request.referer, ip_hash: Digest::SHA256.hexdigest(request.remote_ip.to_s))
     redirect_to link.url, allow_other_host: true
   end

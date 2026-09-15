@@ -1,0 +1,37 @@
+<main class="page"><section class="panel">
+  <div style="display:flex;justify-content:space-between;align-items:center"><h1 style="margin:0;letter-spacing:-1.5px">Payments to confirm</h1><%= link_to "Back to dashboard", dashboard_path, class: "muted" %></div>
+  <p class="muted">Check each reference against your bank statement before approving. Approving grants access immediately.</p>
+
+  <% if @pending_claims.any? %>
+    <% @pending_claims.each do |claim| %>
+      <div class="link-row" style="grid-template-columns:1fr auto;align-items:start;margin-top:12px">
+        <div>
+          <div class="link-title">@<%= claim.claimant.handle %> · <%= claim.money_label %></div>
+          <div class="link-meta">
+            <%= claim.purchasable_type.underscore.humanize %>: <%= claim.purchasable.try(:title) || claim.purchasable.try(:label) || claim.purchasable.try(:name) || "item ##{claim.purchasable_id}" %>
+            · <%= time_ago_in_words(claim.created_at) %> ago
+          </div>
+          <div class="link-meta">UTR: <strong style="user-select:all"><%= claim.utr.presence || "not provided" %></strong></div>
+          <% if claim.amount_mismatch? %>
+            <div style="color:#bd3d5a;font-size:12px;font-weight:700;margin-top:4px">⚠ They say they sent <%= claim.money_label(claim.claimed_amount_cents) %>, expected <%= claim.money_label %></div>
+          <% end %>
+          <% if claim.note.present? %><div class="link-meta">“<%= claim.note %>”</div><% end %>
+          <% if claim.proof.attached? %><div style="margin-top:8px"><%= image_tag claim.proof, style: "max-width:190px;border-radius:9px;border:1px solid var(--line)" %></div><% end %>
+        </div>
+        <div style="display:grid;gap:6px;justify-items:end">
+          <%= button_to "Approve", approve_payment_claim_path(claim), class: "button pink", style: "padding:8px 12px;font-size:12px", data: { turbo_confirm: "Confirm you received #{claim.money_label} from @#{claim.claimant.handle}?" } %>
+          <%= button_to "Reject", reject_payment_claim_path(claim), class: "danger", data: { turbo_confirm: "Reject this payment claim?" } %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="empty">No payments waiting for confirmation.</div>
+  <% end %>
+
+  <% if @reviewed_claims.any? %>
+    <h2 style="margin-top:30px;font-size:19px">Recently reviewed</h2>
+    <% @reviewed_claims.each do |claim| %>
+      <div class="collection-row"><div><strong>@<%= claim.claimant.handle %></strong><span class="muted"> · <%= claim.money_label %> · <%= claim.utr.presence || "no UTR" %></span></div><span style="font-size:12px;font-weight:700;color:<%= claim.approved? ? "#43845e" : "#bd3d5a" %>"><%= claim.status.capitalize %></span></div>
+    <% end %>
+  <% end %>
+</section></main>

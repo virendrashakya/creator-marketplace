@@ -1,0 +1,14 @@
+<%#
+  One entry point for every paid action. Routes to the creator's UPI payment
+  page when they accept manual payments, otherwise falls back to the existing
+  test-mode stub. A real gateway becomes a third branch here.
+%>
+<% if !signed_in? %>
+  <%= link_to "#{signed_out_label} · #{price_label}", sign_in_path, class: "button pink", style: "padding:8px 11px;font-size:12px" %>
+<% elsif creator.accepts_upi_manual? %>
+  <%= link_to "#{label} · #{price_label}", new_payment_claim_path(purchasable_type: purchasable.class.name, purchasable_id: purchasable.id), class: "button pink", style: "padding:8px 11px;font-size:12px" %>
+<% elsif defined?(fallback_path) && fallback_path %>
+  <%= button_to "#{label} · #{price_label}", fallback_path, class: "button pink", style: "padding:8px 11px;font-size:12px" %>
+<% else %>
+  <span class="muted" style="font-size:12px">Not available right now</span>
+<% end %>
