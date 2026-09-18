@@ -189,8 +189,12 @@ small { font-size: 13px; }
 
 /* ---------- shell ---------- */
 
+/* Fixed, not absolute: the bare auth layout sets overflow:hidden on the body
+   to stop the page scrolling, and an absolutely positioned skip link parked at
+   left:-9999px inside a clipping ancestor can be unreachable when focused.
+   A fixed link is positioned against the viewport, so it always appears. */
 .skip {
-  position: absolute; left: -9999px; top: 0; z-index: 100;
+  position: fixed; left: -9999px; top: 0; z-index: 100;
   background: var(--ink); color: var(--on-ink);
   padding: 12px 16px; border-radius: 0 0 var(--r-md) 0;
   font-weight: 600;

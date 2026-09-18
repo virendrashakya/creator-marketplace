@@ -2,16 +2,19 @@
 <% content_for :description, "Indian creators put their recommendations and their paid photos, videos and time on one page. Fans pay over UPI, straight into your bank. You keep everything." %>
 <% content_for :head do %>
   <link rel="stylesheet" href="/assets/home.css">
+  <%# Deferred: nothing here blocks first paint, and the page is complete
+      without it. %>
+  <script src="/assets/js/home.js" defer></script>
 <% end %>
 
 <%#
-  The argument of this page, in order:
+  The argument, in order:
     1. Links are how you start. Selling is how you get paid.
-    2. Here is the money path, and you are the one who approves it.
-    3. Here is what a page looks like.
-    4. Here is why 100% is different from a commission.
-  Everything else is cut. A creator deciding whether to sign up does not need
-  a feature grid, and we have no logo wall or follower counts to show yet.
+    2. Here is the product actually working (the phone cycles through it).
+    3. Here is the money path, and you are the one who approves it.
+    4. Here is why 100% differs from a commission.
+  No logo wall, no follower counts, no testimonial carousel: we do not have
+  those numbers, and inventing them on a payments product is how trust dies.
 %>
 
 <section class="hero">
@@ -23,86 +26,109 @@
       Fans pay over UPI, into your own bank account, and you keep every rupee.
     </p>
     <div class="hero-actions">
-      <%= link_to sign_up_path, class: "btn btn--accent btn--big" do %>
-        Claim your handle
-      <% end %>
+      <%= link_to "Claim your handle", sign_up_path, class: "btn btn--accent btn--big" %>
       <% if (sample = @creators.find { |c| c.product_links.any? } || @creators.first) %>
         <%= link_to "See a real page", profile_path(sample.handle), class: "btn btn--ghost btn--big" %>
       <% end %>
     </div>
-    <p class="hero-fine">
-      Free to start. No gateway, no monthly fee, no cut of your money.
-    </p>
+    <div class="hero-upi">
+      <span class="hero-upi-label">Settles over</span>
+      <span class="upi-marks" role="list">
+        <span class="upi-mark" role="listitem">GPay</span>
+        <span class="upi-mark" role="listitem">PhonePe</span>
+        <span class="upi-mark" role="listitem">Paytm</span>
+      </span>
+    </div>
+    <p class="hero-fine">Free to start. No gateway, no monthly fee, no cut of your money.</p>
   </div>
 
-  <%# The artefact this product makes: a creator page, and the receipt it
-      produces. Two objects, because the whole pitch is that one turns into
-      the other. %>
+  <%# The artefact: a page, and the receipt it produced. The phone cycles
+      browse -> locked -> unlocked, driven by home.js. %>
   <div class="hero-art">
-    <div class="phone" aria-hidden="true">
-      <div class="phone-chrome"><span class="phone-url">wishful.app/@ananyarao</span></div>
+    <div class="phone" data-phone data-phone-state="browse">
+      <div class="phone-chrome"><span class="phone-url" translate="no">wishful.app/@ananyarao</span></div>
       <div class="phone-screen">
-        <div class="phone-banner"><div class="phone-avatar">A</div></div>
+        <div class="phone-banner">
+          <%= marketing_image :creator_hero, eager: true, class_name: "phone-banner-img" %>
+          <div class="phone-avatar"><%= marketing_image :creator_hero, eager: true %></div>
+        </div>
         <div class="phone-body">
           <div class="phone-name">Ananya Rao</div>
-          <div class="phone-handle">@ananyarao · Mumbai</div>
+          <div class="phone-handle" translate="no">@ananyarao &middot; Mumbai</div>
 
+          <%# The paid item. Its three states are driven by the parent's
+              data-phone-state, so one element tells the whole story. %>
           <div class="phone-sell">
             <div class="phone-sell-media">
-              <span class="phone-lock">Locked</span>
+              <%= marketing_image :creator_locked, class_name: "phone-sell-img" %>
+              <span class="phone-sell-veil" aria-hidden="true"></span>
+              <span class="phone-chip phone-chip--lock">Locked</span>
+              <span class="phone-chip phone-chip--open">Unlocked</span>
             </div>
             <div class="min0">
               <div class="phone-sell-title">The full Goa set, 48 photos</div>
-              <div class="phone-sell-price">₹499 to unlock</div>
+              <div class="phone-sell-price">
+                <span class="phone-price-ask">&#8377;499 to unlock</span>
+                <span class="phone-price-paid">Paid &middot; yours now</span>
+              </div>
             </div>
           </div>
 
           <div class="phone-divider"><span>and things I actually use</span></div>
 
           <div class="phone-link">
-            <div class="phone-thumb"></div>
-            <div class="min0">
-              <div class="phone-link-title truncate">Levi's 501, thrifted</div>
-              <div class="phone-link-meta">₹2,499 · Myntra</div>
-            </div>
+            <span class="phone-thumb"><%= marketing_image :rec_denim %></span>
+            <span class="min0">
+              <span class="phone-link-title truncate">Levi's 501, thrifted</span>
+              <span class="phone-link-meta" translate="no">&#8377;2,499 &middot; Myntra</span>
+            </span>
           </div>
           <div class="phone-link">
-            <div class="phone-thumb"></div>
-            <div class="min0">
-              <div class="phone-link-title truncate">The sunscreen, finally</div>
-              <div class="phone-link-meta">₹649 · Nykaa</div>
-            </div>
+            <span class="phone-thumb"><%= marketing_image :rec_serum %></span>
+            <span class="min0">
+              <span class="phone-link-title truncate">The sunscreen, finally</span>
+              <span class="phone-link-meta" translate="no">&#8377;649 &middot; Nykaa</span>
+            </span>
+          </div>
+          <div class="phone-link">
+            <span class="phone-thumb"><%= marketing_image :rec_camera %></span>
+            <span class="min0">
+              <span class="phone-link-title truncate">The camera I actually use</span>
+              <span class="phone-link-meta" translate="no">&#8377;41,999 &middot; Amazon</span>
+            </span>
           </div>
         </div>
       </div>
     </div>
 
+    <%# The receipt. A real QR block and a torn edge, because this is the
+        object that has to feel legitimate. %>
     <div class="slip" aria-hidden="true">
       <div class="slip-head">
         <span class="slip-label">Paid to you</span>
         <span class="badge badge--ok">Approved</span>
       </div>
-      <div class="slip-amount">₹499</div>
+      <div class="slip-amount">&#8377;499</div>
+      <div class="slip-qr"><%= render "pages/upi_qr" %></div>
       <div class="slip-lines">
         <div class="slip-line"><span>UTR</span><span class="ref">402913887561</span></div>
-        <div class="slip-line"><span>To</span><span>ananya@okaxis</span></div>
+        <div class="slip-line"><span>To</span><span translate="no">ananya@okaxis</span></div>
         <div class="slip-line"><span>When</span><span>4:12 pm IST</span></div>
       </div>
       <div class="slip-foot">
-        <span class="slip-keep">You keep ₹499</span>
+        <span class="slip-keep">You keep &#8377;499</span>
         <span class="slip-keep-sub">No commission deducted</span>
       </div>
+      <span class="slip-tear" aria-hidden="true"></span>
     </div>
   </div>
 </section>
 
-<%# The two paths, stated as a sequence rather than as equal features. The
-    second card is the one we want them to read, so it carries the accent. %>
 <section class="paths" aria-labelledby="paths-heading">
   <div class="paths-inner">
-    <h2 class="paths-title" id="paths-heading">Two ways to earn, and they work together</h2>
+    <h2 class="paths-title" id="paths-heading" data-reveal>Two ways to earn, and they work together</h2>
     <div class="paths-grid">
-      <article class="path">
+      <article class="path" data-reveal>
         <p class="path-step">Start here</p>
         <h3 class="path-name">Link what you already post about</h3>
         <p class="path-body">
@@ -117,7 +143,7 @@
         </ul>
       </article>
 
-      <article class="path path--lead">
+      <article class="path path--lead" data-reveal data-reveal-delay="90">
         <p class="path-step">Then get paid</p>
         <h3 class="path-name">Sell the thing nobody else has</h3>
         <p class="path-body">
@@ -136,34 +162,42 @@
   </div>
 </section>
 
-<%# The money path. This is the trust argument, and it is the thing a fan
-    sending money to a stranger needs to see spelled out. %>
 <section class="money" aria-labelledby="money-heading">
   <div class="money-inner">
-    <h2 id="money-heading">How the money reaches you</h2>
-    <p class="money-lede">
-      There is no payment gateway in the middle. Your fan pays your UPI ID,
-      and you are the one who says yes.
-    </p>
+    <div class="money-head">
+      <div class="money-head-copy">
+        <h2 id="money-heading" data-reveal>How the money reaches you</h2>
+        <p class="money-lede" data-reveal data-reveal-delay="70">
+          There is no payment gateway in the middle. Your fan pays your UPI ID,
+          and you are the one who says yes.
+        </p>
+      </div>
+      <figure class="money-shot" data-reveal data-reveal-delay="140">
+        <%= marketing_image :phone_in_hand, class_name: "money-shot-img" %>
+      </figure>
+    </div>
+
+    <%# A genuine sequence, so it is numbered. Nothing else on the page is. %>
     <ol class="flow">
-      <li class="flow-step">
+      <li class="flow-step" data-reveal>
         <p class="flow-title">They see your QR</p>
         <p class="flow-body">Your UPI ID, your QR, your name as the payee.</p>
       </li>
-      <li class="flow-step">
+      <li class="flow-step" data-reveal data-reveal-delay="60">
         <p class="flow-title">They pay from their app</p>
         <p class="flow-body">GPay, PhonePe, Paytm. Straight into your bank.</p>
       </li>
-      <li class="flow-step">
+      <li class="flow-step" data-reveal data-reveal-delay="120">
         <p class="flow-title">They send the UTR</p>
         <p class="flow-body">The reference their app shows, and a screenshot if they want.</p>
       </li>
-      <li class="flow-step flow-step--you">
+      <li class="flow-step flow-step--you" data-reveal data-reveal-delay="180">
         <p class="flow-title">You approve it</p>
         <p class="flow-body">Check it against your statement. Their access opens the moment you tap yes.</p>
       </li>
     </ol>
-    <p class="money-note">
+
+    <p class="money-note" data-reveal>
       Because the money never passes through us, there is nothing for us to
       take a cut of, and nothing to wait for. It is in your account before you
       have approved it.
@@ -171,32 +205,30 @@
   </div>
 </section>
 
-<%# The comparison. Named as a mechanism, not as a competitor, because the
-    point is the structure and not a logo. %>
 <section class="keep" aria-labelledby="keep-heading">
   <div class="keep-inner">
-    <h2 class="keep-title" id="keep-heading">A commission is not the same as being paid</h2>
+    <h2 class="keep-title" id="keep-heading" data-reveal>A commission is not the same as being paid</h2>
     <div class="keep-grid">
-      <div class="keep-col">
+      <div class="keep-col" data-reveal>
         <p class="keep-col-label">Affiliate commission</p>
         <p class="keep-figure keep-figure--them">
-          <span>₹2,499</span>
+          <span>&#8377;2,499</span>
           <span class="keep-arrow" aria-hidden="true">&rarr;</span>
           <span class="visually-hidden">earns you</span>
-          <strong>₹200</strong>
+          <strong>&#8377;200</strong>
         </p>
         <p class="keep-col-note">
           A fan buys the jeans you recommended. The store keeps the sale, pays
           a percentage, and confirms it next month. You earned 8%.
         </p>
       </div>
-      <div class="keep-col keep-col--ours">
+      <div class="keep-col keep-col--ours" data-reveal data-reveal-delay="90">
         <p class="keep-col-label">Sold on Wishful</p>
         <p class="keep-figure">
-          <span>₹499</span>
+          <span>&#8377;499</span>
           <span class="keep-arrow" aria-hidden="true">&rarr;</span>
           <span class="visually-hidden">earns you</span>
-          <strong>₹499</strong>
+          <strong>&#8377;499</strong>
         </p>
         <p class="keep-col-note">
           A fan unlocks the set you shot. They pay you directly. It is in your
@@ -204,7 +236,7 @@
         </p>
       </div>
     </div>
-    <p class="keep-foot">
+    <p class="keep-foot" data-reveal>
       Keep doing both. The links are how people find what you are worth. The
       things you sell are how you get paid for it.
     </p>
@@ -213,9 +245,15 @@
 
 <section class="close" aria-labelledby="close-heading">
   <div class="close-inner">
-    <h2 class="close-title" id="close-heading">Your handle is probably still free</h2>
-    <p class="close-url" aria-hidden="true"><span class="close-url-dim">wishful.app/@</span><span class="close-url-cursor">yourname</span></p>
-    <%= link_to "Claim it", sign_up_path, class: "btn btn--accent btn--big" %>
-    <p class="close-fine">Takes a minute. You need a UPI ID and something worth sharing.</p>
+    <h2 class="close-title" id="close-heading" data-reveal>Your handle is probably still free</h2>
+    <p class="close-url" aria-hidden="true" data-reveal data-reveal-delay="70">
+      <span class="close-url-dim">wishful.app/@</span><span class="close-url-cursor">yourname</span>
+    </p>
+    <div data-reveal data-reveal-delay="120">
+      <%= link_to "Claim it", sign_up_path, class: "btn btn--accent btn--big" %>
+    </div>
+    <p class="close-fine" data-reveal data-reveal-delay="170">
+      Takes a minute. You need a UPI ID and something worth sharing.
+    </p>
   </div>
 </section>

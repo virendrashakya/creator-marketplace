@@ -1,4 +1,7 @@
 <% content_for :title, "Sign in | Wishful" %>
+<%# Bare: no marketing nav or footer. This screen fills the viewport and
+    carries its own way back to the home page. %>
+<% content_for :bare, true %>
 <% content_for :head do %>
   <link rel="stylesheet" href="/assets/home.css">
 <% end %>
@@ -6,6 +9,7 @@
 <div class="auth-split">
   <div class="auth-form">
     <div class="auth-form-inner">
+      <%= link_to "Wishful", root_path, class: "auth-brand" %>
       <h1>Welcome back</h1>
       <p>Sign in to check your payments and update your page.</p>
 

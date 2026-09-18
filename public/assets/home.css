@@ -14,6 +14,24 @@
    eyebrow above every heading, 01/02/03 markers on things that are not a
    sequence (the money flow IS one, so it is numbered and nothing else is). */
 
+/* ---------- scroll reveals ----------
+   Only active once home.js has marked the root, so a page without JS shows
+   everything immediately rather than hiding content behind an event that will
+   never fire. home.js also refuses to mark the root under reduced motion, so
+   these rules simply never apply there. */
+
+.js-reveal [data-reveal] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 620ms var(--ease-out),
+    transform 620ms var(--ease-out);
+}
+.js-reveal [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
 /* ---------- section rhythm ----------
    Alternating surfaces rather than one page colour with cards floating on it.
    A long marketing page needs bands so the eye knows a new argument started. */
@@ -22,6 +40,26 @@
   max-width: var(--shell);
   margin-inline: auto;
   padding-inline: var(--gutter);
+}
+
+
+/* ---------- photo treatment ----------
+   Stock photography looks dropped-in when it keeps its own colour. Every
+   marketing photo is pulled slightly toward the page's own warmth and has its
+   contrast eased, so the images and the palette read as one system. Applied
+   with a filter rather than baked into the files, so replacing a photo with
+   your own shoot needs no re-editing. */
+
+.phone-sell-img, .phone-banner-img, .money-shot-img,
+.phone-thumb img, .phone-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.phone-banner-img, .money-shot-img {
+  filter: saturate(.92) contrast(.96);
 }
 
 /* ---------- hero ---------- */
@@ -69,6 +107,32 @@
 }
 
 .hero-actions { display: flex; gap: var(--gap-2); flex-wrap: wrap; align-items: center; }
+/* The three apps every Indian fan already has. Set as wordmark-style chips
+   rather than fetched logos: real brand logos on a marketing page imply a
+   partnership we do not have, and each one is someone else's trademark. */
+.hero-upi {
+  margin-top: 22px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.hero-upi-label {
+  font-family: var(--mono); font-size: 11.5px;
+  color: var(--muted); white-space: nowrap;
+}
+.upi-marks { display: flex; gap: 6px; flex-wrap: wrap; }
+.upi-mark {
+  font-size: 12.5px; font-weight: 600;
+  color: var(--body);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 11px;
+  white-space: nowrap;
+  animation: wf-rise 460ms var(--ease-out) both;
+}
+.upi-mark:nth-child(1) { animation-delay: 300ms }
+.upi-mark:nth-child(2) { animation-delay: 360ms }
+.upi-mark:nth-child(3) { animation-delay: 420ms }
+
 .hero-fine {
   margin: 18px 0 0;
   font-size: 13.5px;
@@ -129,23 +193,38 @@
   overflow: hidden;
 }
 .phone-banner {
-  height: 84px;
-  background: linear-gradient(145deg, var(--accent) 10%, #8E1142 90%);
+  height: 92px;
   position: relative;
+  overflow: hidden;
+  background: var(--ink-2);
+}
+.phone-banner-img {
+  /* Cropped to the upper body, not the face: the avatar directly below
+     already carries the person. */
+  object-position: 50% 22%;
+}
+/* A scrim under the avatar so a light photo cannot swallow its white ring. */
+.phone-banner::after {
+  content: "";
+  position: absolute; inset: auto 0 0 0; height: 46%;
+  background: linear-gradient(to top, rgba(20,22,26,.42), transparent);
 }
 .phone-avatar {
-  position: absolute; left: 14px; bottom: -22px;
-  width: 50px; height: 50px; border-radius: 999px;
+  position: absolute; left: 14px; bottom: -22px; z-index: 1;
+  width: 52px; height: 52px; border-radius: 999px;
+  overflow: hidden;
   background: var(--page); border: 3px solid #F4F5F3;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--display); font-size: 21px; color: var(--ink);
+  box-shadow: 0 2px 8px rgba(20,22,26,.24);
 }
+.phone-avatar img { object-position: 50% 18%; }
 .phone-body { padding: 30px 12px 14px; }
 .phone-name { font-family: var(--display); font-size: 18px; letter-spacing: -.02em; }
 .phone-handle { font-family: var(--mono); font-size: 10.5px; color: var(--muted); margin-top: 1px; }
 
-/* The paid item sits above the links, at a larger size, because that is the
-   hierarchy we are arguing for. */
+/* The paid item, and the whole product loop in one component.
+   home.js cycles the phone through data-phone-state="browse|locked|unlocked";
+   every visual difference below hangs off that one attribute, so the states
+   cannot drift out of sync with each other. */
 .phone-sell {
   margin-top: 14px;
   display: flex; gap: 10px; align-items: center;
@@ -154,33 +233,88 @@
   border-radius: 12px;
   padding: 9px;
   box-shadow: 0 2px 8px -3px rgba(20,22,26,.14);
+  transition:
+    border-color var(--t-panel) var(--ease-out),
+    box-shadow var(--t-panel) var(--ease-out);
 }
+/* Unlocked: the row itself acknowledges the purchase. */
+[data-phone-state="unlocked"] .phone-sell {
+  border-color: var(--ok-line);
+  box-shadow: 0 3px 14px -4px rgba(14,90,65,.28);
+}
+/* Browse: the paid row recedes so the links read as the focus, which is the
+   "start with links" half of the argument. */
+[data-phone-state="browse"] .phone-sell { box-shadow: none; }
+
 .phone-sell-media {
-  width: 54px; height: 54px; border-radius: 9px; flex: none;
+  width: 56px; height: 56px; border-radius: 9px; flex: none;
   position: relative; overflow: hidden;
-  background: linear-gradient(135deg, #C9CBC4, #A8ABA3);
-  display: flex; align-items: center; justify-content: center;
+  background: var(--ink-2);
+  display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 5px;
 }
-/* Blurred because it is locked. The blur IS the product state. */
-.phone-sell-media::before {
-  content: ""; position: absolute; inset: 0;
-  backdrop-filter: blur(4px);
-  background: rgba(20,22,26,.3);
+/* The photo is really there and really blurred while locked, then resolves.
+   Blurring the image itself rather than laying a frosted panel over it is
+   what makes the unlock feel like the same object becoming visible. */
+.phone-sell-img {
+  position: absolute; inset: 0;
+  object-position: 50% 20%;
+  filter: blur(7px) saturate(.85);
+  transform: scale(1.14);
+  transition:
+    filter 620ms var(--ease-out),
+    transform 620ms var(--ease-out);
 }
-.phone-lock {
-  position: relative;
+[data-phone-state="unlocked"] .phone-sell-img {
+  filter: blur(0) saturate(1);
+  transform: scale(1);
+}
+
+.phone-sell-veil {
+  position: absolute; inset: 0;
+  background: rgba(20,22,26,.34);
+  transition: opacity var(--t-panel) var(--ease-out);
+}
+[data-phone-state="unlocked"] .phone-sell-veil { opacity: 0; }
+
+/* Two chips share one slot; only one is ever visible. */
+.phone-chip {
+  position: relative; z-index: 1;
   font-size: 8.5px; font-weight: 700; letter-spacing: .02em;
-  color: #14161A; background: rgba(251,248,244,.95);
   padding: 2px 6px; border-radius: 999px;
+  white-space: nowrap;
+  transition:
+    opacity var(--t-quick) var(--ease-out),
+    transform var(--t-quick) var(--ease-out);
 }
+.phone-chip--lock { color: #14161A; background: rgba(251,248,244,.95); }
+.phone-chip--open {
+  position: absolute; bottom: 5px; left: 50%;
+  color: #FFF; background: var(--ok);
+  transform: translateX(-50%) scale(.9);
+  opacity: 0;
+}
+[data-phone-state="unlocked"] .phone-chip--lock { opacity: 0; transform: scale(.9); }
+[data-phone-state="unlocked"] .phone-chip--open { opacity: 1; transform: translateX(-50%) scale(1); }
+
 .phone-sell-title {
   font-size: 12.5px; font-weight: 700; line-height: 1.25;
   overflow-wrap: anywhere;
 }
+/* Price and paid-confirmation share one line, so the row does not change
+   height when the state flips. */
 .phone-sell-price {
+  position: relative;
+  margin-top: 3px;
   font-family: var(--mono); font-size: 11px; font-weight: 600;
-  color: var(--accent); margin-top: 3px; font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums;
+  min-height: 15px;
 }
+.phone-price-ask, .phone-price-paid { transition: opacity var(--t-quick) var(--ease-out); }
+.phone-price-ask { color: var(--accent); }
+.phone-price-paid { position: absolute; inset: 0; color: var(--ok); opacity: 0; }
+[data-phone-state="unlocked"] .phone-price-ask { opacity: 0; }
+[data-phone-state="unlocked"] .phone-price-paid { opacity: 1; }
 
 .phone-divider {
   display: flex; align-items: center; gap: 8px;
@@ -196,9 +330,13 @@
   padding: 7px 8px; display: flex; gap: 8px; align-items: center;
   margin-bottom: 6px;
 }
+.phone-link .min0 { display: block; }
+.phone-link-title, .phone-link-meta { display: block; }
 .phone-thumb {
-  width: 32px; height: 32px; border-radius: 6px; flex: none;
-  background: repeating-linear-gradient(135deg, #EDEEEA 0 6px, #E3E4DF 6px 12px);
+  width: 34px; height: 34px; border-radius: 6px; flex: none;
+  overflow: hidden;
+  background: var(--track);
+  display: block;
 }
 .phone-link-title { font-size: 11.5px; font-weight: 600; }
 .phone-link-meta {
@@ -252,6 +390,25 @@
   font-family: var(--mono); font-size: 30px; font-weight: 600;
   font-variant-numeric: tabular-nums; margin: 8px 0 12px; line-height: 1;
 }
+/* The QR block. Small, because on the real payment screen it is the biggest
+   thing on the page and here it is only evidence that one exists. */
+.slip-qr {
+  --qr-bg: #FFFFFF;
+  --qr-ink: #14161A;
+  width: 74px;
+  margin: 0 0 12px;
+  padding: 5px;
+  background: #FFF;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  animation: wf-qr 520ms var(--ease-out) 700ms both;
+}
+.qr-mark { display: block; width: 100%; height: auto; }
+@keyframes wf-qr {
+  from { opacity: 0; transform: scale(.92) }
+  to   { opacity: 1; transform: none }
+}
+
 .slip-lines {
   border-top: 1px dashed var(--line-strong);
   padding-top: 10px;
@@ -277,6 +434,18 @@
   color: var(--ok); font-variant-numeric: tabular-nums;
 }
 .slip-keep-sub { display: block; font-size: 10.5px; color: var(--ok); opacity: .8; margin-top: 2px; }
+
+/* Torn bottom edge. A receipt that ends in a straight line reads as a card;
+   the zigzag is what makes it read as paper that was pulled off a roll. */
+.slip { position: relative; padding-bottom: 8px; }
+.slip-tear {
+  position: absolute; left: 0; right: 0; bottom: -7px; height: 8px;
+  background: var(--ok-tint);
+  -webkit-mask-image: repeating-linear-gradient(
+    -45deg, #000 0 4px, transparent 4px 8px);
+  mask-image: repeating-linear-gradient(
+    -45deg, #000 0 4px, transparent 4px 8px);
+}
 
 /* ---------- the two paths ---------- */
 
@@ -368,10 +537,42 @@
   max-width: 28ch;
 }
 .money-lede {
-  margin: 0 0 clamp(26px, 4vw, 38px);
+  margin: 0;
   font-size: clamp(15.5px, 2vw, 18px);
   line-height: 1.5; color: var(--on-ink-body);
   max-width: 50ch; text-wrap: pretty;
+}
+
+/* Heading beside a photograph of the thing being described: a hand holding a
+   phone, which is where every rupee in this product actually moves. */
+.money-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 236px);
+  gap: clamp(20px, 4vw, 44px);
+  align-items: center;
+  margin-bottom: clamp(28px, 4vw, 42px);
+}
+@media (max-width: 760px) {
+  /* The photo is supporting material, not the argument. On a phone the
+     argument gets the whole width and the photo goes. */
+  .money-head { grid-template-columns: minmax(0, 1fr); }
+  .money-shot { display: none; }
+}
+.money-head-copy { display: grid; gap: 10px; }
+
+.money-shot {
+  margin: 0;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--ink-2);
+  aspect-ratio: 4 / 3;
+  box-shadow: 0 16px 34px -14px rgba(0,0,0,.6);
+}
+.money-shot-img {
+  /* Cropped to the phone and the hand. The original is a wide landscape with
+     a lot of sky that says nothing. */
+  object-position: 50% 38%;
+  filter: saturate(.86) contrast(1.02) brightness(.94);
 }
 
 /* This one genuinely is a sequence, so it is numbered and the numbers mean
@@ -535,16 +736,90 @@
   .close-url-cursor::after { animation: none; opacity: 1; }
 }
 
-/* ---------- auth split (sign in / sign up) ---------- */
+/* ---------- auth split (sign in / sign up) ----------
+   These pages set content_for :bare, so the layout renders no nav and no
+   footer. They fill the viewport instead: with the marketing header and
+   footer in place the dark panel stopped short of both edges and a two field
+   form gained a scrollbar. */
 
-.auth-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); min-height: 80vh; }
-.auth-form { padding: 44px 20px; display: flex; align-items: center; justify-content: center; }
-.auth-form-inner { width: 100%; max-width: 420px; }
-.auth-form h1 { margin: 22px 0 6px; font-size: 34px; line-height: 1.05; }
+/* Two independent columns, not one tall page.
+   The signup form is taller than the viewport; the pitch beside it is not. So
+   the page itself must never scroll: if it did, the short dark column would be
+   dragged up with the long one and its last line would be cut off, which is
+   exactly what happened. Instead the split is pinned to the viewport and only
+   the form column scrolls inside it. */
+
+.body--bare {
+  height: 100svh;
+  /* Belt and braces for browsers without svh; the svh line above wins where
+     it is supported. */
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.body--bare main { flex: 1; display: flex; min-height: 0; }
+
+.auth-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  flex: 1;
+  width: 100%;
+  /* min-height:0 lets the grid respect its parent's height instead of being
+     sized by its tallest child, which is what allows the column below to
+     become the scroll container. */
+  min-height: 0;
+}
+
+.auth-form {
+  padding: clamp(28px, 5vw, 56px) var(--gutter);
+  padding-top: max(clamp(28px, 5vw, 56px), env(safe-area-inset-top));
+  display: flex;
+  /* flex-start, not center: a form taller than its column must scroll from
+     the top. Centring it clips the first field beyond reach, because you
+     cannot scroll above the start of a flex container. */
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 0;
+  overflow-y: auto;
+  /* Keep the aside perfectly still while this column scrolls. */
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+/* Short forms (sign in) still sit optically centred; long ones (sign up)
+   start at the top and scroll. auto margins on the child do this without the
+   clipping that align-items:center causes. */
+.auth-form-inner {
+  width: 100%;
+  max-width: 420px;
+  margin-block: auto;
+}
+
+/* The one piece of chrome these pages keep: a way back to the home page. */
+.auth-brand {
+  display: inline-block;
+  font-family: var(--display); font-weight: 600;
+  font-size: 20px; letter-spacing: -.03em;
+  color: var(--ink); text-decoration: none;
+  margin-bottom: 28px;
+  transition: color var(--t-quick) var(--ease-out), transform var(--t-press) var(--ease-out);
+}
+.auth-brand:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) {
+  .auth-brand:hover { color: var(--accent); }
+}
+
+.auth-form h1 { margin: 0 0 6px; font-size: clamp(28px, 4vw, 34px); line-height: 1.05; }
 .auth-form > .auth-form-inner > p { margin: 0 0 26px; font-size: 15.5px; color: var(--secondary); line-height: 1.5; }
 .auth-aside {
-  background: var(--ink); padding: 44px 20px;
+  background: var(--ink);
+  padding: clamp(32px, 5vw, 56px) var(--gutter);
+  padding-bottom: max(clamp(32px, 5vw, 56px), env(safe-area-inset-bottom));
   display: flex; align-items: center; justify-content: center;
+  /* Its content is short by design, but a long handle or a translated string
+     should scroll this column rather than break the layout. */
+  min-height: 0;
+  overflow-y: auto;
 }
 .auth-aside-inner { max-width: 380px; }
 .auth-aside-title {
@@ -557,3 +832,21 @@
   font-family: var(--mono); font-size: 14px; color: var(--on-ink); overflow-wrap: anywhere;
 }
 .auth-aside-note { margin-top: 14px; font-size: 14px; color: #9BA1A9; line-height: 1.5; }
+
+/* Stacked, the split stops being two columns and becomes one document, so
+   normal page scrolling returns. Form first: someone who tapped "sign in"
+   wants the field, not the sales copy. */
+@media (max-width: 680px) {
+  .body--bare { height: auto; max-height: none; overflow: visible; }
+  .body--bare main { display: block; }
+  .auth-split { display: block; }
+  .auth-form {
+    overflow-y: visible;
+    min-height: 0;
+    align-items: stretch;
+  }
+  .auth-form-inner { margin-block: 0; margin-inline: auto; }
+  .auth-form { order: 1; }
+  .auth-aside { order: 2; }
+}
+
