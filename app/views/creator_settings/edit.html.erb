@@ -132,6 +132,39 @@
         </div>
       </section>
 
+      <%# The words on your own page. These were hardcoded, which meant every
+          creator's page said "Behind the haul" in the same voice. Blank means
+          use the default, so nobody has to fill in six boxes to get a page
+          that reads properly. %>
+      <section class="card settings-card">
+        <h2>The words on your page</h2>
+        <p style="max-width: 58ch">Each section of your public page has a heading. Leave any of these empty to use the default.</p>
+
+        <div class="field-row">
+          <% [
+            [ :links_heading,  "Recommendations heading" ],
+            [ :media_heading,  "Paid photos and video heading" ],
+            [ :posts_heading,  "Posts heading" ],
+            [ :meet_heading,   "Meetups heading" ],
+            [ :reveal_heading, "Contact heading" ]
+          ].each do |field, label| %>
+            <div class="field">
+              <%= f.label field, label %>
+              <%= f.text_field field, maxlength: 60,
+                    placeholder: User::SECTION_DEFAULTS[field] %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="field field--full">
+          <%= f.label :links_note, "Note above your recommendations" %>
+          <%= f.text_area :links_note, rows: 2, maxlength: 240,
+                placeholder: User::SECTION_DEFAULTS[:links_note],
+                aria: { describedby: "links_note_hint" } %>
+          <small id="links_note_hint">Shown to anyone browsing your recommendations. Keep it accurate: it tells people how you are paid.</small>
+        </div>
+      </section>
+
       <section class="card card--dark settings-card">
         <h2>How you get paid</h2>
         <p style="max-width: 58ch">Money goes straight from your fan to you. Turn this off and fans stop seeing the paid things, without you losing the details.</p>

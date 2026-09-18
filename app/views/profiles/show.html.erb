@@ -1,5 +1,9 @@
 <% content_for :title, "#{@user.name} (@#{@user.handle}) | Wishful" %>
 <% content_for :description, @user.bio.presence || "Things #{@user.name} recommends, on Wishful." %>
+<%# This is the creator's page, not ours: no top nav, one quiet credit in the
+    footer. Set for signed-in visitors too, so a fan browsing someone else's
+    page does not get our app bar over it. %>
+<% content_for :chrome, "creator" %>
 <% content_for :head do %>
   <link rel="stylesheet" href="/assets/profile.css">
 <% end %>
@@ -30,7 +34,7 @@
           <div class="actions" style="gap: 9px">
             <span class="pf-handle" translate="no">@<%= @user.handle %></span>
             <% category = [ @user.creator_category, @user.creator_subcategory ].select(&:present?).join(", ") %>
-            <% if category.present? %><span class="pf-chip"><%= category %></span><% end %>
+            <% if category.present? %><span class="pf-badge"><%= category %></span><% end %>
           </div>
           <% details = [ @user.pronouns, @user.location ].select(&:present?) %>
           <% if details.any? %>
@@ -58,69 +62,196 @@
       </div>
     </header>
 
+    <%# Stats and follow. The counts are the two numbers a visitor uses to
+        decide whether this page is worth their money: how much is here, and
+        how many other people are already here. %>
+    <div class="pf-stats">
+      <div class="pf-stat">
+        <span class="pf-stat-value num"><%= number_to_human(@all_links.size, units: { thousand: "K", million: "M" }, format: "%n%u", precision: 2, significant: true) %></span>
+        <span class="pf-stat-label"><%= "recommendation".pluralize(@all_links.size) %></span>
+      </div>
+      <div class="pf-stat">
+        <span class="pf-stat-value num"><%= number_to_human(@user.followers_count, units: { thousand: "K", million: "M" }, format: "%n%u", precision: 2, significant: true) %></span>
+        <span class="pf-stat-label"><%= "follower".pluralize(@user.followers_count) %></span>
+      </div>
+      <div class="pf-stat-action">
+        <% if @own_page %>
+          <%= link_to "Edit page", dashboard_path, class: "btn btn--light btn--small" %>
+        <% elsif !signed_in? %>
+          <%= link_to "Follow", sign_in_path, class: "btn btn--accent btn--small" %>
+        <% elsif @following %>
+          <%= button_to "Following", unfollow_creator_path(@user.handle), method: :delete,
+                class: "btn btn--light btn--small", form_class: "pf-follow-form" %>
+        <% else %>
+          <%= button_to "Follow", follow_creator_path(@user.handle), method: :post,
+                class: "btn btn--accent btn--small", form_class: "pf-follow-form" %>
+        <% end %>
+      </div>
+    </div>
+
     <%= render "profiles/offers_index", user: @user, collections: @collections,
           uncategorized: @uncategorized_links, media: @paid_media_posts,
           meet_offers: @meet_offers, reveals: @contact_reveals, wishlists: @wishlists %>
 
-    <% has_links = @collections.any? { |c| c.product_links.any? } || @uncategorized_links.any? %>
-    <% if has_links %>
-      <% first_group = true %>
-      <% @collections.each do |collection| %>
-        <% next if collection.product_links.empty? %>
-        <section class="pf-section">
-          <div class="pf-section-head">
-            <h2><%= collection.name %></h2>
-            <span class="pf-count"><%= pluralize(collection.product_links.size, "item") %></span>
-          </div>
-          <% if first_group %><p class="rec-note">These are referral links. If you buy, the store pays a small cut at no extra cost to you.</p><% first_group = false %><% end %>
-          <div class="rec-list wf-stagger"><%= render partial: "product_links/card", collection: collection.product_links %></div>
-        </section>
-      <% end %>
-      <% if @uncategorized_links.any? %>
-        <section class="pf-section">
-          <div class="pf-section-head">
-            <h2>Things I use</h2>
-            <span class="pf-count"><%= pluralize(@uncategorized_links.size, "item") %></span>
-          </div>
-          <% if first_group %><p class="rec-note">These are referral links. If you buy, the store pays a small cut at no extra cost to you.</p><% end %>
-          <div class="rec-list wf-stagger"><%= render partial: "product_links/card", collection: @uncategorized_links %></div>
-        </section>
-      <% end %>
+    <%# Content first. Someone tapping a link in an Instagram bio came for the
+        person, and the posts are the only thing on this page they already
+        recognise. Commerce follows, led by what the creator sells themselves. %>
+    <%# Tabs. Real links to ?tab=, not anchors: jumping around a page that is
+        already too long does not shorten it. Each tab is its own URL so a
+        creator can share /@handle?tab=shop directly, and refresh, back and
+        forward all behave. Built from @sections, so a tab never exists for a
+        section with nothing in it. %>
+    <% if @sections.size > 1 %>
+      <nav class="pf-tabs" aria-label="Sections of this page">
+        <div class="pf-tabs-inner">
+          <% @sections.each do |sec| %>
+            <% on = @active_tab == sec[:id] %>
+            <%= link_to profile_path(@user.handle, tab: sec[:id]),
+                  class: "pf-tab#{' is-on' if on}",
+                  aria: { current: (on ? "page" : nil) } do %>
+              <span class="pf-tab-icon" aria-hidden="true"><%= render "profiles/tab_icon", kind: sec[:icon] %></span>
+              <span class="pf-tab-label"><%= sec[:label] %></span>
+            <% end %>
+          <% end %>
+        </div>
+      </nav>
     <% end %>
 
-    <% if @paid_media_posts.any? %>
-      <section class="pf-section">
-        <div class="pf-section-head"><h2>Behind the haul</h2></div>
+    <%# Only the active tab renders. Sections are not hidden with CSS: on a
+        page with 13 recommendations plus media, slots and gifts, shipping
+        everything and hiding it still costs the reader the download. %>
+    <% if @active_tab == "posts" %>
+      <section class="pf-section" id="posts">
+        <div class="pf-section-head">
+          <h2><%= @user.posts_heading_text %></h2>
+          <span class="pf-count"><%= pluralize(@creator_posts.size, "post") %></span>
+        </div>
+        <div class="posts"><%= render partial: "creator_posts/post", collection: @creator_posts %></div>
+      </section>
+    <% end %>
+
+    <%# Paid media before recommendations: this is the creator's own work and
+        the only thing here that pays them in full. %>
+    <% if @active_tab == "unlock" %>
+      <section class="pf-section" id="unlock">
+        <div class="pf-section-head">
+          <h2><%= @user.media_heading_text %></h2>
+          <span class="pf-count"><%= pluralize(@paid_media_posts.size, "item") %></span>
+        </div>
+        <p class="rec-note">Pay once and it is yours. The money goes straight to <%= @user.name.to_s.split.first.presence || "the creator" %>.</p>
         <div class="media-grid wf-stagger"><%= render partial: "paid_media_posts/card", collection: @paid_media_posts %></div>
       </section>
     <% end %>
 
-    <% if @meet_offers.any? %>
-      <section class="pf-section">
-        <div class="pf-section-head"><h2>Book me</h2></div>
+    <% has_links = @all_links.any? %>
+    <% if @active_tab == "shop" %>
+      <section class="pf-section" id="shop">
+        <div class="pf-section-head">
+          <h2><%= @user.links_heading_text %></h2>
+          <span class="pf-count"><%= pluralize(@all_links.size, "item") %></span>
+        </div>
+        <p class="rec-note"><%= @user.links_note_text %></p>
+
+        <%# Search and category chips appear only once a page has enough items
+            to be hard to scan. Below that they make a short page look empty. %>
+        <% if @filterable %>
+          <div class="pf-filters">
+            <%= form_with url: profile_path(@user.handle, tab: "shop"), method: :get, class: "pf-search" do %>
+              <%# form_with drops the query string on a GET, so the tab has to
+                  travel as a field or submitting a search would bounce the
+                  reader back to the default tab. %>
+              <%= hidden_field_tag :tab, "shop" %>
+              <label class="visually-hidden" for="pf_q">Search @<%= @user.handle %>'s recommendations</label>
+              <%= search_field_tag :q, @query, id: "pf_q", placeholder: "Search #{@all_links.size} recommendations",
+                    autocomplete: "off", class: "pf-search-input" %>
+              <%= submit_tag "Search", class: "pf-search-go" %>
+              <% if @query.present? %>
+                <%= link_to "Clear", profile_path(@user.handle, tab: "shop"), class: "pf-search-clear" %>
+              <% end %>
+            <% end %>
+
+            <% if @categories.size > 1 %>
+              <div class="pf-chips" role="list" aria-label="Categories">
+                <a class="pf-chip<%= " is-on" if @query.blank? %>" role="listitem" href="#shop">All</a>
+                <%# Chips stay anchors: they scroll within the shop tab, which
+                    is now a short page rather than the whole profile. %>
+                <% @categories.each do |cat| %>
+                  <a class="pf-chip" role="listitem" href="#cat-<%= cat.id %>"><%= cat.name %></a>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <%# A search result replaces the grouped view: someone who typed a
+            query wants matches, not their collection structure back. %>
+        <% if @query.present? %>
+          <p class="pf-result-count">
+            <%= pluralize(@matched_links.size, "match") %> for &ldquo;<%= @query %>&rdquo;
+          </p>
+          <% if @matched_links.any? %>
+            <div class="rec-list wf-stagger"><%= render partial: "product_links/card", collection: @matched_links %></div>
+          <% else %>
+            <div class="pf-empty-inline">
+              Nothing matched that. <%= link_to "See everything", profile_path(@user.handle, tab: "shop") %>.
+            </div>
+          <% end %>
+        <% else %>
+          <% @categories.each do |collection| %>
+            <div class="pf-group" id="cat-<%= collection.id %>">
+              <% if @categories.size > 1 || @uncategorized_links.any? %>
+                <h3 class="pf-group-name"><%= collection.name %></h3>
+              <% end %>
+              <div class="rec-list wf-stagger"><%= render partial: "product_links/card", collection: collection.product_links %></div>
+            </div>
+          <% end %>
+          <% if @uncategorized_links.any? %>
+            <div class="pf-group">
+              <% if @categories.any? %>
+                <h3 class="pf-group-name">Everything else</h3>
+              <% end %>
+              <div class="rec-list wf-stagger"><%= render partial: "product_links/card", collection: @uncategorized_links %></div>
+            </div>
+          <% end %>
+        <% end %>
+      </section>
+    <% end %>
+
+    <% if @active_tab == "time" && @meet_offers.any? %>
+      <section class="pf-section" id="time">
+        <div class="pf-section-head"><h2><%= @user.meet_heading_text %></h2></div>
         <div class="stack"><%= render partial: "meet_offers/card", collection: @meet_offers %></div>
       </section>
     <% end %>
 
-    <% if @contact_reveals.any? %>
-      <section class="pf-section">
-        <div class="pf-section-head"><h2>Reach me directly</h2></div>
+    <% if @active_tab == "time" && @contact_reveals.any? %>
+      <section class="pf-section"<%= ' id="time"'.html_safe if @meet_offers.empty? %>>
+        <div class="pf-section-head"><h2><%= @user.reveal_heading_text %></h2></div>
         <div class="stack"><%= render partial: "contact_reveals/card", collection: @contact_reveals %></div>
       </section>
     <% end %>
 
-    <% @wishlists.each do |wishlist| %>
+    <%# A wishlist is titled by the creator ("My birthday wishlist"), which does
+        not tell a first-time visitor that this money goes to the creator
+        rather than to a shop. The subhead says so, mirroring the referral
+        disclosure on the recommendation sections above. %>
+    <% gift_anchor_used = false %>
+    <% (@active_tab == "gifts" ? @wishlists : []).each do |wishlist| %>
       <% next if wishlist.wishlist_items.empty? %>
-      <section class="pf-section">
-        <div class="pf-section-head"><h2><%= wishlist.title %></h2></div>
+      <section class="pf-section"<%= ' id="gifts"'.html_safe unless gift_anchor_used %>>
+      <% gift_anchor_used = true %>
+        <div class="pf-section-head">
+          <h2><%= wishlist.title %></h2>
+          <span class="pf-count"><%= pluralize(wishlist.wishlist_items.size, "gift") %></span>
+        </div>
+        <p class="rec-note">
+          These are gifts, not things to buy for yourself. What you send goes
+          straight to <%= @user.name.to_s.split.first.presence || "the creator" %> over UPI.
+        </p>
+        <% if wishlist.description.present? %>
+          <p class="rec-note"><%= wishlist.description %></p>
+        <% end %>
         <div class="wish-grid wf-stagger"><%= render partial: "wishlists/item", collection: wishlist.wishlist_items %></div>
-      </section>
-    <% end %>
-
-    <% if @creator_posts.any? %>
-      <section class="pf-section">
-        <div class="pf-section-head"><h2>Lately</h2></div>
-        <div class="posts"><%= render partial: "creator_posts/post", collection: @creator_posts %></div>
       </section>
     <% end %>
 

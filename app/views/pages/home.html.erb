@@ -1,5 +1,9 @@
 <% content_for :title, "Wishful: get paid for what only you have" %>
 <% content_for :description, "Indian creators put their recommendations and their paid photos, videos and time on one page. Fans pay over UPI, straight into your bank. You keep everything." %>
+<%# Marketing chrome even for a signed-in creator: this page's job is to
+    explain the product, and an app bar on it would be navigation for a
+    different task. %>
+<% content_for :chrome, "marketing" %>
 <% content_for :head do %>
   <link rel="stylesheet" href="/assets/home.css">
   <%# Deferred: nothing here blocks first paint, and the page is complete

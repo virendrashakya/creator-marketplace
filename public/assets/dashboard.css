@@ -110,6 +110,19 @@
   transition: color var(--t-quick) var(--ease-out), transform var(--t-enter) var(--ease-out);
 }
 
+/* The one create action with no money attached. Set apart from the grid above
+   so it does not read as a fifth way to earn. */
+.create-aside {
+  margin-top: var(--gap-3);
+  padding-top: var(--gap-3);
+  border-top: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--gap-3); flex-wrap: wrap;
+}
+.create-aside-name { font-size: 14.5px; font-weight: 700; }
+.create-aside-desc { font-size: 13px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+.create-action--wide { flex: 0 1 220px; }
+
 /* Managed lists. */
 .managed { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--gap-3); }
 .managed-card {
@@ -371,6 +384,44 @@
   .kind-tab:hover { border-color: var(--ink); color: var(--body); }
 }
 .kind-tab[aria-current="page"] { background: var(--accent); border-color: var(--accent); color: #FFF; }
+
+/* Which way the money goes, stated before any field.
+   A recommendation form and a gift form ask for nearly the same things
+   (title, why, image, store link), so the shape of the form cannot tell them
+   apart. This can, and the arrow does most of the work. */
+.form-intent {
+  display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;
+  padding: 13px 15px;
+  border-radius: var(--r-md);
+  margin-bottom: var(--gap-3);
+}
+.form-intent-flow {
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  white-space: nowrap; flex: none;
+  padding: 3px 9px; border-radius: 999px;
+}
+.form-intent-body {
+  margin: 0; flex: 1 1 260px; min-width: 0;
+  font-size: 13.5px; line-height: 1.5; text-wrap: pretty;
+}
+.form-intent-body a { font-weight: 600; text-decoration: underline; }
+
+/* Money leaving toward a shop: neutral, because this is not a sale for you. */
+.form-intent--out {
+  background: var(--addon);
+  border: 1px solid var(--line);
+}
+.form-intent--out .form-intent-flow { background: var(--white); color: var(--secondary); border: 1px solid var(--line-strong); }
+.form-intent--out .form-intent-body { color: var(--secondary); }
+
+/* Money arriving to you: the accent, because it is income. */
+.form-intent--in {
+  background: var(--ok-tint);
+  border: 1px solid var(--ok-line);
+}
+.form-intent--in .form-intent-flow { background: var(--ok); color: #FFF; }
+.form-intent--in .form-intent-body { color: var(--ok); }
+.form-intent--in .form-intent-body a { color: var(--ok); }
 
 /* "How this earns" note above every create form. */
 .earn-note { background: var(--ink); border-radius: var(--r-lg); padding: 14px 16px; margin-bottom: 16px; }

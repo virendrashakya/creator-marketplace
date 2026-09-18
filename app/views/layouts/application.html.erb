@@ -21,46 +21,89 @@
     <%= yield :head %>
   </head>
   <%#
-    Auth screens set :bare. They are full-bleed split layouts that fill the
-    viewport, and the marketing nav actively worked against them: on /sign_in
-    the nav offered a "Sign in" button pointing at the page you were already
-    on, and the header plus footer pushed the split panel off the fold so a
-    two-field form scrolled. Those pages carry their own minimal brand link.
+    Chrome comes in four modes, because this app has four genuinely different
+    kinds of page and one nav cannot serve them.
+
+      :marketing  the landing page. Full nav, full footer. Selling to a
+                  stranger is the whole job, so the brand belongs everywhere.
+      :creator    a public /@handle page. NO top nav: this is the link a
+                  creator puts in their Instagram bio, and putting our logo
+                  and a "Start your page" button above their name advertises
+                  to their audience on their page. One quiet credit at the
+                  very bottom instead.
+      :app        signed-in creator surfaces. A compact app bar to get back
+                  to the dashboard and sign out, and no marketing footer:
+                  "Wishful, made in Mumbai" is copy for visitors, not for
+                  someone who already signed up.
+      :bare       auth screens. Full-bleed split layouts that fill the
+                  viewport; they carry their own small wordmark.
+
+    A view opts in with `content_for :chrome, "creator"`. The default is
+    :app when signed in and :marketing when not, so a new signed-in screen
+    gets working navigation without having to remember to ask for it.
   %>
-  <% bare = content_for?(:bare) %>
-  <body<%= " class=\"body--bare\"".html_safe if bare %>>
+  <% chrome = content_for(:chrome).to_s.strip.presence %>
+  <% chrome ||= content_for?(:bare) ? "bare" : (signed_in? ? "app" : "marketing") %>
+  <body class="chrome-<%= chrome %><%= " body--bare" if chrome == "bare" %>">
     <a class="skip" href="#main">Skip to content</a>
-    <% unless bare %>
+
+    <% case chrome %>
+    <% when "marketing" %>
       <header>
         <nav class="nav" aria-label="Primary">
           <%= link_to "Wishful", root_path, class: "brand" %>
           <div class="nav-links">
-            <% if signed_in? %>
-              <%= link_to "My page", profile_path(current_user.handle), class: "btn btn--ghost btn--small" %>
-              <%= link_to "Dashboard", dashboard_path, class: "btn btn--ghost btn--small" %>
-              <%= button_to "Sign out", sign_out_path, method: :delete, class: "btn-back" %>
-            <% else %>
-              <%# Never offer the page you are already on. %>
-              <%= link_to "Sign in", sign_in_path, class: "btn btn--ghost" unless current_page?(sign_in_path) %>
-              <%= link_to "Start your page", sign_up_path, class: "btn" unless current_page?(sign_up_path) %>
+            <%# Never offer the page you are already on. %>
+            <%= link_to "Sign in", sign_in_path, class: "btn btn--ghost" unless current_page?(sign_in_path) %>
+            <%= link_to "Start your page", sign_up_path, class: "btn" unless current_page?(sign_up_path) %>
+          </div>
+        </nav>
+      </header>
+
+    <% when "app" %>
+      <header class="appbar-wrap">
+        <nav class="appbar" aria-label="Primary">
+          <%= link_to "Wishful", dashboard_path, class: "appbar-brand" %>
+          <div class="appbar-links">
+            <%= link_to dashboard_path, class: "appbar-link" do %>Dashboard<% end unless current_page?(dashboard_path) %>
+            <%= link_to profile_path(current_user.handle), class: "appbar-handle" do %>
+              <span class="mono" translate="no">@<%= current_user.handle %></span>
             <% end %>
+            <%= button_to "Sign out", sign_out_path, method: :delete,
+                  class: "appbar-signout", form_class: "appbar-signout-form" %>
           </div>
         </nav>
       </header>
     <% end %>
+
     <div class="flash-region" aria-live="polite">
       <% flash.each do |kind, message| %>
         <div class="flash <%= "alert" if kind.to_s.in?(%w[alert error]) %>"><%= message %></div>
       <% end %>
     </div>
+
     <main id="main">
       <%= yield %>
     </main>
-    <% unless bare %>
+
+    <% if chrome == "marketing" %>
       <footer class="footer">
         <span>Wishful, made in Mumbai</span>
         <span class="mono" style="font-size: 12.5px">All times IST</span>
       </footer>
+    <% elsif chrome == "creator" %>
+      <%#
+        The only trace of us on a creator's page, and it is a credit rather
+        than an advert. It links to the marketing home so a fan who likes
+        what they see can find out what this is, but it does not compete with
+        anything the creator put above it.
+      %>
+      <footer class="credit">
+        <%= link_to root_path, class: "credit-link" do %>
+          Made with <span class="credit-brand">Wishful</span>
+        <% end %>
+      </footer>
     <% end %>
+  </body>
   </body>
 </html>

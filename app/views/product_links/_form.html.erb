@@ -1,5 +1,21 @@
 <%= form_with model: @product_link do |f| %>
   <%= render "shared/errors", record: @product_link %>
+
+  <%# A recommendation and a wishlist gift use nearly the same fields, and
+      creators were mixing them up. The only thing that separates them is who
+      receives the money, so each form says which it is before any field. %>
+  <div class="form-intent form-intent--out">
+    <span class="form-intent-flow">
+      <span class="visually-hidden">Money goes from the fan to the shop</span>
+      <span aria-hidden="true">Fan &rarr; the shop</span>
+    </span>
+    <p class="form-intent-body">
+      This sends people to a store to buy it themselves. You earn only what
+      the shop pays you. To ask your audience to buy something <em>for</em>
+      you, add it to a <%= link_to "gift wishlist", new_wishlist_path %> instead.
+    </p>
+  </div>
+
   <div class="field">
     <%= f.label :title, "What are you recommending?" %>
     <%= f.text_field :title, placeholder: "The everyday tote" %>

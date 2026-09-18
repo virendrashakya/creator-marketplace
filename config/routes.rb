@@ -53,5 +53,10 @@ Rails.application.routes.draw do
     resources :creator_post_comments, only: :create
   end
 
+  # Follow lives under the handle so the button can post from the public page
+  # without knowing an internal id. Declared before the catch-all show route.
+  post   "/:handle/follow", to: "creator_follows#create",  as: :follow_creator
+  delete "/:handle/follow", to: "creator_follows#destroy", as: :unfollow_creator
+
   get "/:handle", to: "profiles#show", as: :profile
 end

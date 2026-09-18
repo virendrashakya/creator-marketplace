@@ -22,6 +22,41 @@ class User < ApplicationRecord
   has_many :creator_blocks, foreign_key: :creator_id, dependent: :destroy, inverse_of: :creator
   has_many :payment_claims, foreign_key: :claimant_id, dependent: :destroy, inverse_of: :claimant
   has_many :received_payment_claims, class_name: "PaymentClaim", foreign_key: :creator_id, dependent: :destroy, inverse_of: :creator
+
+  # Follows, both directions. `followers_count` on users is a counter cache,
+  # maintained by CreatorFollow, so the public profile never counts rows.
+  has_many :follower_relationships, class_name: "CreatorFollow", foreign_key: :creator_id,
+           dependent: :destroy, inverse_of: :creator
+  has_many :followers, through: :follower_relationships, source: :follower
+
+  has_many :following_relationships, class_name: "CreatorFollow", foreign_key: :follower_id,
+           dependent: :destroy, inverse_of: :follower
+  has_many :following, through: :following_relationships, source: :creator
+
+  # Section headings for the public page. Each falls back to a default, so a
+  # creator who never opens settings still gets a page that reads well, and
+  # one who wants their own voice can have it. The view asks the model rather
+  # than hardcoding, which is what stops these drifting apart.
+  SECTION_DEFAULTS = {
+    posts_heading:  "Lately",
+    media_heading:  "Behind the haul",
+    links_heading:  "Things I recommend",
+    meet_heading:   "Book me",
+    reveal_heading: "Reach me directly",
+    links_note:     "These are referral links. If you buy, the store pays a " \
+                    "small cut at no extra cost to you."
+  }.freeze
+
+  SECTION_DEFAULTS.each_key do |field|
+    define_method("#{field}_text") do
+      public_send(field).presence || SECTION_DEFAULTS[field]
+    end
+  end
+
+  def following?(creator)
+    return false if creator.blank?
+    following_relationships.exists?(creator_id: creator.id)
+  end
   has_one_attached :profile_picture
   has_one_attached :banner
   has_one_attached :upi_qr

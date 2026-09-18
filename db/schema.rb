@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_05_011000) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_19_020000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -77,6 +77,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_05_011000) do
     t.datetime "updated_at", null: false
     t.index ["creator_id", "identifier_type", "identifier_value"], name: "index_creator_blocks_unique_identifier", unique: true
     t.index ["creator_id"], name: "index_creator_blocks_on_creator_id"
+  end
+
+  create_table "creator_follows", force: :cascade do |t|
+    t.bigint "creator_id", null: false
+    t.bigint "follower_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id", "follower_id"], name: "index_creator_follows_on_creator_id_and_follower_id", unique: true
+    t.index ["creator_id"], name: "index_creator_follows_on_creator_id"
+    t.index ["follower_id", "created_at"], name: "index_creator_follows_on_follower_id_and_created_at"
+    t.index ["follower_id"], name: "index_creator_follows_on_follower_id"
   end
 
   create_table "creator_post_comments", force: :cascade do |t|
@@ -318,6 +329,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_05_011000) do
     t.string "upi_id"
     t.string "upi_payee_name"
     t.boolean "accepts_upi_manual", default: false, null: false
+    t.integer "followers_count", default: 0, null: false
+    t.string "posts_heading"
+    t.string "media_heading"
+    t.string "links_heading"
+    t.string "meet_heading"
+    t.string "reveal_heading"
+    t.text "links_note"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["handle"], name: "index_users_on_handle", unique: true
   end
@@ -351,6 +369,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_05_011000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "contact_reveals", "users"
   add_foreign_key "creator_blocks", "users", column: "creator_id"
+  add_foreign_key "creator_follows", "users", column: "creator_id"
+  add_foreign_key "creator_follows", "users", column: "follower_id"
   add_foreign_key "creator_post_comments", "creator_posts"
   add_foreign_key "creator_post_comments", "users"
   add_foreign_key "creator_post_likes", "creator_posts"

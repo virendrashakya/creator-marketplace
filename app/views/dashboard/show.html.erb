@@ -50,15 +50,22 @@
       <span class="muted" style="font-size: 13.5px">Pick what you are adding, not which form to open</span>
     </div>
     <div class="create-groups wf-stagger">
+      <%#
+        Grouped by where the money goes, because that is the only distinction
+        that matters and the one creators were getting wrong. A recommendation
+        sends a fan to a shop and you may earn a commission later; a wishlist
+        item asks the fan to pay you. Same-shaped form, opposite direction of
+        money, so the group heading says so out loud.
+      %>
       <% [
-        [ "Things you back", "Links out, with your reason attached.",
+        [ "Send people to a shop", "They pay the store. You may earn a commission.",
           [ [ "Recommendation", new_product_link_path ], [ "Collection", new_collection_path ] ] ],
-        [ "Things you sell", "Paid once, unlocked after you approve.",
+        [ "Sell something of yours", "They pay you. Unlocked after you approve.",
           [ [ "Paid photo or video", new_paid_media_post_path ], [ "Media collection", new_paid_media_collection_path ], [ "Subscription plan", new_subscription_plan_path ] ] ],
-        [ "Your time and reach", "Slots and contact details behind a payment.",
+        [ "Sell your time and reach", "They pay you for a slot or your contact.",
           [ [ "Meetup with slots", new_meet_offer_path ], [ "Contact reveal", new_contact_reveal_path ] ] ],
-        [ "Asks and updates", "Funding goals and what you post.",
-          [ [ "Gift wishlist", new_wishlist_path ], [ "Post", new_creator_post_path ] ] ]
+        [ "Ask to be gifted", "They pay you, and get nothing back but your thanks.",
+          [ [ "Gift wishlist", new_wishlist_path ] ] ]
       ].each do |name, desc, actions| %>
         <div class="create-group">
           <div>
@@ -74,6 +81,19 @@
             <% end %>
           </div>
         </div>
+      <% end %>
+    </div>
+
+    <%# Posting is the one create action with no money attached. Keeping it in
+        the money grid implied it was a fifth way to earn. %>
+    <div class="create-aside">
+      <div class="min0">
+        <div class="create-aside-name">Just posting something?</div>
+        <div class="create-aside-desc">An update for your page. Nothing to pay, nothing to approve.</div>
+      </div>
+      <%= link_to new_creator_post_path, class: "create-action create-action--wide" do %>
+        <span class="min0 break">Write a post</span>
+        <span class="plus" aria-hidden="true">+</span>
       <% end %>
     </div>
   </section>

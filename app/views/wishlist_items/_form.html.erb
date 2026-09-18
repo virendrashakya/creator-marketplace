@@ -1,5 +1,21 @@
 <%= form_with model: [ @wishlist, @wishlist_item ] do |f| %>
   <%= render "shared/errors", record: @wishlist_item %>
+
+  <%# The mirror of the note on the recommendation form. Same fields, opposite
+      direction of money. %>
+  <div class="form-intent form-intent--in">
+    <span class="form-intent-flow">
+      <span class="visually-hidden">Money goes from the fan to you</span>
+      <span aria-hidden="true">Fan &rarr; you</span>
+    </span>
+    <p class="form-intent-body">
+      Your audience puts money towards this and you receive it over UPI. They
+      get nothing back but your thanks. To point people at something to buy
+      for themselves, add a
+      <%= link_to "recommendation", new_product_link_path %> instead.
+    </p>
+  </div>
+
   <div class="field">
     <%= f.label :title, "Gift" %>
     <%= f.text_field :title, placeholder: "35mm lens" %>
@@ -11,8 +27,10 @@
   <div class="field-row">
     <%= render "shared/price_field", f: f, record: @wishlist_item, field: :target_cents, label: "Gift value", placeholder: "500000" %>
     <div class="field">
-      <%= f.label :product_url, "Store link (optional)" %>
-      <%= f.url_field :product_url, placeholder: "https://…", spellcheck: false, autocapitalize: "off" %>
+      <%= f.label :product_url, "Where it is sold (optional)" %>
+      <%= f.url_field :product_url, placeholder: "https://…", spellcheck: false,
+            autocapitalize: "off", aria: { describedby: "gift_url_hint" } %>
+      <small id="gift_url_hint">Only so people can see what you mean. Nobody buys through this link.</small>
     </div>
     <div class="field">
       <%= f.label :image_url, "Image link (optional)" %>

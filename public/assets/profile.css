@@ -27,7 +27,10 @@
   background: var(--bg);
   color: var(--p-ink);
   min-height: 80vh;
-  padding-bottom: 64px;
+  /* The credit strip below supplies the bottom breathing room. Keeping the
+     old 64px here as well left roughly 120px of dead space under the last
+     card. The mobile rule further down re-adds room for the tab bar. */
+  padding-bottom: 8px;
 }
 .profile-inner { max-width: var(--shell); margin-inline: auto; }
 .profile a { color: inherit; }
@@ -61,7 +64,10 @@
   letter-spacing: -.03em; margin: 0 0 3px; overflow-wrap: anywhere;
 }
 .pf-handle { font-family: var(--mono); font-size: 13.5px; color: var(--p-sub); }
-.pf-chip {
+/* The category badge beside the handle. Renamed from .pf-chip: the filter
+   chips in the shop tab used the same class and, coming later in the file,
+   were overriding this with a 40px min-height and scroll-snap. */
+.pf-badge {
   font-size: 12.5px; font-weight: 600; color: var(--p-ink);
   background: var(--chip); border: 1px solid var(--p-line);
   border-radius: 999px; padding: 4px 10px;
@@ -87,9 +93,220 @@
   .pf-social:hover { border-color: var(--p-accent); }
 }
 
+/* ---------- stats and follow ---------- */
+
+/* The two numbers a visitor uses to judge the page, and the one action that
+   costs them nothing. Divided rather than carded, so it reads as one row of
+   facts about this person instead of three separate widgets. */
+.pf-stats {
+  margin: 20px var(--gutter) 0;
+  display: flex; align-items: stretch; flex-wrap: wrap;
+  border: 1px solid var(--p-line);
+  border-radius: var(--r-lg);
+  background: var(--p-card);
+  box-shadow: var(--p-raised);
+  overflow: hidden;
+}
+.pf-stat {
+  flex: 1 1 110px; min-width: 0;
+  padding: 12px 16px;
+  border-right: 1px solid var(--p-line);
+  display: flex; flex-direction: column; gap: 1px;
+}
+.pf-stat-value {
+  font-size: 19px; font-weight: 600;
+  font-variant-numeric: tabular-nums; line-height: 1.1;
+}
+.pf-stat-label { font-size: 12.5px; color: var(--p-sub); }
+.pf-stat-action {
+  display: flex; align-items: center;
+  padding: 10px 14px;
+  flex: 0 0 auto;
+}
+.pf-follow-form { margin: 0; }
+/* A follow is a cheap, repeatable action, so the feedback is the press. */
+.pf-follow-form .btn { min-width: 104px; }
+
+@media (max-width: 420px) {
+  /* Stacked, the action gets its own full-width row rather than being
+     squeezed beside two numbers. */
+  .pf-stat { flex: 1 1 0; padding: 11px 12px; }
+  .pf-stat-action { flex: 1 0 100%; border-top: 1px solid var(--p-line); }
+  .pf-stat-action .btn, .pf-follow-form { width: 100%; }
+}
+
+/* ---------- search and category chips ---------- */
+
+/* Only rendered once a creator passes ProfilesController::FILTER_THRESHOLD.
+   A search box above twelve items makes a page look emptier than it is. */
+.pf-filters { margin-bottom: 18px; display: grid; gap: 10px; }
+
+.pf-search { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pf-search-input {
+  flex: 1 1 200px; min-width: 0; min-height: 46px;
+  padding: 0 14px;
+  border: 1.5px solid var(--p-line); border-radius: var(--r-md);
+  background: var(--p-card); color: var(--p-ink);
+  font: inherit; outline: none;
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    box-shadow var(--t-quick) var(--ease-out);
+}
+.pf-search-input::placeholder { color: var(--p-sub); }
+.pf-search-input:focus {
+  border-color: var(--p-accent);
+  box-shadow: 0 0 0 3px var(--p-ring);
+}
+.pf-search-go {
+  min-height: 46px; padding: 0 16px;
+  border: 1px solid transparent; border-radius: var(--r-md);
+  background: var(--p-accent); color: #FFF;
+  font: inherit; font-size: 14.5px; font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--t-press) var(--ease-out), opacity var(--t-quick) var(--ease-out);
+}
+.pf-search-go:active { transform: scale(.97); }
+.pf-search-clear { font-size: 14px; font-weight: 600; color: var(--p-sub); }
+
+/* Horizontal scroll rather than wrapping: a wrapped chip row pushes the
+   content it filters off the screen. */
+.pf-chips {
+  display: flex; gap: 7px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+}
+.pf-chips::-webkit-scrollbar { display: none; }
+.pf-chip {
+  flex: none; scroll-snap-align: start;
+  min-height: 40px; display: inline-flex; align-items: center;
+  padding: 0 14px;
+  border: 1px solid var(--p-line); border-radius: 999px;
+  background: var(--p-card); color: var(--p-ink);
+  font-size: 13.5px; font-weight: 600; white-space: nowrap;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    background-color var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
+}
+.pf-chip:active { transform: scale(.96); }
+.pf-chip.is-on { background: var(--p-ink); color: var(--bg); border-color: var(--p-ink); }
+@media (hover: hover) and (pointer: fine) {
+  .pf-chip:hover { border-color: var(--p-accent); }
+  .pf-chip.is-on:hover { border-color: var(--p-ink); }
+}
+
+.pf-result-count {
+  margin: 0 0 14px;
+  font-size: 13.5px; color: var(--p-sub);
+  font-variant-numeric: tabular-nums;
+}
+.pf-empty-inline {
+  border: 1.5px dashed var(--p-line); border-radius: var(--r-lg);
+  padding: 24px 18px; text-align: center;
+  font-size: 14.5px; color: var(--p-sub);
+}
+.pf-empty-inline a { color: var(--p-accent); font-weight: 600; }
+
+/* Collection groups inside the shop section. */
+.pf-group + .pf-group { margin-top: 26px; }
+.pf-group-name {
+  margin: 0 0 12px;
+  font-family: var(--display); font-weight: 500;
+  font-size: 17px; letter-spacing: -.015em;
+  color: var(--p-ink);
+  /* Offset so an anchored jump does not hide the heading under the sticky
+     nothing above it; harmless when nothing is sticky. */
+  scroll-margin-top: 16px;
+}
+
+/* ---------- tabs ----------
+
+   Real navigation, not a jump list. Each tab is a ?tab= URL and only that
+   section is rendered, so a profile with 13 recommendations plus posts, media,
+   slots and gifts is never one enormous scroll.
+
+   Set as a horizontal rail under the identity block rather than a fixed bottom
+   bar: it belongs with the content it switches, and a fixed bar permanently
+   covers the last card on a short tab. */
+
+.pf-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  margin-top: 22px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--p-line);
+}
+.pf-tabs-inner {
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  display: flex;
+  gap: 2px;
+  /* Five tabs fit on a phone at this size, but a longer label set should
+     scroll rather than wrap into two rows of nav. */
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.pf-tabs-inner::-webkit-scrollbar { display: none; }
+
+.pf-tab {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 52px;
+  padding: 0 14px;
+  color: var(--p-sub);
+  text-decoration: none;
+  font-size: 14.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  /* The active marker is a 2px rule sitting on the container's border, so
+     switching tabs does not shift anything by a pixel. */
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color var(--t-quick) var(--ease-out),
+    border-color var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
+}
+.pf-tab:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) {
+  .pf-tab:hover { color: var(--p-ink); }
+}
+
+.pf-tab.is-on {
+  color: var(--p-ink);
+  border-bottom-color: var(--p-accent);
+}
+
+.pf-tab-icon { display: block; width: 18px; height: 18px; flex: none; }
+.pf-tab-icon svg { display: block; width: 100%; height: 100%; }
+
+/* The first section under a sticky rail needs to clear it when anchored. */
+
+
+@media (max-width: 560px) {
+  /* Icons carry the meaning at phone width; the labels stay because five
+     unlabelled glyphs are a guessing game. Tighter, not hidden. */
+  .pf-tab { padding: 0 11px; font-size: 13.5px; gap: 5px; }
+  .pf-tab-icon { width: 17px; height: 17px; }
+}
+
 /* ---------- section headings ---------- */
 
-.pf-section { padding: 38px var(--gutter) 0; }
+/* scroll-margin clears the sticky tab rail when a category chip anchors. */
+.pf-section { padding: 38px var(--gutter) 0; scroll-margin-top: 64px; }
 .pf-section-head {
   display: flex; align-items: baseline; justify-content: space-between;
   gap: 14px; border-top: 1px solid var(--p-line);
@@ -108,6 +325,7 @@
   border: 1px solid var(--p-line); border-radius: var(--r-xl);
   background: var(--p-card); overflow: hidden;
   box-shadow: var(--p-raised);
+  box-shadow: var(--p-raised);
 }
 .pf-offers-head { padding: 16px clamp(14px, 3vw, 20px) 14px; border-bottom: 1px solid var(--p-line); }
 .pf-offers-head h2 { margin: 0 0 3px; font-size: clamp(19px, 2.8vw, 24px); }
@@ -124,7 +342,10 @@
 }
 .pf-offer:active { transform: scale(.985); background: var(--bg); }
 @media (hover: hover) and (pointer: fine) {
+  .pf-offer:active { transform: scale(.985); background: var(--bg); }
+@media (hover: hover) and (pointer: fine) {
   .pf-offer:hover { background: var(--bg); }
+}
 }
 .pf-offer-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
 .pf-offer-name { font-size: 15px; font-weight: 700; }
@@ -151,6 +372,8 @@
     transform var(--t-quick) var(--ease-out),
     box-shadow var(--t-quick) var(--ease-out),
     border-color var(--t-quick) var(--ease-out);
+  box-shadow: var(--p-raised);
+  -webkit-tap-highlight-color: transparent;
 }
 /* Press beats lift on a phone. The previous `:hover { translateY(-2px) }`
    had no hover guard, so on touch a tapped card stayed stuck 2px up until
@@ -224,6 +447,7 @@
   border: 1px solid var(--p-line); border-radius: 16px; overflow: hidden;
   background: var(--p-card);
   box-shadow: var(--p-raised);
+  box-shadow: var(--p-raised);
 }
 .media-preview {
   height: 190px; position: relative;
@@ -252,6 +476,10 @@
 /* The unlocked badge is the receipt for a payment a creator approved by hand.
    It earns a real entrance: this is the rare, first-time moment where delight
    is the point, not friction. */
+@keyframes wf-unlock {
+  from { opacity: 0; transform: scale(.9) translateY(-4px) }
+  to   { opacity: 1; transform: none }
+}
 .media-unlocked {
   position: absolute; top: 10px; left: 10px;
   display: inline-flex; align-items: center; gap: 6px;
@@ -275,6 +503,7 @@
   background: var(--p-card); box-shadow: var(--p-raised);
   padding: clamp(16px, 3vw, 24px);
   display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;
+  box-shadow: var(--p-raised);
 }
 .meet-title { font-family: var(--display); font-size: 22px; letter-spacing: -.02em; }
 .meet-desc { margin: 8px 0 0; font-size: 15px; line-height: 1.55; color: var(--p-body); text-wrap: pretty; }
@@ -298,7 +527,10 @@
    The press has to register before the page navigates. */
 .slot:active { transform: scale(.95); border-color: var(--p-accent); }
 @media (hover: hover) and (pointer: fine) {
+  .slot:active { transform: scale(.95); border-color: var(--p-accent); }
+@media (hover: hover) and (pointer: fine) {
   .slot:hover { border-color: var(--p-accent); color: var(--p-ink); }
+}
 }
 
 /* ---------- contact reveal ---------- */
@@ -308,6 +540,7 @@
   background: var(--p-card); box-shadow: var(--p-raised);
   padding: clamp(16px, 3vw, 22px);
   display: flex; gap: 18px; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  box-shadow: var(--p-raised);
 }
 .reveal-label { font-size: 16.5px; font-weight: 600; }
 .reveal-value {
@@ -325,6 +558,7 @@
   background: var(--p-card); box-shadow: var(--p-raised);
   padding: 16px;
   display: flex; flex-direction: column; gap: 12px;
+  box-shadow: var(--p-raised);
 }
 .wish-title { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
 .wish-note { font-size: 13px; color: var(--p-sub); margin-top: 3px; }
@@ -363,6 +597,7 @@
 .post {
   border: 1px solid var(--p-line); border-radius: 16px;
   background: var(--p-card); overflow: hidden;
+  box-shadow: var(--p-raised);
   box-shadow: var(--p-raised);
 }
 .post-head { padding: 15px 16px 0; display: flex; gap: 10px; align-items: center; }
@@ -431,6 +666,22 @@
   .rec-media { width: 100%; height: 170px; }
 }
 
+/* ---------- the credit strip ----------
+   The footer lives in the layout, outside .profile, so it does not inherit
+   the theme tokens. On a dark theme that left a light band under a dark page.
+   These rules re-ground it from the body class the layout sets. */
+
+.chrome-creator body, body.chrome-creator { background: var(--page); }
+
+/* Pull the strip onto whatever the profile's own background is. Matching the
+   theme is set per theme below, because the token is scoped to .profile. */
+.chrome-creator .credit { background: #F4F5F3; }
+/* #6B7178 on #F4F5F3 is 4.51:1, which clears AA with almost nothing to
+   spare. #63686F is the value the design system already settled on for this
+   exact reason and gives 4.93:1. */
+.chrome-creator .credit-link { color: #63686F; }
+.chrome-creator .credit-link:hover { color: #14161A; }
+
 /* ---------- themes: token overrides only ---------- */
 
 /* On a dark page a drop shadow does nothing: there is no light for it to
@@ -484,3 +735,20 @@
 .theme-luxury .wish-track, .theme-after_dark .wish-track { box-shadow: inset 0 1px 2px rgba(0,0,0,.35); }
 .theme-luxury .rec-flag, .theme-after_dark .rec-flag { background: var(--p-accent); color: #14161A; }
 .theme-luxury :focus-visible, .theme-after_dark :focus-visible { outline-color: var(--p-accent); }
+
+/* Credit strip per theme. It sits outside .profile so it cannot read the
+   theme tokens; :has lets the body pick the right values from the theme its
+   profile is using. Browsers without :has fall back to the light default
+   above, which is legible everywhere because the strip keeps its own
+   background. */
+body:has(.theme-luxury) .credit { background: #14142A; }
+body:has(.theme-luxury) .credit-link { color: #A9A4B8; }
+body:has(.theme-luxury) .credit-link:hover { color: #F4F1F7; }
+
+body:has(.theme-adventure) .credit { background: #EDF1EA; }
+body:has(.theme-adventure) .credit-link { color: #4C6058; }
+body:has(.theme-adventure) .credit-link:hover { color: #10231C; }
+
+body:has(.theme-after_dark) .credit { background: #0C0D10; }
+body:has(.theme-after_dark) .credit-link { color: #9BA0A8; }
+body:has(.theme-after_dark) .credit-link:hover { color: #F0EFEC; }
