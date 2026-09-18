@@ -1,210 +1,334 @@
-/* Wishful: creator dashboard and payment confirmation.
-   The ledger is the organising idea: rows that line up, amounts in a column,
-   state carried by the same grammar everywhere. */
+/* Wishful creator surfaces: dashboard, review queue, payment, settings, forms.
+   Ported from the canvas. The receipt is the organising metaphor for anything
+   involving money: hard top border, dashed tear line, mono figures. */
 
-.dash-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--gap-3);
-  flex-wrap: wrap;
-  margin-bottom: var(--gap-4);
-}
-.dash-head h1 { font-size: var(--t-3); }
-.dash-head p { margin-top: 0.25rem; font-size: var(--t--1); }
+/* ---------- dashboard ---------- */
 
-/* One primary action, one escape hatch, everything else behind a menu. */
-.dash-menu { position: relative; }
-.dash-menu summary {
-  list-style: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 44px;
-  padding: 0.625rem 1.125rem;
-  border: 1px solid var(--rule);
-  border-radius: var(--r-md);
-  background: var(--card);
-  font-size: var(--t--1);
-  font-weight: 600;
-  touch-action: manipulation;
-}
-.dash-menu summary::-webkit-details-marker { display: none; }
-.dash-menu summary:hover { background: var(--clay); }
-.dash-menu[open] summary { background: var(--clay); }
-.dash-menu-panel {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 0.5rem);
-  z-index: 20;
-  min-width: 15rem;
-  padding: var(--gap-1);
-  background: var(--card);
-  border: 1px solid var(--rule);
-  border-radius: var(--r-md);
-  box-shadow: 0 12px 28px rgb(26 23 20 / 12%);
-  display: grid;
-  gap: 2px;
-}
-.dash-menu-panel a {
-  padding: 0.625rem 0.75rem;
-  border-radius: var(--r-sm);
-  font-size: var(--t--1);
-  font-weight: 550;
-  text-decoration: none;
-}
-.dash-menu-panel a:hover { background: var(--clay); }
+.dash { display: flex; flex-direction: column; gap: 20px; }
+.dash-head { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+.dash-head h1 { margin: 0 0 4px; }
+.dash-link { font-family: var(--mono); font-size: 13px; }
 
-@media (max-width: 34rem) {
-  .dash-menu-panel { position: static; box-shadow: none; margin-top: var(--gap-1); min-width: 0; }
+/* Pending payments alert: the one thing that pulls the eye. */
+.pending-alert {
+  display: flex; gap: 14px; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; width: 100%; text-align: left;
+  background: var(--ink); border: none; border-left: 4px solid var(--warn-dot);
+  border-radius: var(--r-lg); padding: 16px 18px;
+  cursor: pointer; text-decoration: none;
 }
+.pending-alert:hover { background: #1F2226; }
+.pending-dot { width: 9px; height: 9px; border-radius: 99px; background: #E0A93A; flex: none; animation: wf-pulse 2s infinite; }
+.pending-title { font-size: 16.5px; font-weight: 600; color: var(--on-ink); }
+.pending-sub { font-size: 14px; color: var(--on-ink-body); margin-top: 2px; }
+.pending-cta { font-size: 15px; font-weight: 600; color: var(--on-ink); white-space: nowrap; }
 
-/* ---------- stats ---------- */
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: var(--gap-2);
-  margin-bottom: var(--gap-4);
-  padding: var(--gap-3) 0;
-  border-block: 1px solid var(--rule);
-}
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px 18px; }
+.stat-label { font-size: 13px; font-weight: 600; color: var(--muted); }
 .stat-value {
-  display: block;
-  font-family: var(--serif);
-  font-size: var(--t-3);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
+  display: block; font-family: var(--mono);
+  font-size: clamp(25px, 4vw, 32px); font-weight: 600;
+  font-variant-numeric: tabular-nums; margin-top: 6px; line-height: 1.1;
 }
-.stat-label { display: block; margin-top: 0.375rem; color: var(--ink-soft); font-size: var(--t--1); }
+.stat-sub { font-size: 12.5px; color: var(--muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
 
-/* ---------- panels and ledger rows ---------- */
+/* Ways to earn, on the dark panel. */
+.earn { background: var(--ink); border-radius: var(--r-xl); padding: clamp(16px, 3vw, 22px); }
+.earn h2 { color: var(--on-ink); margin: 0; }
+.earn-lede { margin: 0 0 16px; font-size: 14.5px; color: var(--on-ink-body); max-width: 62ch; line-height: 1.5; }
+.earn-total { font-family: var(--mono); font-size: 12px; color: var(--on-ink-muted); font-variant-numeric: tabular-nums; }
+.earn-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 2px; background: var(--ink-line); border-radius: var(--r-lg); overflow: hidden;
+}
+.earn-cell { background: var(--ink-2); padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.earn-name { font-size: 15px; font-weight: 700; color: var(--on-ink); }
+.earn-amount { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent-on-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.earn-how { font-size: 13.5px; line-height: 1.45; color: #9BA1A9; flex: 1; text-wrap: pretty; }
+.btn--on-dark {
+  align-self: flex-start;
+  background: transparent; color: var(--on-ink);
+  border-color: var(--ink-line-2);
+}
+.btn--on-dark:hover { background: transparent; border-color: var(--accent-bright); color: var(--on-ink); }
 
-.dash-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: var(--gap-4); align-items: start; }
-@media (max-width: 52rem) { .dash-grid { grid-template-columns: 1fr; } }
+/* Create actions, grouped by intent rather than by form. */
+.create-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: var(--gap-3); }
+.create-group {
+  border: 1px solid var(--line); border-radius: var(--r-lg);
+  background: var(--white); padding: 15px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.create-group-name { font-size: 15.5px; font-weight: 700; }
+.create-group-desc { font-size: 13px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+.create-action {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  text-align: left; width: 100%; min-height: 44px; padding: 0 12px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: var(--card); color: var(--ink);
+  font: inherit; font-size: 14.5px; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+}
+.create-action:hover { background: var(--addon); border-color: var(--ink); color: var(--ink); }
+.create-action .plus { color: var(--muted); }
 
-.panel { min-width: 0; }
-/* Spacing belongs to every panel that follows anything, not only to a panel
-   following another panel. The grid sits between them on the dashboard. */
-.dash-grid + .panel,
-.panel + .panel,
-.stats + .panel { margin-top: var(--gap-5); }
-.panel h2 { font-size: var(--t-1); }
-
+/* Managed lists. */
+.managed { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--gap-3); }
+.managed-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+  padding: 16px; display: flex; flex-direction: column; gap: 12px;
+}
+.managed-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.managed-name { font-size: 15.5px; font-weight: 700; }
+.managed-count { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--gap-2);
-  align-items: center;
-  padding: var(--gap-2) 0;
-  border-bottom: 1px solid var(--rule);
+  display: flex; gap: 11px; align-items: center;
+  background: var(--white); border: 1px solid var(--line);
+  border-radius: var(--r-md); padding: 9px 10px;
 }
-.row:last-child { border-bottom: 0; }
-
-.row--media { grid-template-columns: 52px minmax(0, 1fr) auto; }
-@media (max-width: 34rem) {
-  .row, .row--media { grid-template-columns: minmax(0, 1fr); }
-  .row .actions { justify-content: flex-start; }
-}
-
 .row-thumb {
-  width: 52px; height: 52px;
-  border-radius: var(--r-sm);
-  object-fit: cover;
-  background: var(--clay);
-  flex: none;
+  width: 38px; height: 38px; border-radius: 8px; flex: none; overflow: hidden;
+  background: repeating-linear-gradient(135deg, #EDEEEA 0 7px, #E3E4DF 7px 14px);
 }
-.row-title { font-weight: 650; overflow-wrap: anywhere; }
-.row-meta { color: var(--ink-soft); font-size: var(--t--1); margin-top: 0.125rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.row-amount { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.row-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.row-title { font-size: 14.5px; font-weight: 600; }
+.row-meta { display: flex; gap: 8px; align-items: center; margin-top: 3px; flex-wrap: wrap; }
+.row-meta-text { font-family: var(--mono); font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.row-actions { display: flex; gap: 4px; flex: none; }
 
-/* ---------- payment claims ---------- */
+/* Skeletons. */
+.skeleton {
+  border-radius: 10px;
+  background: linear-gradient(90deg, #E4E5E0 25%, #EFF0EC 50%, #E4E5E0 75%);
+  background-size: 320px 100%;
+  animation: wf-shimmer 1.3s linear infinite;
+}
+
+/* ---------- review queue ---------- */
 
 .claim {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--gap-3);
-  align-items: start;
-  padding: var(--gap-3) 0;
-  border-bottom: 1px solid var(--rule);
+  background: var(--card); border: 1px solid var(--line);
+  border-left: 4px solid var(--warn-dot); border-radius: 16px;
+  overflow: hidden; animation: wf-rise .25s ease both;
 }
-.claim:last-of-type { border-bottom: 0; }
-@media (max-width: 40rem) { .claim { grid-template-columns: 1fr; } }
-
-.claim-head { display: flex; align-items: baseline; gap: var(--gap-2); flex-wrap: wrap; }
-.claim-who { font-weight: 700; }
-.claim-amount { font-family: var(--serif); font-size: var(--t-1); font-weight: 600; font-variant-numeric: tabular-nums; }
-.claim-what { color: var(--ink-soft); font-size: var(--t--1); margin-top: 0.125rem; overflow-wrap: anywhere; }
-
-.claim-ref {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  margin-top: var(--gap-2);
-  padding: 0.375rem 0.625rem;
-  background: var(--clay);
-  border-radius: var(--r-sm);
-  font-size: var(--t--1);
+.claim-head {
+  padding: 16px clamp(14px, 3vw, 20px);
+  display: flex; gap: 14px; justify-content: space-between; flex-wrap: wrap;
+  align-items: flex-start; border-bottom: 1px solid var(--track);
 }
-.claim-ref-label { color: var(--ink-soft); font-weight: 600; }
-
+.claim-who { font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
+.claim-item { font-size: 14.5px; color: var(--secondary); margin-top: 4px; overflow-wrap: anywhere; }
+.claim-when { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.claim-due-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.claim-due { font-family: var(--mono); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .claim-mismatch {
-  margin-top: var(--gap-2);
-  padding: 0.5rem 0.75rem;
-  border-left: 3px solid var(--danger);
-  border-radius: var(--r-sm);
-  background: color-mix(in srgb, var(--danger) 8%, transparent);
-  color: var(--ink);
-  font-size: var(--t--1);
-  font-weight: 600;
+  display: flex; gap: 10px;
+  background: var(--warn-tint); border-bottom: 1px solid var(--warn-line);
+  padding: 12px clamp(14px, 3vw, 20px);
+  font-size: 14px; line-height: 1.45; color: var(--warn); font-variant-numeric: tabular-nums;
 }
-.claim-note { margin-top: var(--gap-2); font-size: var(--t--1); color: var(--ink-soft); overflow-wrap: anywhere; }
-.claim-proof { margin-top: var(--gap-2); border-radius: var(--r-sm); border: 1px solid var(--rule); max-width: 12rem; height: auto; }
-.claim-decide { display: grid; gap: var(--gap-1); justify-items: stretch; align-content: start; }
-@media (max-width: 40rem) { .claim-decide { grid-auto-flow: column; justify-content: start; } }
-
-/* ---------- pay screen ---------- */
-
-.pay-card {
-  margin: var(--gap-3) 0;
-  padding: var(--gap-4) var(--gap-3);
-  border: 1px solid var(--rule);
-  border-radius: var(--r-lg);
-  background: var(--card);
-  text-align: center;
+.claim-body {
+  padding: 14px clamp(14px, 3vw, 20px);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px;
 }
-.pay-qr { width: 200px; height: 200px; object-fit: contain; border-radius: var(--r-sm); }
-.pay-upi { margin-top: var(--gap-3); }
-.pay-upi-id { font-size: var(--t-1); font-weight: 700; margin-top: 0.125rem; }
-.pay-amount {
-  margin-top: var(--gap-3);
-  padding-top: var(--gap-3);
-  border-top: 1px solid var(--rule);
-  font-family: var(--serif);
-  font-size: var(--t-4);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  line-height: 1;
+.claim-label {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 4px;
+}
+.claim-utr {
+  font-family: var(--mono); font-size: 16px; font-weight: 600;
+  background: var(--white); border: 1px solid var(--line);
+  border-radius: 9px; padding: 8px 10px;
+  letter-spacing: .03em; font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere; user-select: all;
+}
+.claim-sent { font-family: var(--mono); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.claim-sent--off { color: var(--danger); }
+.claim-shot {
+  width: 100%; max-width: 190px; border-radius: 10px;
+  border: 1px solid var(--line); display: block;
+}
+.claim-decide { padding: 0 clamp(14px, 3vw, 20px) 16px; display: flex; gap: 9px; flex-wrap: wrap; }
+.claim-decide .btn { flex: 1; min-width: 140px; min-height: 48px; }
+
+.reviewed-row {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px 14px; display: flex; gap: 12px; align-items: center;
+  justify-content: space-between; flex-wrap: wrap;
 }
 
-/* The handshake, stated once, in order. */
-.pay-steps { counter-reset: step; list-style: none; padding: 0; margin: var(--gap-3) 0 0; display: grid; gap: var(--gap-2); }
-.pay-steps li {
-  counter-increment: step;
-  display: grid;
-  grid-template-columns: 1.5rem 1fr;
-  gap: var(--gap-2);
-  font-size: var(--t--1);
-  color: var(--ink-soft);
+/* ---------- payment, as a receipt ---------- */
+
+.receipt {
+  background: var(--card); border-radius: var(--r-sm);
+  box-shadow: 0 12px 30px rgba(20,22,26,.13);
+  border-top: 4px solid var(--ink);
+  overflow: hidden; animation: wf-rise .3s ease both;
 }
-.pay-steps li::before {
-  content: counter(step);
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  color: var(--ink);
+.receipt--pending { border-top-color: var(--warn-dot); }
+.receipt-head { padding: 22px clamp(16px, 4vw, 28px) 18px; border-bottom: 1px dashed var(--line-strong); }
+.receipt-eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.receipt-who { font-family: var(--display); font-size: 25px; letter-spacing: -.02em; margin-top: 5px; }
+.receipt-item { font-size: 14.5px; color: var(--secondary); margin-top: 3px; }
+.receipt-amount-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-top: 18px; flex-wrap: wrap; }
+.receipt-amount {
+  font-family: var(--mono); font-size: clamp(34px, 8vw, 46px); font-weight: 600;
+  font-variant-numeric: tabular-nums; line-height: 1;
 }
-.pay-steps li strong { color: var(--ink); font-weight: 650; }
+.receipt-pay { padding: 20px clamp(16px, 4vw, 28px); display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 20px; align-items: start; }
+.qr {
+  width: 100%; max-width: 190px; aspect-ratio: 1;
+  background: var(--white); border: 1px solid var(--line);
+  border-radius: 12px; padding: 12px;
+}
+.qr img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.qr-hint { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 8px; }
+.pay-detail-label { font-size: 12.5px; font-weight: 700; color: var(--body); margin-bottom: 5px; }
+.pay-detail {
+  font-family: var(--mono); font-size: 15px;
+  background: var(--white); border: 1px solid var(--line);
+  border-radius: 9px; padding: 9px 11px;
+  overflow-wrap: anywhere; user-select: all;
+}
+.receipt-explain {
+  background: var(--ink); padding: 18px clamp(16px, 4vw, 28px);
+  color: #C9CBC4; font-size: 14.5px; line-height: 1.5;
+}
+.receipt-foot { padding: 20px clamp(16px, 4vw, 28px) 26px; }
+.receipt-lines {
+  padding: 20px clamp(16px, 4vw, 28px) 24px;
+  display: flex; flex-direction: column; gap: 11px;
+  font-family: var(--mono); font-size: 13px; color: var(--secondary); font-variant-numeric: tabular-nums;
+}
+.receipt-line { display: flex; justify-content: space-between; gap: 12px; }
+.receipt-line span:last-child { color: var(--ink); text-align: right; }
+
+.utr-input {
+  width: 100%; min-height: 52px; padding: 0 14px;
+  border: 1.5px solid var(--line-strong); border-radius: var(--r-md);
+  background: var(--white); color: var(--ink); outline: none;
+  font-family: var(--mono); font-size: 20px;
+  letter-spacing: .08em; font-variant-numeric: tabular-nums;
+}
+.utr-input:focus { border-color: var(--ink); }
+.utr-input[aria-invalid="true"] { border-color: var(--invalid); }
+.utr-hint { margin-top: 7px; font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
+
+/* ---------- settings ---------- */
+
+.settings-stack { display: flex; flex-direction: column; gap: var(--gap-3); }
+.settings-card h2 { margin: 0 0 4px; font-size: 21px; letter-spacing: -.02em; }
+.settings-card > p { margin: 0 0 18px; font-size: 14px; color: var(--muted); }
+
+.choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.choice {
+  display: block; text-align: left; padding: 0; overflow: hidden;
+  border: 2px solid var(--line); border-radius: 13px;
+  background: var(--white); cursor: pointer; font: inherit;
+}
+.choice input { position: absolute; opacity: 0; pointer-events: none; }
+.choice:has(input:checked) { border-color: var(--accent); }
+.choice:has(input:focus-visible) { outline: 2.5px solid var(--accent-bright); outline-offset: 2px; }
+.choice-swatch { height: 58px; display: flex; align-items: center; gap: 7px; padding: 0 12px; }
+.choice-dot { width: 20px; height: 20px; border-radius: 99px; }
+.choice-bar { width: 44px; height: 8px; border-radius: 99px; }
+.choice-fig { height: 72px; padding: 9px; display: flex; flex-wrap: wrap; gap: 5px; align-content: flex-start; background: #F4F5F3; }
+.choice-fig span { border-radius: 4px; background: #D8D9D4; }
+.choice-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 11px 10px; }
+.choice-name { font-size: 14px; font-weight: 600; }
+.choice-tick { font-size: 13px; font-weight: 700; color: transparent; }
+.choice:has(input:checked) .choice-tick { color: var(--accent); }
+
+/* Payment methods live on a dark card. */
+.methods { display: flex; flex-direction: column; gap: 10px; }
+.method { border-radius: var(--r-lg); padding: 14px; background: var(--ink-2); border: 1px solid var(--ink-line-2); }
+.method--off { opacity: .72; border-color: var(--ink-line); }
+.method-icon {
+  width: 40px; height: 40px; border-radius: 10px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; background: var(--ink-3); color: var(--accent-on-ink);
+}
+.method--off .method-icon { color: var(--on-ink-muted); }
+.method-name { font-size: 15.5px; font-weight: 700; color: var(--on-ink); }
+.method-detail { font-family: var(--mono); font-size: 13.5px; color: #C9CBC4; margin-top: 5px; overflow-wrap: anywhere; }
+.method-note { font-size: 13px; color: var(--on-ink-muted); margin-top: 4px; text-wrap: pretty; }
+.badge--on-dark { background: #10291F; color: #62C79B; border: 1px solid #1F5340; }
+.badge--off-dark { background: var(--ink-3); color: var(--on-ink-muted); border: 1px solid var(--ink-line-2); }
+.badge--primary { background: #2A1522; color: var(--accent-on-ink); border: 1px solid #6B2A48; }
+.badge--primary::before { display: none; }
+.toggle--dark { background: var(--ink-3); border-color: var(--ink-line-2); }
+.toggle--dark .toggle-label { color: var(--on-ink-muted); }
+.toggle--dark[aria-checked="true"] { border-color: var(--accent-bright); }
+.toggle--dark[aria-checked="true"] .toggle-label { color: var(--on-ink); }
+.toggle--dark .toggle-knob { background: #4A4E56; }
+
+.settings-save {
+  position: sticky; bottom: 0; margin-top: 18px; padding: 14px 0;
+  background: linear-gradient(to top, var(--page) 65%, rgba(233,234,229,0));
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+
+/* ---------- create form ---------- */
+
+.kind-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.kind-tab {
+  min-height: 40px; padding: 0 12px; border-radius: 10px;
+  border: 1px solid var(--line-strong); background: var(--card);
+  color: var(--body); font: inherit; font-size: 13.5px; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center;
+}
+.kind-tab:hover { border-color: var(--ink); color: var(--body); }
+.kind-tab[aria-current="page"] { background: var(--accent); border-color: var(--accent); color: #FFF; }
+
+/* "How this earns" note above every create form. */
+.earn-note { background: var(--ink); border-radius: var(--r-lg); padding: 14px 16px; margin-bottom: 16px; }
+.earn-note-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--on-ink-body); }
+.earn-note-body { font-size: 15px; line-height: 1.5; color: var(--on-ink); margin-top: 6px; text-wrap: pretty; }
+
+.form-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
+  padding: clamp(16px, 3vw, 24px);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px;
+}
+.form-card .field { margin: 0; }
+.field--full { grid-column: 1 / -1; }
+.field--sep { border-top: 1px solid var(--track); padding-top: 16px; }
+.form-foot {
+  grid-column: 1 / -1; display: flex; gap: 10px; flex-wrap: wrap;
+  border-top: 1px solid var(--track); padding-top: 18px;
+}
+.form-foot .btn--accent { flex: 1; min-width: 160px; }
+
+/* Slot manager. */
+.slot-row {
+  display: flex; gap: 10px; align-items: center;
+  background: var(--white); border: 1px solid var(--line);
+  border-radius: var(--r-md); padding: 9px 11px;
+}
+.slot-row-label { font-family: var(--mono); font-size: 14px; font-variant-numeric: tabular-nums; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+
+/* Multi-select picker. */
+.picker { display: flex; flex-direction: column; gap: 7px; margin-top: 9px; }
+.pick {
+  display: flex; align-items: center; gap: 11px; width: 100%;
+  min-height: 52px; padding: 7px 12px; border-radius: var(--r-md);
+  border: 1.5px solid var(--line); background: var(--white);
+  font: inherit; font-size: 14.5px; font-weight: 600; color: var(--ink);
+  cursor: pointer; text-align: left;
+}
+.pick:has(input:checked) { border-color: var(--accent); }
+.pick input { position: absolute; opacity: 0; pointer-events: none; }
+.pick-box {
+  width: 22px; height: 22px; border-radius: 6px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  border: 1.5px solid var(--line-strong); background: var(--white); color: transparent;
+}
+.pick:has(input:checked) .pick-box { border-color: var(--accent); background: var(--accent); color: #FFF; }
+.pick-thumb {
+  width: 34px; height: 34px; border-radius: 7px; flex: none;
+  background: repeating-linear-gradient(135deg, #EDEEEA 0 7px, #E3E4DF 7px 14px);
+}
+.pick-meta { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }

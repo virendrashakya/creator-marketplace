@@ -1,14 +1,20 @@
-<% content_for :title, "Profile and settings | Wishful" %>
-<div class="page">
-  <section class="auth auth--wide">
-    <h1>Profile and settings</h1>
-    <p class="muted">Your account, how your page looks, and how you get paid.</p>
+<% content_for :title, "Settings | Wishful" %>
+<% content_for :head do %>
+  <link rel="stylesheet" href="/assets/dashboard.css">
+<% end %>
 
-    <%= form_with model: @user, url: creator_settings_path, method: :patch do |f| %>
-      <%= render "shared/errors", record: @user %>
+<div class="page page--narrow">
+  <%= link_to dashboard_path, class: "btn-back" do %><span aria-hidden="true">←</span> Dashboard<% end %>
+  <h1 style="margin: 8px 0 22px">Settings</h1>
 
-      <fieldset>
-        <legend id="account">Account</legend>
+  <%= form_with model: @user, url: creator_settings_path, method: :patch do |f| %>
+    <%= render "shared/errors", record: @user %>
+
+    <div class="settings-stack">
+
+      <section class="card settings-card">
+        <h2>Account</h2>
+        <p>Only you see this.</p>
         <div class="field-row">
           <div class="field">
             <%= f.label :name, "Display name" %>
@@ -16,8 +22,7 @@
           </div>
           <div class="field">
             <%= f.label :email, "Email" %>
-            <%= f.email_field :email, autocomplete: "email", spellcheck: false, autocapitalize: "off", aria: { describedby: "email_hint" } %>
-            <small id="email_hint">Private. Used to sign in.</small>
+            <%= f.email_field :email, autocomplete: "email", spellcheck: false, autocapitalize: "off" %>
           </div>
           <div class="field">
             <%= f.label :account_type, "Account type" %>
@@ -25,28 +30,29 @@
           </div>
           <div class="field">
             <%= f.label :date_of_birth, "Date of birth" %>
-            <%= f.date_field :date_of_birth, autocomplete: "bday" %>
-            <small>Private.</small>
+            <%= f.date_field :date_of_birth, autocomplete: "bday", class: "mono" %>
           </div>
         </div>
-      </fieldset>
+      </section>
 
-      <fieldset>
-        <legend id="public">Public profile</legend>
+      <section class="card settings-card">
+        <h2>Public profile</h2>
+        <p>This is what anyone opening your link sees.</p>
         <div class="field">
           <%= f.label :bio, "Bio" %>
-          <%= f.text_area :bio, maxlength: 400, placeholder: "The things you are known for recommending…" %>
+          <%= f.text_area :bio, rows: 3, maxlength: 400,
+                placeholder: "The things you are known for recommending" %>
         </div>
         <div class="field-row">
           <div class="field">
             <%= f.label :profile_picture, "Profile picture" %>
             <%= f.file_field :profile_picture, accept: "image/*" %>
-            <% if current_user.profile_picture.attached? %><small>One is already uploaded. Choosing a new file replaces it.</small><% end %>
+            <% if current_user.profile_picture.attached? %><small>One is uploaded. Choosing a new file replaces it.</small><% end %>
           </div>
           <div class="field">
             <%= f.label :banner, "Banner" %>
             <%= f.file_field :banner, accept: "image/*" %>
-            <% if current_user.banner.attached? %><small>One is already uploaded. Choosing a new file replaces it.</small><% end %>
+            <% if current_user.banner.attached? %><small>One is uploaded. Choosing a new file replaces it.</small><% end %>
           </div>
           <div class="field">
             <%= f.label :pronouns, "Pronouns" %>
@@ -54,7 +60,7 @@
           </div>
           <div class="field">
             <%= f.label :location, "Location" %>
-            <%= f.text_field :location, autocomplete: "address-level2", placeholder: "Mumbai" %>
+            <%= f.text_field :location, autocomplete: "address-level2", placeholder: "Bandra, Mumbai" %>
           </div>
           <div class="field">
             <%= f.label :public_email, "Public contact email" %>
@@ -62,71 +68,151 @@
             <small>Shown on your page. Leave blank to hide it.</small>
           </div>
         </div>
-      </fieldset>
+      </section>
 
-      <fieldset>
-        <legend id="style">Category and style</legend>
+      <section class="card settings-card">
+        <h2>Category and style</h2>
+        <p>Changes how your page looks, not what is on it.</p>
         <div class="field-row">
           <div class="field">
-            <%= f.label :creator_category, "Category" %>
-            <%= f.select :creator_category, [ "Fashion", "Beauty", "Fitness", "Travel", "Food", "Gaming", "Lifestyle", "Art & design", "Music", "Adult creator" ], include_blank: "Choose a category" %>
+            <%= f.label :creator_category, "Creator category" %>
+            <%= f.select :creator_category,
+                  [ "Fashion", "Beauty", "Fitness", "Travel", "Food", "Gaming", "Lifestyle", "Art and design", "Music", "Adult creator" ],
+                  include_blank: "Choose a category" %>
           </div>
           <div class="field">
             <%= f.label :creator_subcategory, "Subcategory" %>
-            <%= f.text_field :creator_subcategory, placeholder: "Solo travel" %>
-          </div>
-          <div class="field">
-            <%= f.label :theme, "Theme" %>
-            <%= f.select :theme, [ [ "Minimal", "minimal" ], [ "Luxury", "luxury" ], [ "Adventure", "adventure" ], [ "After dark", "after_dark" ] ] %>
-          </div>
-          <div class="field">
-            <%= f.label :profile_layout, "Layout" %>
-            <%= f.select :profile_layout, [ [ "List", "classic" ], [ "Editorial", "editorial" ], [ "Gallery", "gallery" ] ] %>
+            <%= f.text_field :creator_subcategory, placeholder: "Thrift styling" %>
           </div>
         </div>
-      </fieldset>
 
-      <fieldset>
-        <legend id="payments">Payments</legend>
-        <p class="muted" style="font-size: var(--t--1)">Followers pay your UPI ID directly and send you the reference number. You confirm each one before access opens.</p>
-        <div class="field-row">
+        <div class="field">
+          <span class="field-label">Page theme</span>
+          <div class="choice-grid">
+            <% [ [ "minimal", "Minimal", "#F4F5F3", "#C2185B", "#DFE1DC" ],
+                 [ "luxury", "Luxury", "#14142A", "#F0A9C8", "#2E2E4A" ],
+                 [ "adventure", "Adventure", "#EDF1EA", "#0B5B42", "#D2DBD0" ],
+                 [ "after_dark", "After dark", "#0C0D10", "#FF5C8A", "#262A31" ] ].each do |value, label, bg, dot, bar| %>
+              <label class="choice">
+                <%= f.radio_button :theme, value %>
+                <span class="choice-swatch" style="background: <%= bg %>" aria-hidden="true">
+                  <span class="choice-dot" style="background: <%= dot %>"></span>
+                  <span class="choice-bar" style="background: <%= bar %>"></span>
+                </span>
+                <span class="choice-foot">
+                  <span class="choice-name"><%= label %></span>
+                  <span class="choice-tick" aria-hidden="true">✓</span>
+                </span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Page layout</span>
+          <div class="choice-grid">
+            <% [ [ "classic", "List", [ [ "100%", 26 ], [ "100%", 26 ], [ "100%", 26 ] ] ],
+                 [ "editorial", "Editorial", [ [ "100%", 38 ], [ "70%", 10 ], [ "100%", 26 ] ] ],
+                 [ "gallery", "Gallery", [ [ "47%", 34 ], [ "47%", 34 ], [ "47%", 34 ] ] ] ].each do |value, label, bars| %>
+              <label class="choice">
+                <%= f.radio_button :profile_layout, value %>
+                <span class="choice-fig" aria-hidden="true">
+                  <% bars.each do |w, h| %>
+                    <span style="width: <%= w %>; height: <%= h %>px"></span>
+                  <% end %>
+                </span>
+                <span class="choice-foot">
+                  <span class="choice-name"><%= label %></span>
+                  <span class="choice-tick" aria-hidden="true">✓</span>
+                </span>
+              </label>
+            <% end %>
+          </div>
+          <%= link_to "Preview my page", profile_path(current_user.handle), class: "btn btn--light btn--small", style: "margin-top: 14px" %>
+        </div>
+      </section>
+
+      <section class="card card--dark settings-card">
+        <h2>How you get paid</h2>
+        <p style="max-width: 58ch">Money goes straight from your fan to you. Turn this off and fans stop seeing the paid things, without you losing the details.</p>
+
+        <% unless current_user.accepts_upi_manual? %>
+          <div class="callout callout--warn" style="margin-bottom: 14px">
+            <span class="mark" aria-hidden="true">!</span>
+            <span>UPI is off, so nothing on your page can be bought right now. Your page still shows, the paid things just cannot be paid for.</span>
+          </div>
+        <% end %>
+
+        <div class="method">
+          <div class="actions" style="justify-content: space-between; align-items: flex-start; flex-wrap: wrap">
+            <div class="actions" style="gap: 12px; flex: 1 1 220px; align-items: flex-start; flex-wrap: nowrap">
+              <span class="method-icon" aria-hidden="true">▧</span>
+              <div class="min0">
+                <div class="actions" style="gap: 8px">
+                  <span class="method-name">UPI</span>
+                  <span class="badge <%= current_user.accepts_upi_manual? ? "badge--on-dark" : "badge--off-dark" %>">
+                    <%= current_user.accepts_upi_manual? ? "Active" : "Inactive" %>
+                  </span>
+                </div>
+                <div class="method-detail" translate="no"><%= current_user.upi_id.presence || "No UPI ID yet" %></div>
+                <div class="method-note">Fans copy this into their UPI app, or scan your QR.</div>
+              </div>
+            </div>
+            <label class="toggle toggle--dark" aria-checked="<%= current_user.accepts_upi_manual? %>">
+              <%= f.check_box :accepts_upi_manual, style: "position: absolute; opacity: 0" %>
+              <span class="toggle-knob" aria-hidden="true"></span>
+              <span class="toggle-label">Accept UPI payments</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-row" style="margin-top: 16px">
           <div class="field">
-            <%= f.label :upi_id, "Your UPI ID" %>
-            <%= f.text_field :upi_id, placeholder: "yourname@okhdfcbank", autocomplete: "off", spellcheck: false, autocapitalize: "off", class: "ref" %>
+            <%= f.label :upi_id, "Your UPI ID", style: "color: #E4E5E0" %>
+            <%= f.text_field :upi_id, placeholder: "yourname@okhdfcbank", class: "mono",
+                  autocomplete: "off", spellcheck: false, autocapitalize: "off" %>
           </div>
           <div class="field">
-            <%= f.label :upi_payee_name, "Payee name" %>
-            <%= f.text_field :upi_payee_name, autocomplete: "off", aria: { describedby: "payee_hint" } %>
-            <small id="payee_hint">Exactly as it appears in your UPI app, so payers know it is you.</small>
+            <%= f.label :upi_payee_name, "Payee name fans will see", style: "color: #E4E5E0" %>
+            <%= f.text_field :upi_payee_name, autocomplete: "off" %>
+            <small style="color: var(--on-ink-muted)">Shown on every payment screen so fans can check it against what their UPI app displays.</small>
           </div>
           <div class="field">
-            <%= f.label :upi_qr, "UPI QR code" %>
+            <%= f.label :upi_qr, "UPI QR image", style: "color: #E4E5E0" %>
             <%= f.file_field :upi_qr, accept: "image/*" %>
-            <% if current_user.upi_qr.attached? %><small>One is already uploaded. Choosing a new file replaces it.</small><% end %>
+            <% if current_user.upi_qr.attached? %><small style="color: var(--on-ink-muted)">One is uploaded. Choosing a new file replaces it.</small><% end %>
           </div>
         </div>
-        <label class="check">
-          <%= f.check_box :accepts_upi_manual %>
-          Accept UPI payments
-        </label>
-      </fieldset>
+      </section>
 
-      <fieldset>
-        <legend id="social">Social links</legend>
+      <section class="card settings-card">
+        <h2>Social links</h2>
+        <p>Leave any of them blank and the button disappears from your page.</p>
         <div class="field-row">
-          <div class="field"><%= f.label :instagram_handle, "Instagram" %><%= f.text_field :instagram_handle, placeholder: "@yourhandle", autocomplete: "off", spellcheck: false, autocapitalize: "off" %></div>
-          <div class="field"><%= f.label :youtube_handle, "YouTube" %><%= f.text_field :youtube_handle, placeholder: "@yourchannel", autocomplete: "off", spellcheck: false, autocapitalize: "off" %></div>
-          <div class="field"><%= f.label :x_handle, "X" %><%= f.text_field :x_handle, placeholder: "@yourhandle", autocomplete: "off", spellcheck: false, autocapitalize: "off" %></div>
-          <div class="field"><%= f.label :reddit_handle, "Reddit" %><%= f.text_field :reddit_handle, placeholder: "u/yourhandle", autocomplete: "off", spellcheck: false, autocapitalize: "off" %></div>
-          <div class="field"><%= f.label :tiktok_handle, "TikTok" %><%= f.text_field :tiktok_handle, placeholder: "@yourhandle", autocomplete: "off", spellcheck: false, autocapitalize: "off" %></div>
-          <div class="field"><%= f.label :website_url, "Website" %><%= f.url_field :website_url, placeholder: "https://…", autocomplete: "url", spellcheck: false, autocapitalize: "off" %></div>
+          <% [ [ :instagram_handle, "Instagram", "@" ], [ :youtube_handle, "YouTube", "@" ],
+               [ :x_handle, "X", "@" ], [ :reddit_handle, "Reddit", "u/" ],
+               [ :tiktok_handle, "TikTok", "@" ] ].each do |attr, label, prefix| %>
+            <div class="field">
+              <%= f.label attr, label %>
+              <div class="input-group">
+                <span class="addon addon--left" aria-hidden="true"><%= prefix %></span>
+                <%= f.text_field attr, translate: "no", class: "mono",
+                      autocomplete: "off", spellcheck: false, autocapitalize: "off" %>
+              </div>
+            </div>
+          <% end %>
+          <div class="field">
+            <%= f.label :website_url, "Website" %>
+            <%= f.url_field :website_url, placeholder: "https://", class: "mono",
+                  autocomplete: "url", spellcheck: false, autocapitalize: "off" %>
+          </div>
         </div>
-      </fieldset>
+      </section>
+    </div>
 
-      <div class="form-actions">
-        <%= f.submit "Save settings", class: "button accent", data: { disable_with: "Saving…" } %>
-        <%= link_to "Cancel", dashboard_path, class: "button light" %>
-      </div>
-    <% end %>
-  </section>
+    <div class="settings-save">
+      <%= f.submit "Save changes", class: "btn btn--accent btn--big", data: { disable_with: "Saving…" } %>
+      <%= link_to "Discard", dashboard_path, class: "btn btn--light btn--big" %>
+    </div>
+  <% end %>
 </div>

@@ -39,11 +39,11 @@
       <%= f.collection_select :subscription_plan_id, current_user.subscription_plans.where(active: true), :id, :name, { include_blank: "Not included with a plan" } %>
     </div>
   </div>
-  <label class="check">
+  <label class="toggle-wrap">
     <%= f.check_box :published %>
     Show this on my page
   </label>
-  <div class="form-actions">
+  <div class="actions" style="margin-top: 18px">
     <%= f.submit(@paid_media_post.persisted? ? "Save paid media" : "Create paid media", class: "button accent", data: { disable_with: "Saving…" }) %>
     <%= link_to "Cancel", dashboard_path, class: "button light" %>
   </div>

@@ -1,29 +1,38 @@
 <% unlocked = card.unlocked_for?(current_user) %>
-<article class="offer">
-  <% if unlocked && card.media.attached? && card.media_type == "image" %>
-    <%= image_tag media_paid_media_post_path(card), class: "vouch-thumb", alt: card.title, width: 136, height: 136, loading: "lazy" %>
-  <% elsif card.preview.attached? %>
-    <%= image_tag preview_paid_media_post_path(card), class: "vouch-thumb", alt: "Blurred preview of #{card.title}", width: 136, height: 136, loading: "lazy" %>
-  <% else %>
-    <span class="vouch-thumb" aria-hidden="true">◍</span>
-  <% end %>
-  <div class="min0">
-    <div class="offer-title break"><%= card.title %></div>
-    <div class="offer-note clamp-2"><%= card.caption.presence || "An exclusive #{card.media_type}" %></div>
+<article class="media-card">
+  <div class="media-preview">
+    <% if unlocked && card.media.attached? && card.media_type == "image" %>
+      <%= image_tag media_paid_media_post_path(card), alt: card.title, width: 480, height: 380, loading: "lazy" %>
+    <% elsif card.preview.attached? %>
+      <%= image_tag preview_paid_media_post_path(card), alt: "", width: 480, height: 380, loading: "lazy" %>
+    <% end %>
+
     <% if unlocked %>
-      <div class="offer-actions">
-        <% if card.media_type == "video" && card.media.attached? %>
-          <%= link_to media_paid_media_post_path(card), class: "button light small", target: "_blank", rel: "noopener noreferrer" do %>
-            Watch<span class="visually-hidden"> <%= card.title %> (opens in a new tab)</span>
-          <% end %>
-        <% else %>
-          <span class="state state--confirmed">Unlocked</span>
-        <% end %>
-      </div>
+      <span class="media-unlocked">Unlocked</span>
     <% else %>
-      <div class="offer-actions">
-        <%= render "shared/buy_button", purchasable: card, creator: card.user, label: "Unlock", signed_out_label: "Sign in to unlock", price_label: card.price_label, fallback_path: purchase_paid_media_post_path(card) %>
+      <div class="media-lock">
+        <span class="media-lock-pill">Locked</span>
+        <span class="media-lock-price"><%= card.price_label %> to unlock</span>
       </div>
     <% end %>
+  </div>
+  <div class="media-body">
+    <div class="media-title"><%= card.title %></div>
+    <div class="media-meta"><%= card.caption.presence || "Exclusive #{card.media_type}" %></div>
+    <div style="margin-top: 12px">
+      <% if unlocked %>
+        <% if card.media_type == "video" && card.media.attached? %>
+          <%= link_to media_paid_media_post_path(card), class: "btn btn--block", target: "_blank", rel: "noopener noreferrer" do %>
+            Open it<span class="visually-hidden"> (opens in a new tab)</span>
+          <% end %>
+        <% else %>
+          <span class="badge badge--ok">Unlocked</span>
+        <% end %>
+      <% else %>
+        <%= render "shared/buy_button", purchasable: card, creator: card.user,
+              label: "Unlock for #{card.price_label}", signed_out_label: "Sign in to unlock",
+              price_label: card.price_label, fallback_path: purchase_paid_media_post_path(card) %>
+      <% end %>
+    </div>
   </div>
 </article>

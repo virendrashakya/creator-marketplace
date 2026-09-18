@@ -1,30 +1,40 @@
-<article class="offer">
-  <span class="vouch-thumb" aria-hidden="true">◍</span>
+<article class="meet">
   <div class="min0">
-    <div class="offer-title break"><%= card.title %></div>
-    <div class="offer-note">
-      <%= [ card.location.presence, "#{card.duration_minutes} min", card.price_label ].compact.join(" · ") %>
-    </div>
+    <div class="meet-title break"><%= card.title %></div>
     <% if card.description.present? %>
-      <div class="offer-note clamp-2"><%= card.description %></div>
+      <p class="meet-desc"><%= card.description %></p>
     <% end %>
-    <% slots = card.meet_slots.bookable.limit(5) %>
+    <div class="meet-facts">
+      <% if card.location.present? %><div><%= card.location %></div><% end %>
+      <div class="num"><%= card.duration_minutes %> minutes · <%= card.price_label %></div>
+    </div>
+  </div>
+  <div class="min0">
+    <% slots = card.meet_slots.bookable.limit(6) %>
+    <div class="slots-label">Open slots, <%= slot_timezone_label %></div>
     <% if slots.any? %>
       <div class="slots">
         <% slots.each do |slot| %>
-          <% slot_label = l(slot.starts_at, format: :slot_short) %>
+          <% label = l(slot.starts_at, format: :slot_short) %>
           <% if !signed_in? %>
-            <%= link_to sign_in_path, class: "button accent small num" do %><%= slot_label %><span class="visually-hidden">: sign in to book</span><% end %>
+            <%= link_to sign_in_path, class: "slot" do %>
+              <%= label %><span class="visually-hidden">: sign in to book</span>
+            <% end %>
           <% elsif card.user.accepts_upi_manual? %>
-            <%= link_to new_payment_claim_path(purchasable_type: "MeetSlot", purchasable_id: slot.id), class: "button accent small num" do %><%= slot_label %><span class="visually-hidden">: book this time</span><% end %>
+            <%= link_to new_payment_claim_path(purchasable_type: "MeetSlot", purchasable_id: slot.id), class: "slot" do %>
+              <%= label %><span class="visually-hidden">: book this time</span>
+            <% end %>
           <% else %>
-            <%= button_to book_meet_slot_path(slot), class: "button accent small num", form: { data: { turbo_submits_with: "Booking…" } } do %><%= slot_label %><span class="visually-hidden">: book this time</span><% end %>
+            <%= button_to book_meet_slot_path(slot), class: "slot", form: { data: { turbo_submits_with: "Booking…" } } do %>
+              <%= label %><span class="visually-hidden">: book this time</span>
+            <% end %>
           <% end %>
         <% end %>
       </div>
-      <p class="offer-note">Times shown in <%= slot_timezone_label %>.</p>
     <% else %>
-      <div class="offer-note">No open times right now. <%= card.user.name %> adds new ones as they free up.</div>
+      <div class="empty">
+        <div class="empty-body">All slots taken for now. New ones open as <%= card.user.name.split.first %> frees up time.</div>
+      </div>
     <% end %>
   </div>
 </article>

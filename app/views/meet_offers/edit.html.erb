@@ -1,5 +1,5 @@
 <% content_for :title, "Edit meet offer | Wishful" %>
-<div class="page"><section class="auth"><h1>Edit meet offer</h1><%= render "form" %></section></div>
+<div class="page page--form"><section class="card"><h1>Edit meet offer</h1><%= render "form" %></section></div>
 <div class="page">
   <section class="panel auth auth--wide">
     <h2>Times you are free</h2>
@@ -34,7 +34,7 @@
         <div class="field"><%= f.label :ends_at, "Ends" %><%= f.datetime_field :ends_at %></div>
       </div>
       <p class="muted" style="font-size: var(--t--1)">Times are in <%= slot_timezone_label %>.</p>
-      <div class="form-actions"><%= f.submit "Add slot", class: "button accent", data: { disable_with: "Adding…" } %></div>
+      <div class="actions" style="margin-top: 18px"><%= f.submit "Add slot", class: "button accent", data: { disable_with: "Adding…" } %></div>
     <% end %>
   </section>
 </div>

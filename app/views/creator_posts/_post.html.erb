@@ -1,8 +1,20 @@
 <article class="post">
   <div class="post-head">
-    <span translate="no">@<%= post.user.handle %></span>
-    <time class="muted" datetime="<%= post.created_at.iso8601 %>" title="<%= l post.created_at, format: :slot %>"><%= l post.created_at.to_date, format: :stamp %></time>
+    <div class="post-avatar">
+      <% if post.user.profile_picture.attached? %>
+        <%= image_tag post.user.profile_picture, alt: "", width: 68, height: 68 %>
+      <% end %>
+    </div>
+    <div class="min0">
+      <div class="post-who"><%= post.user.name %></div>
+      <time class="post-when" datetime="<%= post.created_at.iso8601 %>" title="<%= l post.created_at, format: :slot %>">
+        <%= l post.created_at, format: :slot_short %> <%= slot_timezone_label %>
+      </time>
+    </div>
   </div>
+
+  <p class="post-text"><%= post.body %></p>
+
   <% if post.media.attached? %>
     <% if post.media.content_type.to_s.start_with?("video/") %>
       <%= video_tag post.media, controls: true, preload: "metadata", playsinline: true, class: "post-media" %>
@@ -10,35 +22,46 @@
       <%= image_tag post.media, class: "post-media", alt: "", width: 1080, height: 1080, loading: "lazy" %>
     <% end %>
   <% end %>
-  <div class="post-body">
-    <p class="post-text"><%= post.body %></p>
-    <div class="post-counts">
-      <%= pluralize(post.creator_post_likes.size, "like") %> · <%= pluralize(post.creator_post_comments.size, "comment") %>
-    </div>
-    <div class="actions" style="margin-top: var(--gap-2)">
-      <% if signed_in? %>
-        <% liked = post.creator_post_likes.any? { |like| like.user_id == current_user.id } %>
-        <% if liked %>
-          <%= button_to "Liked", creator_post_creator_post_like_path(post), method: :delete, class: "button light small", form: { data: { turbo_submits_with: "Working…" } }, aria: { pressed: "true", label: "Unlike this post" } %>
-        <% else %>
-          <%= button_to "Like", creator_post_creator_post_like_path(post), method: :post, class: "button light small", form: { data: { turbo_submits_with: "Working…" } }, aria: { pressed: "false", label: "Like this post" } %>
-        <% end %>
-      <% else %>
-        <%= link_to "Sign in to like", sign_in_path, class: "button light small" %>
-      <% end %>
-    </div>
-    <% post.creator_post_comments.first(10).each do |comment| %>
-      <p class="post-comment break"><strong translate="no">@<%= comment.user.handle %></strong> <%= comment.body %></p>
-    <% end %>
-    <% if post.creator_post_comments.size > 10 %>
-      <p class="post-comment muted"><%= pluralize(post.creator_post_comments.size - 10, "earlier comment") %> not shown.</p>
-    <% end %>
+
+  <div class="post-bar">
     <% if signed_in? %>
-      <%= form_with url: creator_post_creator_post_comments_path(post), class: "post-form" do |f| %>
-        <%= label_tag "comment_body_#{post.id}", "Add a comment", class: "visually-hidden" %>
-        <%= text_field_tag "creator_post_comment[body]", nil, id: "comment_body_#{post.id}", placeholder: "Add a comment…", maxlength: 500 %>
-        <%= submit_tag "Post", class: "button light small", data: { disable_with: "Posting…" } %>
+      <% liked = post.creator_post_likes.any? { |like| like.user_id == current_user.id } %>
+      <%= button_to creator_post_creator_post_like_path(post),
+            method: liked ? :delete : :post,
+            class: "post-like",
+            form: { data: { turbo_submits_with: "…" } },
+            aria: { pressed: liked.to_s, label: liked ? "Unlike this post" : "Like this post" } do %>
+        <%= liked ? "♥" : "♡" %> <%= post.creator_post_likes.size %>
       <% end %>
+    <% else %>
+      <%= link_to "♡ #{post.creator_post_likes.size}", sign_in_path, class: "post-like" %>
     <% end %>
+    <span class="post-like" style="cursor: default"><%= pluralize(post.creator_post_comments.size, "comment") %></span>
   </div>
+
+  <% if post.creator_post_comments.any? || signed_in? %>
+    <div class="post-comments">
+      <% post.creator_post_comments.first(10).each do |comment| %>
+        <div class="post-comment">
+          <div class="post-comment-avatar"></div>
+          <div class="min0">
+            <div class="post-comment-who" translate="no">@<%= comment.user.handle %></div>
+            <div class="post-comment-text"><%= comment.body %></div>
+          </div>
+        </div>
+      <% end %>
+      <% if post.creator_post_comments.size > 10 %>
+        <div class="post-comment-who"><%= pluralize(post.creator_post_comments.size - 10, "earlier comment") %> not shown.</div>
+      <% end %>
+
+      <% if signed_in? %>
+        <%= form_with url: creator_post_creator_post_comments_path(post), class: "post-form" do %>
+          <%= label_tag "comment_body_#{post.id}", "Write a comment", class: "visually-hidden" %>
+          <%= text_field_tag "creator_post_comment[body]", nil, id: "comment_body_#{post.id}",
+                placeholder: "Say something kind", maxlength: 500 %>
+          <%= submit_tag "Post", class: "btn btn--small", data: { disable_with: "Posting…" } %>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
 </article>

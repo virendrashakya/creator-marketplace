@@ -1,0 +1,55 @@
+<%#
+  The canvas opens the page with an index of everything on offer, so a fan
+  landing from a bio link sees the whole surface before scrolling past it.
+  Built from what the creator actually has; hidden entirely when empty.
+%>
+<% offers = [] %>
+
+<% link_count = collections.sum { |c| c.product_links.size } + uncategorized.size %>
+<% if link_count.positive? %>
+  <% offers << { name: "Recommendations", price: "Free", free: true,
+                 desc: "#{pluralize(link_count, 'thing')} I actually use, with the reason why.", anchor: nil } %>
+<% end %>
+
+<% media.each do |m| %>
+  <% offers << { name: m.title, price: m.price_label, free: false,
+                 desc: m.caption.presence || "An exclusive #{m.media_type}.", anchor: nil } %>
+<% end %>
+
+<% meet_offers.each do |o| %>
+  <% offers << { name: o.title, price: o.price_label, free: false,
+                 desc: [ o.location.presence, "#{o.duration_minutes} minutes" ].compact.join(", "), anchor: nil } %>
+<% end %>
+
+<% reveals.each do |rv| %>
+  <% offers << { name: rv.label, price: rv.price_label, free: false,
+                 desc: "Unlocked once #{user.name} confirms your payment.", anchor: nil } %>
+<% end %>
+
+<% gift_items = wishlists.sum { |w| w.wishlist_items.size } %>
+<% if gift_items.positive? %>
+  <% offers << { name: "Gift the gear", price: "Any amount", free: true,
+                 desc: "#{pluralize(gift_items, 'thing')} I am saving for. Chip in whatever.", anchor: nil } %>
+<% end %>
+
+<% if offers.any? %>
+  <section class="pf-section" style="padding-top: 30px">
+    <div class="pf-offers">
+      <div class="pf-offers-head">
+        <h2>What you can get from me</h2>
+        <p>Free to browse. The paid things unlock once <%= user.name.split.first %> checks your payment.</p>
+      </div>
+      <div class="pf-offers-grid">
+        <% offers.first(6).each do |o| %>
+          <div class="pf-offer">
+            <div class="pf-offer-top">
+              <span class="pf-offer-name break"><%= o[:name] %></span>
+              <span class="pf-offer-price <%= "pf-offer-price--free" if o[:free] %>"><%= o[:price] %></span>
+            </div>
+            <div class="pf-offer-desc clamp-2"><%= o[:desc] %></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% end %>

@@ -1,40 +1,65 @@
-<% content_for :title, "Make your page | Wishful" %>
-<div class="page">
-  <section class="auth">
-    <h1>Make your page</h1>
-    <p class="muted">Your handle is your address: wishful.app/@yourname</p>
-    <%= form_with model: @user, url: sign_up_path do |f| %>
-      <%= render "shared/errors", record: @user %>
-      <div class="field">
-        <%= f.label :name, "Your name" %>
-        <%= f.text_field :name, autocomplete: "name", required: true %>
-      </div>
-      <div class="field">
-        <%= f.label :handle, "Handle" %>
-        <div class="money-input">
-          <span class="money-unit" aria-hidden="true">@</span>
-          <%= f.text_field :handle, autocomplete: "username", spellcheck: false, autocapitalize: "off", required: true,
-                aria: { describedby: "handle_hint" } %>
+<% content_for :title, "Claim your handle | Wishful" %>
+<% content_for :head do %>
+  <link rel="stylesheet" href="/assets/home.css">
+<% end %>
+
+<div class="auth-split">
+  <div class="auth-form">
+    <div class="auth-form-inner">
+      <h1>Claim your handle</h1>
+      <p>One page for everything you recommend and sell. Takes about two minutes.</p>
+
+      <%= form_with model: @user, url: sign_up_path do |f| %>
+        <%= render "shared/errors", record: @user %>
+
+        <div class="field">
+          <%= f.label :name, "Your name" %>
+          <%= f.text_field :name, autocomplete: "name", placeholder: "Ananya Rao", required: true %>
         </div>
-        <small id="handle_hint">Letters, numbers and underscores. This is what you will share.</small>
-      </div>
-      <div class="field">
-        <%= f.label :email, "Email" %>
-        <%= f.email_field :email, autocomplete: "email", spellcheck: false, autocapitalize: "off", required: true %>
-      </div>
-      <div class="field">
-        <%= f.label :password, "Password" %>
-        <%= f.password_field :password, autocomplete: "new-password", required: true, aria: { describedby: "password_hint" } %>
-        <small id="password_hint">At least 6 characters.</small>
-      </div>
-      <div class="field">
-        <%= f.label :password_confirmation, "Confirm password" %>
-        <%= f.password_field :password_confirmation, autocomplete: "new-password", required: true %>
-      </div>
-      <div class="form-actions">
-        <%= f.submit "Make my page", class: "button accent", data: { disable_with: "Creating…" } %>
-      </div>
-    <% end %>
-    <p class="muted" style="margin-top: var(--gap-3)">Already have a page? <%= link_to "Sign in", sign_in_path %></p>
-  </section>
+
+        <div class="field">
+          <%= f.label :handle, "Your public address" %>
+          <div class="input-group">
+            <span class="addon addon--left" aria-hidden="true">wishful.app/@</span>
+            <%= f.text_field :handle, maxlength: 30, placeholder: "ananyarao",
+                  autocomplete: "username", spellcheck: false, autocapitalize: "off",
+                  required: true, class: "mono", aria: { describedby: "handle_hint" } %>
+          </div>
+          <small id="handle_hint">Lowercase letters, numbers and underscores. Up to 30 characters.</small>
+        </div>
+
+        <div class="field">
+          <%= f.label :email, "Email" %>
+          <%= f.email_field :email, placeholder: "you@email.com", autocomplete: "email",
+                spellcheck: false, autocapitalize: "off", required: true %>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <%= f.label :password, "Password" %>
+            <%= f.password_field :password, placeholder: "At least 6 characters",
+                  autocomplete: "new-password", required: true %>
+          </div>
+          <div class="field">
+            <%= f.label :password_confirmation, "Confirm password" %>
+            <%= f.password_field :password_confirmation, placeholder: "Type it again",
+                  autocomplete: "new-password", required: true %>
+          </div>
+        </div>
+
+        <%= f.submit "Create my page", class: "btn btn--accent btn--big btn--block",
+              data: { disable_with: "Creating…" } %>
+      <% end %>
+
+      <p class="muted" style="margin-top: 16px; font-size: 14px">Already have a page? <%= link_to "Sign in", sign_in_path %></p>
+    </div>
+  </div>
+
+  <div class="auth-aside">
+    <div class="auth-aside-inner">
+      <div class="auth-aside-title">Your handle is the whole address. Short, lowercase, yours.</div>
+      <div class="auth-aside-url">wishful.app/@<%= @user&.handle.presence || "yourname" %></div>
+      <div class="auth-aside-note">Lowercase letters, numbers and underscores. Up to 30 characters. You can change it later, but old links stop working.</div>
+    </div>
+  </div>
 </div>

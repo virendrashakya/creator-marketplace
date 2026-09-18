@@ -1,0 +1,53 @@
+<%#
+  One managed list on the dashboard. Every list has a real empty state, because
+  a new creator meets six of them at once and they are the first thing they see.
+%>
+<div class="managed-card">
+  <div class="managed-head">
+    <div class="managed-name"><%= name %></div>
+    <span class="managed-count"><%= rows.any? ? count : "none yet" %></span>
+  </div>
+
+  <% if rows.empty? %>
+    <div class="empty">
+      <div class="empty-title"><%= empty_title %></div>
+      <div class="empty-body"><%= empty_body %></div>
+      <%= link_to empty_cta, empty_path, class: "btn btn--accent btn--small", style: "margin-top: 12px" %>
+    </div>
+  <% else %>
+    <div class="stack" style="gap: 7px">
+      <% rows.first(4).each do |row| %>
+        <div class="row">
+          <div class="row-thumb">
+            <% if row[:image].present? %>
+              <%= image_tag row[:image], alt: "", width: 76, height: 76, loading: "lazy" %>
+            <% end %>
+          </div>
+          <div class="min0" style="flex: 1">
+            <div class="row-title truncate"><%= row[:title] %></div>
+            <div class="row-meta">
+              <% if row[:badge].present? %>
+                <span class="badge badge--<%= row[:badge_kind] %>"><%= row[:badge] %></span>
+              <% end %>
+              <span class="row-meta-text"><%= row[:meta] %></span>
+            </div>
+          </div>
+          <div class="row-actions">
+            <% if row[:extra_path] %>
+              <%= link_to row[:extra_label], row[:extra_path], class: "btn btn--light btn--small" %>
+            <% end %>
+            <%= link_to "Edit", row[:edit], class: "btn btn--light btn--small" %>
+            <% if row[:delete] %>
+              <%= button_to row[:delete], method: :delete, class: "btn btn--danger btn--icon",
+                    form: { data: { turbo_confirm: row[:confirm] } },
+                    aria: { label: "Delete #{row[:title]}" } do %>×<% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+      <% if rows.size > 4 %>
+        <div class="row-meta-text" style="padding: 2px 4px"><%= rows.size - 4 %> more not shown</div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

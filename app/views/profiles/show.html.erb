@@ -1,44 +1,55 @@
 <% content_for :title, "#{@user.name} (@#{@user.handle}) | Wishful" %>
-<% content_for :description, @user.bio.presence || "Things #{@user.name} vouches for, on Wishful." %>
+<% content_for :description, @user.bio.presence || "Things #{@user.name} recommends, on Wishful." %>
 <% content_for :head do %>
   <link rel="stylesheet" href="/assets/profile.css">
 <% end %>
 
-<div class="page">
-  <section class="profile theme-<%= @user.theme %> layout-<%= @user.profile_layout %>">
-    <% if @user.banner.attached? %>
-      <%= image_tag @user.banner, alt: "", width: 1200, height: 400, class: "profile-banner" %>
-    <% end %>
+<div class="profile theme-<%= @user.theme %> layout-<%= @user.profile_layout %>">
+  <div class="profile-inner">
 
-    <header class="profile-id">
-      <div class="profile-avatar">
+    <div class="pf-banner">
+      <% if @user.banner.attached? %>
+        <%= image_tag @user.banner, alt: "", width: 1600, height: 500 %>
+      <% end %>
+    </div>
+
+    <header class="pf-id">
+      <div class="pf-avatar">
         <% if @user.profile_picture.attached? %>
-          <%= image_tag @user.profile_picture, alt: "", width: 144, height: 144 %>
+          <%= image_tag @user.profile_picture, alt: "", width: 208, height: 208 %>
         <% elsif @user.avatar_url.present? %>
-          <%= image_tag @user.avatar_url, alt: "", width: 144, height: 144 %>
+          <%= image_tag @user.avatar_url, alt: "", width: 208, height: 208 %>
         <% else %>
           <%= @user.name.to_s.strip.first&.upcase %>
         <% end %>
       </div>
-      <div class="min0">
-        <h1><%= @user.name %></h1>
-        <div class="profile-handle" translate="no">@<%= @user.handle %></div>
-        <% details = [ @user.creator_category, @user.creator_subcategory, @user.pronouns, @user.location ].select(&:present?) %>
-        <% if details.any? %>
-          <div class="profile-meta"><%= details.join(" · ") %></div>
-        <% end %>
-        <% if @user.bio.present? %>
-          <p class="profile-bio break"><%= @user.bio %></p>
-        <% end %>
+
+      <div class="pf-head">
+        <div class="min0" style="flex: 1 1 320px">
+          <h1 class="pf-name"><%= @user.name %></h1>
+          <div class="actions" style="gap: 9px">
+            <span class="pf-handle" translate="no">@<%= @user.handle %></span>
+            <% category = [ @user.creator_category, @user.creator_subcategory ].select(&:present?).join(", ") %>
+            <% if category.present? %><span class="pf-chip"><%= category %></span><% end %>
+          </div>
+          <% details = [ @user.pronouns, @user.location ].select(&:present?) %>
+          <% if details.any? %>
+            <div class="pf-meta"><%= details.join(" · ") %></div>
+          <% end %>
+          <% if @user.bio.present? %>
+            <p class="pf-bio"><%= @user.bio %></p>
+          <% end %>
+        </div>
+
         <% if @social_links.any? || @user.website_url.present? %>
-          <div class="profile-socials">
+          <div class="pf-socials">
             <% @social_links.each do |name, handle, base_url| %>
-              <%= link_to social_url(base_url, handle), class: "button light small", target: "_blank", rel: "noopener noreferrer" do %>
+              <%= link_to social_url(base_url, handle), class: "pf-social", target: "_blank", rel: "noopener noreferrer" do %>
                 <span translate="no"><%= name %></span><span class="visually-hidden"> (opens in a new tab)</span>
               <% end %>
             <% end %>
             <% if @user.website_url.present? %>
-              <%= link_to @user.website_url, class: "button light small", target: "_blank", rel: "noopener noreferrer" do %>
+              <%= link_to @user.website_url, class: "pf-social", target: "_blank", rel: "noopener noreferrer" do %>
                 Website<span class="visually-hidden"> (opens in a new tab)</span>
               <% end %>
             <% end %>
@@ -47,53 +58,80 @@
       </div>
     </header>
 
-    <% has_links = @collections.any? { |c| c.product_links.any? } || @uncategorized_links.any? %>
+    <%= render "profiles/offers_index", user: @user, collections: @collections,
+          uncategorized: @uncategorized_links, media: @paid_media_posts,
+          meet_offers: @meet_offers, reveals: @contact_reveals, wishlists: @wishlists %>
 
+    <% has_links = @collections.any? { |c| c.product_links.any? } || @uncategorized_links.any? %>
     <% if has_links %>
+      <% first_group = true %>
       <% @collections.each do |collection| %>
         <% next if collection.product_links.empty? %>
-        <h2 class="band"><%= collection.name %></h2>
-        <div class="vouch-list"><%= render partial: "product_links/card", collection: collection.product_links %></div>
+        <section class="pf-section">
+          <div class="pf-section-head">
+            <h2><%= collection.name %></h2>
+            <span class="pf-count"><%= pluralize(collection.product_links.size, "item") %></span>
+          </div>
+          <% if first_group %><p class="rec-note">These are referral links. If you buy, the store pays a small cut at no extra cost to you.</p><% first_group = false %><% end %>
+          <div class="rec-list"><%= render partial: "product_links/card", collection: collection.product_links %></div>
+        </section>
       <% end %>
       <% if @uncategorized_links.any? %>
-        <h2 class="band">Things I use</h2>
-        <div class="vouch-list"><%= render partial: "product_links/card", collection: @uncategorized_links %></div>
+        <section class="pf-section">
+          <div class="pf-section-head">
+            <h2>Things I use</h2>
+            <span class="pf-count"><%= pluralize(@uncategorized_links.size, "item") %></span>
+          </div>
+          <% if first_group %><p class="rec-note">These are referral links. If you buy, the store pays a small cut at no extra cost to you.</p><% end %>
+          <div class="rec-list"><%= render partial: "product_links/card", collection: @uncategorized_links %></div>
+        </section>
       <% end %>
     <% end %>
 
     <% if @paid_media_posts.any? %>
-      <h2 class="band">Behind the paywall</h2>
-      <%= render partial: "paid_media_posts/card", collection: @paid_media_posts %>
+      <section class="pf-section">
+        <div class="pf-section-head"><h2>Behind the haul</h2></div>
+        <div class="media-grid"><%= render partial: "paid_media_posts/card", collection: @paid_media_posts %></div>
+      </section>
     <% end %>
 
     <% if @meet_offers.any? %>
-      <h2 class="band">Meet me</h2>
-      <%= render partial: "meet_offers/card", collection: @meet_offers %>
+      <section class="pf-section">
+        <div class="pf-section-head"><h2>Book me</h2></div>
+        <div class="stack"><%= render partial: "meet_offers/card", collection: @meet_offers %></div>
+      </section>
     <% end %>
 
     <% if @contact_reveals.any? %>
-      <h2 class="band">Reach me directly</h2>
-      <%= render partial: "contact_reveals/card", collection: @contact_reveals %>
+      <section class="pf-section">
+        <div class="pf-section-head"><h2>Reach me directly</h2></div>
+        <div class="stack"><%= render partial: "contact_reveals/card", collection: @contact_reveals %></div>
+      </section>
     <% end %>
 
     <% @wishlists.each do |wishlist| %>
       <% next if wishlist.wishlist_items.empty? %>
-      <h2 class="band">Gift: <%= wishlist.title %></h2>
-      <%= render partial: "wishlists/item", collection: wishlist.wishlist_items %>
+      <section class="pf-section">
+        <div class="pf-section-head"><h2><%= wishlist.title %></h2></div>
+        <div class="wish-grid"><%= render partial: "wishlists/item", collection: wishlist.wishlist_items %></div>
+      </section>
     <% end %>
 
     <% if @creator_posts.any? %>
-      <h2 class="band">Lately</h2>
-      <%= render partial: "creator_posts/post", collection: @creator_posts %>
+      <section class="pf-section">
+        <div class="pf-section-head"><h2>Lately</h2></div>
+        <div class="posts"><%= render partial: "creator_posts/post", collection: @creator_posts %></div>
+      </section>
     <% end %>
 
     <% unless has_links || @paid_media_posts.any? || @meet_offers.any? || @contact_reveals.any? || @creator_posts.any? || @wishlists.any? { |w| w.wishlist_items.any? } %>
-      <div class="empty-profile">
-        <strong>@<%= @user.handle %></strong> hasn’t added anything yet.
+      <div class="pf-empty">
+        <div class="empty-title">@<%= @user.handle %> has not added anything yet</div>
         <% if signed_in? && current_user == @user %>
-          <%= link_to "Add your first recommendation", new_product_link_path %>.
+          <p class="empty-body"><%= link_to "Add your first recommendation", new_product_link_path %>.</p>
         <% end %>
       </div>
     <% end %>
-  </section>
+
+  </div>
 </div>

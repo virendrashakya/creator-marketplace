@@ -1,4 +1,6 @@
 class PaymentClaim < ApplicationRecord
+  include MoneyFormatting
+
   # A follower's assertion that they have paid out-of-band (currently UPI).
   # Nothing is granted until the creator approves: `approve!` is the single
   # place entitlement is created, which is where a real gateway's webhook will
@@ -42,8 +44,7 @@ class PaymentClaim < ApplicationRecord
   end
 
   def money_label(cents = amount_cents)
-    symbol = currency == "INR" ? "₹" : "$"
-    "#{symbol}#{format('%.2f', cents.to_i / 100.0).sub(/\.00\z/, '')}"
+    money_label_for(cents)
   end
 
   # Grants the entitlement the claim was made for. Wrapped in a transaction so

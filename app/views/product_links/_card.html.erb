@@ -1,23 +1,27 @@
-<%# The reason leads. The product name is the credit line beneath it, because
-    a recommendation is the creator's sentence, not the merchant's title. %>
-<%= link_to visit_product_link_path(card), class: "vouch", target: "_blank", rel: "noopener noreferrer" do %>
-  <% if card.image_url.present? %>
-    <%= image_tag card.image_url, class: "vouch-thumb", alt: "", width: 136, height: 136, loading: "lazy" %>
-  <% else %>
-    <span class="vouch-thumb" aria-hidden="true">◍</span>
-  <% end %>
-  <span class="vouch-body">
-    <% if card.description.present? %>
-      <span class="vouch-reason clamp-3"><%= card.description %></span>
+<%# The reason is the product. Everything else is the credit line. %>
+<%= link_to visit_product_link_path(card), class: "rec", target: "_blank", rel: "noopener noreferrer" do %>
+  <span class="rec-media">
+    <% if card.image_url.present? %>
+      <%= image_tag card.image_url, alt: "", width: 232, height: 232, loading: "lazy" %>
     <% end %>
-    <span class="vouch-title">
-      <% if card.featured? %><span class="vouch-flag" aria-hidden="true"></span><span class="visually-hidden">Featured. </span><% end %>
-      <%= card.title %>
-    </span>
-    <% if card.merchant.present? %><span class="vouch-merchant break"><%= card.merchant %></span><% end %>
+    <% if card.featured? %>
+      <span class="rec-flag">Featured</span>
+    <% end %>
   </span>
-  <% if card.price.present? %>
-    <span class="vouch-price"><%= card.price %></span>
-  <% end %>
-  <span class="visually-hidden">(opens in a new tab)</span>
+  <span class="rec-body">
+    <span class="rec-top">
+      <span class="rec-title"><%= card.title %></span>
+      <% if card.price.present? %><span class="rec-price"><%= card.price %></span><% end %>
+    </span>
+    <% if card.merchant.present? %>
+      <span class="rec-merchant badge badge--merchant" translate="no"><%= card.merchant %></span>
+    <% end %>
+    <% if card.description.present? %>
+      <span class="rec-reason"><%= card.description %></span>
+    <% end %>
+    <span class="rec-cta">
+      <%= card.merchant.present? ? "Buy on #{card.merchant}" : "Open the link" %>
+    </span>
+    <span class="visually-hidden">(opens in a new tab)</span>
+  </span>
 <% end %>

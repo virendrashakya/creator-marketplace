@@ -1,4 +1,6 @@
 class MeetOffer < ApplicationRecord
+  include MoneyFormatting
+
   belongs_to :user
   has_many :meet_slots, dependent: :destroy
 
@@ -9,7 +11,6 @@ class MeetOffer < ApplicationRecord
   validates :currency, inclusion: { in: %w[INR USD] }
 
   def price_label
-    symbol = currency == "INR" ? "₹" : "$"
-    "#{symbol}#{format('%.2f', price_cents.to_i / 100.0).sub(/\.00\z/, '')}"
+    money_label_for(price_cents)
   end
 end

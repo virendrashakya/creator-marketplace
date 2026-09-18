@@ -1,4 +1,8 @@
-<%= form_with model: @collection do |f| %>
+<%# LinkCollection is routed as :collections, so the path helper Rails would
+    derive from the model name does not exist. Name the URL explicitly. %>
+<%= form_with model: @collection,
+      url: (@collection.persisted? ? collection_path(@collection) : collections_path),
+      method: (@collection.persisted? ? :patch : :post) do |f| %>
   <%= render "shared/errors", record: @collection %>
   <div class="field">
     <%= f.label :name, "Collection name" %>
@@ -9,7 +13,7 @@
     <%= f.number_field :position, min: 0, step: 1, inputmode: "numeric", class: "num", aria: { describedby: "position_hint" } %>
     <small id="position_hint">Lower numbers appear first on your page.</small>
   </div>
-  <div class="form-actions">
+  <div class="actions" style="margin-top: 18px">
     <%= f.submit(@collection.persisted? ? "Save collection" : "Create collection", class: "button accent", data: { disable_with: "Saving…" }) %>
     <%= link_to "Cancel", dashboard_path, class: "button light" %>
   </div>

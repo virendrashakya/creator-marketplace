@@ -1,0 +1,64 @@
+<% content_for :title, "Blocked accounts | Wishful" %>
+<% content_for :head do %>
+  <link rel="stylesheet" href="/assets/dashboard.css">
+<% end %>
+
+<div class="page" style="max-width: 640px">
+  <%= link_to dashboard_path, class: "btn-back" do %><span aria-hidden="true">←</span> Dashboard<% end %>
+  <h1 style="margin: 8px 0 6px">Blocked accounts</h1>
+  <p class="lede" style="max-width: 54ch">Blocked people cannot comment, book a slot, or submit a payment claim. They will not be told.</p>
+
+  <div class="card" style="margin-top: 22px">
+    <%= form_with model: @creator_block || current_user.creator_blocks.new(identifier_type: "username"),
+          url: creator_blocks_path do |f| %>
+      <%= render "shared/errors", record: (@creator_block || current_user.creator_blocks.new) %>
+
+      <div class="field-row">
+        <div class="field">
+          <%= f.label :identifier_type, "What kind" %>
+          <%= f.select :identifier_type, [ [ "Handle", "username" ], [ "Email", "email" ], [ "Phone", "phone" ] ] %>
+        </div>
+        <div class="field">
+          <%= f.label :identifier_value, "Handle, email or phone" %>
+          <%= f.text_field :identifier_value, translate: "no", class: "mono",
+                placeholder: "@someone or an email",
+                spellcheck: false, autocapitalize: "off", autocomplete: "off" %>
+        </div>
+      </div>
+
+      <div class="field">
+        <%= f.label :reason, "Reason, for your own records" %>
+        <%= f.text_field :reason, placeholder: "Fake UTRs" %>
+      </div>
+
+      <%= f.submit "Block this account", class: "btn", data: { disable_with: "Blocking…" } %>
+    <% end %>
+
+    <div style="border-top: 1px solid var(--track); padding-top: 14px; margin-top: 18px">
+      <% if @blocks.any? %>
+        <div class="stack" style="gap: 8px">
+          <% @blocks.each do |block| %>
+            <div class="reviewed-row">
+              <div class="min0" style="flex: 1 1 180px">
+                <div class="mono break" style="font-size: 14px" translate="no">
+                  <%= block.identifier_type == "username" ? "@#{block.identifier_value}" : block.identifier_value %>
+                </div>
+                <div class="muted break" style="font-size: 13px; margin-top: 3px">
+                  <%= block.reason.presence || "No reason given" %>
+                </div>
+              </div>
+              <%= button_to "Unblock", creator_block_path(block), method: :delete,
+                    class: "btn btn--light btn--small",
+                    form: { data: { turbo_confirm: "Unblock this account? They will be able to comment and pay again." } } %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="empty" style="text-align: center">
+          <div class="empty-title">Nobody blocked</div>
+          <div class="empty-body">Good sign. Hopefully it stays this way.</div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

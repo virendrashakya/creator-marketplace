@@ -3,227 +3,153 @@
   <link rel="stylesheet" href="/assets/dashboard.css">
 <% end %>
 
-<div class="page">
+<div class="page dash">
   <div class="dash-head">
     <div class="min0">
-      <h1>Your page</h1>
-      <p class="muted">Live at <%= link_to "@#{current_user.handle}", profile_path(current_user.handle) %></p>
+      <h1>Hello, <%= current_user.name.to_s.split.first.presence || current_user.handle %></h1>
+      <%= link_to "wishful.app/@#{current_user.handle}", profile_path(current_user.handle), class: "dash-link" %>
     </div>
-    <div class="actions actions--end">
-      <% if @pending_claim_count.to_i.positive? %>
-        <%= link_to payment_claims_path, class: "button accent" do %>
-          Confirm <%= pluralize(@pending_claim_count, "payment") %>
-        <% end %>
-      <% end %>
-      <%= link_to "Add recommendation", new_product_link_path, class: @pending_claim_count.to_i.positive? ? "button light" : "button accent" %>
-      <details class="dash-menu">
-        <summary>Add something else</summary>
-        <div class="dash-menu-panel">
-          <%= link_to "Write a post", new_creator_post_path %>
-          <%= link_to "Sell a photo or video", new_paid_media_post_path %>
-          <%= link_to "Make a media collection", new_paid_media_collection_path %>
-          <%= link_to "Offer a meetup", new_meet_offer_path %>
-          <%= link_to "Sell your contact details", new_contact_reveal_path %>
-          <%= link_to "Start a gifting wishlist", new_wishlist_path %>
-          <%= link_to "Create a subscription plan", new_subscription_plan_path %>
-          <%= link_to "Group links into a collection", new_collection_path %>
-          <%= link_to "Edit profile and payments", creator_settings_path %>
-          <%= link_to "Blocked accounts", creator_blocks_path %>
-          <% unless @pending_claim_count.to_i.positive? %>
-            <%= link_to "Payments to confirm", payment_claims_path %>
-          <% end %>
-        </div>
-      </details>
-    </div>
+    <%= link_to "View my page", profile_path(current_user.handle), class: "btn btn--light" %>
   </div>
+
+  <% if @pending_claim_count.to_i.positive? %>
+    <%= link_to payment_claims_path, class: "pending-alert" do %>
+      <span class="actions" style="gap: 12px; flex-wrap: nowrap">
+        <span class="pending-dot" aria-hidden="true"></span>
+        <span class="min0">
+          <span class="pending-title"><%= pluralize(@pending_claim_count, "payment") %> waiting for you</span>
+          <span class="pending-sub">Check each reference against your bank statement before approving.</span>
+        </span>
+      </span>
+      <span class="pending-cta">Review now</span>
+    <% end %>
+  <% end %>
 
   <section class="stats">
-    <div>
+    <div class="stat">
+      <div class="stat-label">Recommendations</div>
       <strong class="stat-value"><%= number_with_delimiter(@links.count) %></strong>
-      <span class="stat-label">recommendations</span>
+      <div class="stat-sub">across <%= pluralize(@collections.size, "collection") %></div>
     </div>
-    <div>
+    <div class="stat">
+      <div class="stat-label">Referral clicks</div>
       <strong class="stat-value"><%= number_with_delimiter(@total_clicks) %></strong>
-      <span class="stat-label">link clicks</span>
+      <div class="stat-sub">all time</div>
     </div>
-    <div>
+    <div class="stat">
+      <div class="stat-label">Approved on UPI</div>
       <strong class="stat-value"><%= money(@paid_media_revenue) %></strong>
-      <span class="stat-label">paid media, test mode</span>
+      <div class="stat-sub">test mode</div>
     </div>
   </section>
 
-  <div class="dash-grid">
-    <div class="panel">
-      <div class="section-head">
-        <h2>Collections</h2>
-        <%= link_to "New", new_collection_path, class: "muted" %>
-      </div>
-      <% if @collections.any? %>
-        <% @collections.each do |collection| %>
-          <div class="row">
-            <div class="min0">
-              <div class="row-title break"><%= collection.name %></div>
-              <div class="row-meta"><%= pluralize(collection.product_links.size, "link") %></div>
-            </div>
-            <div class="actions actions--end">
-              <%= link_to "Edit", edit_collection_path(collection) %>
-              <%= button_to "Delete", collection_path(collection), method: :delete, class: "danger", form: { data: { turbo_confirm: "Delete the collection “#{collection.name}”? The links inside it stay on your page." } } %>
-            </div>
-          </div>
-        <% end %>
-      <% else %>
-        <div class="empty"><strong>No collections yet.</strong> Group your links by theme so your page is easier to scan.</div>
-      <% end %>
+  <%# Grouped by what the creator is adding, not by which form it opens. %>
+  <section class="card">
+    <div class="section-head">
+      <h2>Add to your page</h2>
+      <span class="muted" style="font-size: 13.5px">Pick what you are adding, not which form to open</span>
     </div>
-
-    <div class="panel">
-      <div class="section-head">
-        <h2>Recommendations</h2>
-        <%= link_to "Add", new_product_link_path, class: "muted" %>
-      </div>
-      <% if @links.any? %>
-        <% @links.each do |link| %>
-          <div class="row row--media">
-            <% if link.image_url.present? %>
-              <%= image_tag link.image_url, class: "row-thumb", alt: "", width: 104, height: 104, loading: "lazy" %>
-            <% else %>
-              <span class="row-thumb" aria-hidden="true"></span>
+    <div class="create-groups">
+      <% [
+        [ "Things you back", "Links out, with your reason attached.",
+          [ [ "Recommendation", new_product_link_path ], [ "Collection", new_collection_path ] ] ],
+        [ "Things you sell", "Paid once, unlocked after you approve.",
+          [ [ "Paid photo or video", new_paid_media_post_path ], [ "Media collection", new_paid_media_collection_path ], [ "Subscription plan", new_subscription_plan_path ] ] ],
+        [ "Your time and reach", "Slots and contact details behind a payment.",
+          [ [ "Meetup with slots", new_meet_offer_path ], [ "Contact reveal", new_contact_reveal_path ] ] ],
+        [ "Asks and updates", "Funding goals and what you post.",
+          [ [ "Gift wishlist", new_wishlist_path ], [ "Post", new_creator_post_path ] ] ]
+      ].each do |name, desc, actions| %>
+        <div class="create-group">
+          <div>
+            <div class="create-group-name"><%= name %></div>
+            <div class="create-group-desc"><%= desc %></div>
+          </div>
+          <div class="stack" style="gap: 6px">
+            <% actions.each do |label, path| %>
+              <%= link_to path, class: "create-action" do %>
+                <span class="min0 break"><%= label %></span>
+                <span class="plus" aria-hidden="true">+</span>
+              <% end %>
             <% end %>
-            <div class="min0">
-              <div class="row-title break">
-                <% if link.featured? %><span class="vouch-flag" aria-hidden="true"></span><span class="visually-hidden">Featured. </span><% end %>
-                <%= link.title %>
-              </div>
-              <div class="row-meta break">
-                <%= [ link.merchant.presence, link.price.presence, link.link_collection&.name, pluralize(link.clicks_count, "click") ].compact.join(" · ") %>
-              </div>
-            </div>
-            <div class="actions actions--end">
-              <%= link_to "Edit", edit_product_link_path(link) %>
-              <%= button_to "Delete", product_link_path(link), method: :delete, class: "danger", form: { data: { turbo_confirm: "Delete “#{link.title}” from your page?" } } %>
-            </div>
           </div>
-        <% end %>
-      <% else %>
-        <div class="empty"><strong>Nothing here yet.</strong> <%= link_to "Add the first thing you recommend", new_product_link_path %>.</div>
+        </div>
       <% end %>
     </div>
+  </section>
+
+  <div class="section-head" style="margin-bottom: 0">
+    <h2>What is on your page</h2>
   </div>
 
-  <section class="panel">
-    <div class="section-head">
-      <h2>Subscription plans</h2>
-      <%= link_to "New plan", new_subscription_plan_path, class: "muted" %>
-    </div>
-    <% if current_user.subscription_plans.any? %>
-      <% current_user.subscription_plans.each do |plan| %>
-        <div class="row">
-          <div class="min0">
-            <div class="row-title break"><%= plan.name %></div>
-            <div class="row-meta"><%= money(plan.price_cents, plan.currency) %> a month<%= plan.active? ? "" : " · paused" %></div>
-          </div>
-          <div class="actions actions--end">
-            <%= link_to "Edit", edit_subscription_plan_path(plan) %>
-            <%= button_to "Delete", subscription_plan_path(plan), method: :delete, class: "danger", form: { data: { turbo_confirm: "Delete the plan “#{plan.name}”?" } } %>
-          </div>
-        </div>
-      <% end %>
-    <% else %>
-      <div class="empty"><strong>No plans yet.</strong> Charge monthly, then attach media or collections to the plan.</div>
-    <% end %>
+  <section class="managed">
+    <%= render "dashboard/managed", name: "Recommendations", count: pluralize(@links.size, "live"),
+          empty_title: "Nothing recommended yet",
+          empty_body: "The thing you keep getting asked about. Start there.",
+          empty_cta: "Add a recommendation", empty_path: new_product_link_path,
+          rows: @links.map { |l| { title: l.title, badge: l.merchant.presence, badge_kind: "merchant",
+                                   meta: pluralize(l.clicks_count, "click"), image: l.image_url,
+                                   edit: edit_product_link_path(l), delete: product_link_path(l),
+                                   confirm: "Delete “#{l.title}” from your page?" } } %>
+
+    <%= render "dashboard/managed", name: "Collections", count: @collections.size.to_s,
+          empty_title: "No collections yet",
+          empty_body: "Group your links by theme so the page is easier to scan.",
+          empty_cta: "Create a collection", empty_path: new_collection_path,
+          rows: @collections.map { |c| { title: c.name, badge: "Live", badge_kind: "plain",
+                                         meta: pluralize(c.product_links.size, "item"),
+                                         edit: edit_collection_path(c), delete: collection_path(c),
+                                         confirm: "Delete the collection “#{c.name}”? The links inside it stay." } } %>
+
+    <%= render "dashboard/managed", name: "Paid media", count: @paid_posts.size.to_s,
+          empty_title: "No paid media yet",
+          empty_body: "Put a photo or video behind a one time unlock.",
+          empty_cta: "Add paid media", empty_path: new_paid_media_post_path,
+          rows: @paid_posts.map { |p| { title: p.title, badge: p.published? ? "Live" : "Hidden",
+                                        badge_kind: p.published? ? "plain" : "hidden",
+                                        meta: p.price_label,
+                                        edit: edit_paid_media_post_path(p), delete: paid_media_post_path(p),
+                                        confirm: "Delete “#{p.title}”?" } } %>
+
+    <%= render "dashboard/managed", name: "Meetups and reveals",
+          count: (@meet_offers.size + @contact_reveals.size).to_s,
+          empty_title: "Nothing offered yet",
+          empty_body: "Sell a meetup, or let people pay to reach you directly.",
+          empty_cta: "Offer a meetup", empty_path: new_meet_offer_path,
+          rows: @meet_offers.map { |o| { title: o.title, badge: o.published? ? "Live" : "Hidden",
+                                         badge_kind: o.published? ? "plain" : "hidden",
+                                         meta: pluralize(o.meet_slots.count { |s| !s.booked? && s.starts_at > Time.current }, "slot open"),
+                                         edit: edit_meet_offer_path(o), delete: meet_offer_path(o),
+                                         confirm: "Delete the meetup “#{o.title}”?" } } +
+                @contact_reveals.map { |rv| { title: rv.label, badge: rv.published? ? "Live" : "Hidden",
+                                         badge_kind: rv.published? ? "plain" : "hidden",
+                                         meta: rv.price_label,
+                                         edit: edit_contact_reveal_path(rv), delete: contact_reveal_path(rv),
+                                         confirm: "Delete the contact reveal “#{rv.label}”?" } } %>
+
+    <%= render "dashboard/managed", name: "Gift wishlists", count: current_user.wishlists.size.to_s,
+          empty_title: "No wishlists yet",
+          empty_body: "Let your audience fund something you are saving for.",
+          empty_cta: "Start a wishlist", empty_path: new_wishlist_path,
+          rows: current_user.wishlists.map { |w| { title: w.title, badge: w.published? ? "Live" : "Hidden",
+                                         badge_kind: w.published? ? "plain" : "hidden",
+                                         meta: pluralize(w.wishlist_items.size, "item"),
+                                         edit: edit_wishlist_path(w), delete: nil,
+                                         extra_label: "Add item", extra_path: new_wishlist_wishlist_item_path(w) } } %>
+
+    <%= render "dashboard/managed", name: "Subscription plans", count: current_user.subscription_plans.size.to_s,
+          empty_title: "No monthly plan yet",
+          empty_body: "The people who buy every drop would rather pay you once a month. Start with one tier.",
+          empty_cta: "Create a plan", empty_path: new_subscription_plan_path,
+          rows: current_user.subscription_plans.map { |p| { title: p.name, badge: p.active? ? "Open" : "Paused",
+                                         badge_kind: p.active? ? "plain" : "hidden",
+                                         meta: "#{money(p.price_cents, p.currency)} a month",
+                                         edit: edit_subscription_plan_path(p), delete: subscription_plan_path(p),
+                                         confirm: "Delete the plan “#{p.name}”?" } } %>
   </section>
 
-  <section class="panel">
-    <div class="section-head">
-      <h2>Gifting wishlists</h2>
-      <%= link_to "New wishlist", new_wishlist_path, class: "muted" %>
-    </div>
-    <% if current_user.wishlists.any? %>
-      <% current_user.wishlists.each do |wishlist| %>
-        <div class="row">
-          <div class="min0">
-            <div class="row-title break"><%= wishlist.title %></div>
-            <div class="row-meta"><%= pluralize(wishlist.wishlist_items.size, "gift") %></div>
-          </div>
-          <div class="actions actions--end">
-            <%= link_to "Add item", new_wishlist_wishlist_item_path(wishlist) %>
-            <%= link_to "Edit", edit_wishlist_path(wishlist) %>
-          </div>
-        </div>
-      <% end %>
-    <% else %>
-      <div class="empty"><strong>No wishlists yet.</strong> Let your audience fund something you are saving for.</div>
-    <% end %>
-  </section>
-
-  <section class="panel">
-    <div class="section-head">
-      <h2>Meetups and contact</h2>
-      <span class="actions">
-        <%= link_to "New meetup", new_meet_offer_path, class: "muted" %>
-        <%= link_to "New contact reveal", new_contact_reveal_path, class: "muted" %>
-      </span>
-    </div>
-    <% if @meet_offers.any? || @contact_reveals.any? %>
-      <% @meet_offers.each do |offer| %>
-        <div class="row">
-          <div class="min0">
-            <div class="row-title break"><%= offer.title %></div>
-            <div class="row-meta">
-              <%= offer.price_label %> · <%= pluralize(offer.meet_slots.count { |slot| !slot.booked? && slot.starts_at > Time.current }, "open slot") %>
-              <% unless offer.published? %><span class="state state--hidden">Hidden</span><% end %>
-            </div>
-          </div>
-          <div class="actions actions--end">
-            <%= link_to "Edit", edit_meet_offer_path(offer) %>
-            <%= button_to "Delete", meet_offer_path(offer), method: :delete, class: "danger", form: { data: { turbo_confirm: "Delete the meetup “#{offer.title}”?" } } %>
-          </div>
-        </div>
-      <% end %>
-      <% @contact_reveals.each do |reveal| %>
-        <div class="row">
-          <div class="min0">
-            <div class="row-title break"><%= reveal.label %></div>
-            <div class="row-meta">
-              <%= reveal.price_label %> · <%= pluralize(reveal.access_purchases.count { |p| p.status == "paid" }, "reveal") %>
-              <% unless reveal.published? %><span class="state state--hidden">Hidden</span><% end %>
-            </div>
-          </div>
-          <div class="actions actions--end">
-            <%= link_to "Edit", edit_contact_reveal_path(reveal) %>
-            <%= button_to "Delete", contact_reveal_path(reveal), method: :delete, class: "danger", form: { data: { turbo_confirm: "Delete the contact reveal “#{reveal.label}”?" } } %>
-          </div>
-        </div>
-      <% end %>
-    <% else %>
-      <div class="empty"><strong>Nothing offered yet.</strong> Sell a meetup, or let people pay to reach you directly.</div>
-    <% end %>
-  </section>
-
-  <section class="panel">
-    <div class="section-head">
-      <h2>Paid media</h2>
-      <%= link_to "New paid post", new_paid_media_post_path, class: "muted" %>
-    </div>
-    <% if @paid_posts.any? %>
-      <% @paid_posts.each do |post| %>
-        <div class="row row--media">
-          <span class="row-thumb" aria-hidden="true"></span>
-          <div class="min0">
-            <div class="row-title break"><%= post.title %></div>
-            <div class="row-meta">
-              <%= post.price_label %> · <%= pluralize(post.media_purchases.count { |p| p.status == "paid" }, "unlock") %>
-              <% unless post.published? %><span class="state state--hidden">Hidden</span><% end %>
-            </div>
-          </div>
-          <div class="actions actions--end">
-            <%= link_to "Edit", edit_paid_media_post_path(post) %>
-            <%= button_to "Delete", paid_media_post_path(post), method: :delete, class: "danger", form: { data: { turbo_confirm: "Delete “#{post.title}”?" } } %>
-          </div>
-        </div>
-      <% end %>
-    <% else %>
-      <div class="empty"><strong>No paid media yet.</strong> Put a photo or video behind a one-time unlock.</div>
-    <% end %>
-  </section>
+  <div class="actions">
+    <%= link_to "Settings", creator_settings_path, class: "btn btn--light" %>
+    <%= link_to "Blocked accounts", creator_blocks_path, class: "btn btn--light" %>
+  </div>
 </div>

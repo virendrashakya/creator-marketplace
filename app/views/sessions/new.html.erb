@@ -1,21 +1,38 @@
 <% content_for :title, "Sign in | Wishful" %>
-<div class="page">
-  <section class="auth">
-    <h1>Welcome back</h1>
-    <p class="muted">Sign in to manage your page and confirm payments.</p>
-    <%= form_with url: sign_in_path do |f| %>
-      <div class="field">
-        <%= f.label :email, "Email" %>
-        <%= f.email_field :email, autocomplete: "email", spellcheck: false, autocapitalize: "off", required: true %>
-      </div>
-      <div class="field">
-        <%= f.label :password, "Password" %>
-        <%= f.password_field :password, autocomplete: "current-password", required: true %>
-      </div>
-      <div class="form-actions">
-        <%= f.submit "Sign in", class: "button accent", data: { disable_with: "Signing in…" } %>
-      </div>
-    <% end %>
-    <p class="muted" style="margin-top: var(--gap-3)">New here? <%= link_to "Make your page", sign_up_path %></p>
-  </section>
+<% content_for :head do %>
+  <link rel="stylesheet" href="/assets/home.css">
+<% end %>
+
+<div class="auth-split">
+  <div class="auth-form">
+    <div class="auth-form-inner">
+      <h1>Welcome back</h1>
+      <p>Sign in to check your payments and update your page.</p>
+
+      <%= form_with url: sign_in_path do |f| %>
+        <div class="field">
+          <%= f.label :email, "Email" %>
+          <%= f.email_field :email, placeholder: "you@email.com", autocomplete: "email",
+                spellcheck: false, autocapitalize: "off", required: true %>
+        </div>
+        <div class="field">
+          <%= f.label :password, "Password" %>
+          <%= f.password_field :password, placeholder: "Your password",
+                autocomplete: "current-password", required: true %>
+        </div>
+        <%= f.submit "Sign in", class: "btn btn--accent btn--big btn--block",
+              data: { disable_with: "Signing in…" } %>
+      <% end %>
+
+      <p class="muted" style="margin-top: 16px; font-size: 14px">New here? <%= link_to "Claim your handle", sign_up_path %></p>
+    </div>
+  </div>
+
+  <div class="auth-aside">
+    <div class="auth-aside-inner">
+      <div class="auth-aside-title">Your handle is the whole address. Short, lowercase, yours.</div>
+      <div class="auth-aside-url">wishful.app/@yourname</div>
+      <div class="auth-aside-note">Everything you recommend and sell lives at one link, and the money goes straight to your UPI ID.</div>
+    </div>
+  </div>
 </div>

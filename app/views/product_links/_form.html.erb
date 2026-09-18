@@ -25,11 +25,11 @@
     <%= f.label :link_collection_id, "Collection" %>
     <%= f.collection_select :link_collection_id, current_user.link_collections, :id, :name, { include_blank: "No collection" } %>
   </div>
-  <label class="check">
+  <label class="toggle-wrap">
     <%= f.check_box :featured %>
     Pin this to the top of my page
   </label>
-  <div class="form-actions">
+  <div class="actions" style="margin-top: 18px">
     <%= f.submit(@product_link.persisted? ? "Save recommendation" : "Add recommendation", class: "button accent", data: { disable_with: "Saving…" }) %>
     <%= link_to "Cancel", dashboard_path, class: "button light" %>
   </div>

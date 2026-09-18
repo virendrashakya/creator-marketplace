@@ -1,4 +1,6 @@
 class WishlistItem < ApplicationRecord
+  include MoneyFormatting
+
   belongs_to :wishlist
   has_many :gift_contributions, dependent: :destroy
 
@@ -25,8 +27,7 @@ class WishlistItem < ApplicationRecord
   end
 
   def money_label(cents)
-    symbol = currency == "INR" ? "₹" : "$"
-    "#{symbol}#{format('%.2f', cents.to_i / 100.0).sub(/\.00\z/, '')}"
+    money_label_for(cents)
   end
 
   # Recomputed from the contributions rather than incremented, so it stays

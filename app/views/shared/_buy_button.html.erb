@@ -1,23 +1,16 @@
 <%#
   One entry point for every paid action. Routes to the creator's UPI payment
   page when they accept manual payments, otherwise falls back to the existing
-  test-mode stub. A real gateway becomes a third branch here.
-
-  The price sits in its own slot rather than being joined to the label with a
-  separator, so the button reads as one action with a cost, not a meta string.
+  test-mode stub.
 %>
 <% if !signed_in? %>
-  <%= link_to sign_in_path, class: "button accent small buy" do %>
-    <span><%= signed_out_label %></span><span class="buy-price num"><%= price_label %></span>
-  <% end %>
+  <%= link_to signed_out_label, sign_in_path, class: "btn btn--accent btn--block" %>
 <% elsif creator.accepts_upi_manual? %>
-  <%= link_to new_payment_claim_path(purchasable_type: purchasable.class.name, purchasable_id: purchasable.id), class: "button accent small buy" do %>
-    <span><%= label %></span><span class="buy-price num"><%= price_label %></span>
-  <% end %>
+  <%= link_to label, new_payment_claim_path(purchasable_type: purchasable.class.name, purchasable_id: purchasable.id),
+        class: "btn btn--accent btn--block" %>
 <% elsif defined?(fallback_path) && fallback_path %>
-  <%= button_to fallback_path, class: "button accent small buy", form: { data: { turbo_submits_with: "Working…" } } do %>
-    <span><%= label %></span><span class="buy-price num"><%= price_label %></span>
-  <% end %>
+  <%= button_to label, fallback_path, class: "btn btn--accent btn--block",
+        form: { data: { turbo_submits_with: "Working…" } } %>
 <% else %>
-  <span class="muted" style="font-size: var(--t--1)"><%= creator.name %> has not set up payments yet. Check back soon.</span>
+  <span class="muted" style="font-size: 13.5px"><%= creator.name %> has not set up payments yet.</span>
 <% end %>

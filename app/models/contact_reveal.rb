@@ -1,4 +1,6 @@
 class ContactReveal < ApplicationRecord
+  include MoneyFormatting
+
   belongs_to :user
   has_many :access_purchases, as: :purchasable, dependent: :destroy
 
@@ -19,7 +21,6 @@ class ContactReveal < ApplicationRecord
   end
 
   def price_label
-    symbol = currency == "INR" ? "₹" : "$"
-    "#{symbol}#{format('%.2f', price_cents.to_i / 100.0).sub(/\.00\z/, '')}"
+    money_label_for(price_cents)
   end
 end

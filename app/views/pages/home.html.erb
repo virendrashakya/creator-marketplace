@@ -1,65 +1,85 @@
-<% content_for :title, "Wishful: things worth vouching for" %>
+<% content_for :title, "Wishful: one link for everything you recommend" %>
 <% content_for :head do %>
   <link rel="stylesheet" href="/assets/home.css">
 <% end %>
 
-<div class="page home">
-  <section class="hero">
-    <div class="hero-text">
-      <h1>The things you actually use, on one page people can pay you for.</h1>
-      <p class="hero-lede">Wishful is where you put the shampoo you repurchased, the lens you saved for, the café you send everyone to. Followers tap through, or pay you straight to your UPI.</p>
-      <div class="actions">
-        <%= link_to "Make your page", sign_up_path, class: "button accent" %>
-        <% if (sample = @creators.find { |creator| creator.product_links.any? } || @creators.first) %>
-          <%= link_to "See a real page", profile_path(sample.handle), class: "button light" %>
-        <% end %>
-      </div>
-      <p class="hero-fine muted">Free to start. No cut taken on gifts.</p>
+<section class="hero">
+  <div>
+    <h1>One link for everything you actually recommend.</h1>
+    <p class="hero-lede">Your thrift finds, your presets, your time, your wishlist. Fans pay you straight over UPI, into your own account. No gateway sitting in the middle, no cut of your money going anywhere else.</p>
+    <div class="actions">
+      <%= link_to "Claim your handle", sign_up_path, class: "btn btn--accent btn--big" %>
+      <% if (sample = @creators.find { |c| c.product_links.any? } || @creators.first) %>
+        <%= link_to "See a live page", profile_path(sample.handle), class: "btn btn--ghost btn--big" %>
+      <% end %>
     </div>
+    <div class="hero-facts">
+      <span>GPay, PhonePe, Paytm</span>
+      <span>settles to your UPI ID</span>
+    </div>
+  </div>
 
-    <%# The hero is a real vouch row at full size. It is the thing the product makes,
-        shown in its own vernacular, rather than a phone mockup. %>
-    <figure class="hero-sample" aria-labelledby="sample-cap">
-      <div class="sample-row">
-        <div class="sample-thumb" aria-hidden="true">◍</div>
-        <div class="min0">
-          <p class="sample-reason">“Carried it every day for eight months and the strap still hasn’t gone soft.”</p>
-          <div class="sample-title">The everyday tote</div>
-          <div class="sample-merchant">Zouk</div>
-        </div>
-        <div class="sample-price num">₹2,499</div>
+  <%# The artefact the product makes: a creator page, and the receipt it produces. %>
+  <div class="hero-art" aria-hidden="true">
+    <div class="phone">
+      <div class="phone-banner">
+        <div class="phone-avatar">A</div>
       </div>
-      <div class="sample-row sample-row--gift">
-        <div class="sample-thumb" aria-hidden="true">◍</div>
-        <div class="min0">
-          <p class="sample-reason">“Saving for this one. Gifts go straight to my UPI.”</p>
-          <div class="sample-title">35mm lens</div>
-          <div class="sample-meter" role="img" aria-label="62 percent funded">
-            <span style="width:62%"></span>
+      <div class="phone-body">
+        <div class="phone-name">Ananya Rao</div>
+        <div class="phone-handle">@ananyarao</div>
+        <div class="phone-links">
+          <div class="phone-link">
+            <div class="phone-thumb"></div>
+            <div class="min0">
+              <div class="phone-link-title truncate">Levi's 501, 1990s</div>
+              <div class="phone-link-price">₹2,499</div>
+            </div>
           </div>
-          <div class="sample-merchant num">₹31,000 of ₹50,000</div>
+          <div class="phone-link">
+            <div class="phone-thumb"></div>
+            <div class="min0">
+              <div class="phone-link-title truncate">Closet audit, 40 min</div>
+              <div class="phone-link-price">₹1,200</div>
+            </div>
+          </div>
         </div>
-        <div class="sample-price num">Gift</div>
-      </div>
-      <figcaption id="sample-cap" class="muted">A page in progress, by @miraedits.</figcaption>
-    </figure>
-  </section>
-
-  <section class="facets">
-    <h2 class="facets-head">Made for recommendations, not for ads.</h2>
-    <div class="facet-grid">
-      <div class="facet">
-        <h3>Say why, not just what</h3>
-        <p>A link on its own persuades nobody. Every recommendation leads with your reason for it, in your words.</p>
-      </div>
-      <div class="facet">
-        <h3>Paid directly, by UPI</h3>
-        <p>Followers pay to your own UPI ID and send the reference number. You confirm it against your statement before anything unlocks.</p>
-      </div>
-      <div class="facet">
-        <h3>Gifts, meetups, and private posts</h3>
-        <p>Run a wishlist your audience can fund, sell a coffee and a portfolio review, or put a set of photos behind a one-time unlock.</p>
       </div>
     </div>
-  </section>
-</div>
+
+    <div class="slip">
+      <div class="slip-label">Payment received</div>
+      <div class="slip-amount">₹2,499</div>
+      <div class="slip-lines">
+        <div class="slip-line"><span>UTR</span><span>402913887561</span></div>
+        <div class="slip-line"><span>IST</span><span>19 Sep, 4:12 pm</span></div>
+      </div>
+      <div class="badge badge--ok" style="margin-top: 12px">Approved by you</div>
+    </div>
+  </div>
+</section>
+
+<section class="steps-band">
+  <div class="steps-inner">
+    <h2>How the money reaches you</h2>
+    <p class="steps-lede">Four steps, and you are the one who says yes at the end.</p>
+    <ol class="steps">
+      <li class="step">
+        <div class="step-title">They tap and see your QR</div>
+        <div class="step-body">Your UPI ID, your QR, your payee name. Nothing of ours in between.</div>
+      </li>
+      <li class="step">
+        <div class="step-title">They pay from their app</div>
+        <div class="step-body">GPay, PhonePe, Paytm, whatever they already use. Straight to your bank.</div>
+      </li>
+      <li class="step">
+        <div class="step-title">They send you the UTR</div>
+        <div class="step-body">The 12 digit reference their app shows, plus a screenshot if they want.</div>
+      </li>
+      <li class="step">
+        <div class="step-title">You approve it</div>
+        <div class="step-body">Check it against your statement, tap approve, and their access opens instantly.</div>
+      </li>
+    </ol>
+  </div>
+</section>

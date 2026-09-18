@@ -1,4 +1,6 @@
 class PaidMediaPost < ApplicationRecord
+  include MoneyFormatting
+
   belongs_to :user
   belongs_to :paid_media_collection, optional: true
   belongs_to :subscription_plan, optional: true
@@ -31,8 +33,7 @@ class PaidMediaPost < ApplicationRecord
   def price_label
     return subscription_plan&.name.presence || "Members only" if price_cents.blank?
 
-    symbol = currency == "INR" ? "₹" : "$"
-    "#{symbol}#{format('%.2f', price_cents / 100.0).sub(/\.00\z/, '')}"
+    money_label_for(price_cents)
   end
 
   private

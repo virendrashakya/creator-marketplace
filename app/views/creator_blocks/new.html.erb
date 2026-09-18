@@ -1,0 +1,32 @@
+<% content_for :title, "Block an account | Wishful" %>
+<% content_for :head do %>
+  <link rel="stylesheet" href="/assets/dashboard.css">
+<% end %>
+
+<div class="page page--form">
+  <%= link_to creator_blocks_path, class: "btn-back" do %><span aria-hidden="true">←</span> Blocked accounts<% end %>
+  <h1 style="margin: 8px 0 22px">Block an account</h1>
+
+  <section class="card">
+    <%= form_with model: @creator_block, url: creator_blocks_path do |f| %>
+      <%= render "shared/errors", record: @creator_block %>
+      <div class="field">
+        <%= f.label :identifier_type, "What kind" %>
+        <%= f.select :identifier_type, [ [ "Handle", "username" ], [ "Email", "email" ], [ "Phone", "phone" ] ] %>
+      </div>
+      <div class="field">
+        <%= f.label :identifier_value, "Handle, email or phone" %>
+        <%= f.text_field :identifier_value, translate: "no", class: "mono",
+              spellcheck: false, autocapitalize: "off", autocomplete: "off" %>
+      </div>
+      <div class="field">
+        <%= f.label :reason, "Reason, for your own records" %>
+        <%= f.text_field :reason, placeholder: "Fake UTRs" %>
+      </div>
+      <div class="actions" style="margin-top: 18px">
+        <%= f.submit "Block this account", class: "btn btn--accent", data: { disable_with: "Blocking…" } %>
+        <%= link_to "Cancel", creator_blocks_path, class: "btn btn--light" %>
+      </div>
+    <% end %>
+  </section>
+</div>

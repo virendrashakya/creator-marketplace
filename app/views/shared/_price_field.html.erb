@@ -1,7 +1,6 @@
 <%#
-  Amounts are stored in minor units (paise/cents). A bare number field labelled
-  "(paise)" invites someone to type 499 and charge ₹4.99, so the unit is shown
-  on the input itself and restated as a worked example beneath it.
+  Amounts are stored in minor units. The canvas solves the paise trap with a
+  currency button, the unit on the right, and a live echo of what a fan pays.
 %>
 <% currency = record.try(:currency).presence || "INR" %>
 <% unit = minor_unit_hint(currency) %>
@@ -9,12 +8,17 @@
 <% hint_id = "#{field_id}_hint" %>
 <div class="field">
   <%= f.label field, label, for: field_id %>
-  <div class="money-input">
-    <span class="money-unit" aria-hidden="true"><%= currency == "USD" ? "$" : "₹" %></span>
-    <%= f.number_field field, id: field_id, min: 1, step: 1, inputmode: "numeric", class: "num",
+  <div class="input-group input-group--money">
+    <span class="addon addon--left" aria-hidden="true"><%= currency == "USD" ? "$" : "₹" %></span>
+    <%= f.number_field field, id: field_id, min: 1, step: 1, inputmode: "numeric",
           placeholder: placeholder, aria: { describedby: hint_id } %>
+    <span class="addon addon--right"><%= unit %></span>
   </div>
-  <small id="<%= hint_id %>">
-    In <%= unit %>: enter <%= number_with_delimiter(100_000) %> for <%= money(100_000, currency) %>.
-  </small>
+  <div class="money-echo" id="<%= hint_id %>">
+    <span aria-hidden="true">=</span>
+    <div>
+      A fan pays <strong><%= money(100_000, currency) %></strong> when you enter <%= number_with_delimiter(100_000) %>.
+      <span class="stored">Stored in <%= unit %>.</span>
+    </div>
+  </div>
 </div>

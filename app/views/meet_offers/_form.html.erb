@@ -23,11 +23,11 @@
       <%= f.number_field :duration_minutes, min: 1, step: 1, inputmode: "numeric", class: "num", placeholder: "30" %>
     </div>
   </div>
-  <label class="check">
+  <label class="toggle-wrap">
     <%= f.check_box :published %>
     Show this on my page
   </label>
-  <div class="form-actions">
+  <div class="actions" style="margin-top: 18px">
     <%= f.submit(@meet_offer.persisted? ? "Save meetup" : "Create meetup", class: "button accent", data: { disable_with: "Saving…" }) %>
     <%= link_to "Cancel", dashboard_path, class: "button light" %>
   </div>

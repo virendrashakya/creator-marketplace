@@ -1,16 +1,21 @@
 <% revealed = card.revealed_for?(current_user) %>
-<article class="offer">
-  <span class="vouch-thumb" aria-hidden="true">◍</span>
-  <div class="min0">
-    <div class="offer-title break"><%= card.label %></div>
+<article class="reveal">
+  <div class="min0" style="flex: 1 1 240px">
+    <div class="reveal-label break"><%= card.label %></div>
+    <div class="reveal-value ref" translate="no">
+      <%= revealed ? card.secret_value : "+91 98••• •••••" %>
+    </div>
+    <div class="reveal-note">
+      <%= revealed ? "Revealed to you" : "Unlocks after #{card.user.name.split.first} approves your payment" %>
+    </div>
+  </div>
+  <div style="flex: none">
     <% if revealed %>
-      <div class="offer-note ref"><%= card.secret_value %></div>
-      <div class="offer-actions"><span class="state state--confirmed">Revealed</span></div>
+      <span class="badge badge--ok">Revealed</span>
     <% else %>
-      <div class="offer-note">Shown to you as soon as <%= card.user.name %> confirms your payment.</div>
-      <div class="offer-actions">
-        <%= render "shared/buy_button", purchasable: card, creator: card.user, label: "Reveal", signed_out_label: "Sign in to reveal", price_label: card.price_label, fallback_path: purchase_contact_reveal_path(card) %>
-      </div>
+      <%= render "shared/buy_button", purchasable: card, creator: card.user,
+            label: "Unlock for #{card.price_label}", signed_out_label: "Sign in to unlock",
+            price_label: card.price_label, fallback_path: purchase_contact_reveal_path(card) %>
     <% end %>
   </div>
 </article>

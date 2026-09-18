@@ -1,63 +1,57 @@
 <% raised = item.raised_cents %>
-<% remaining = item.remaining_cents %>
 <% target = item.target_cents.to_i %>
+<% remaining = item.remaining_cents %>
 <% pct = target.positive? ? [ raised * 100 / target, 100 ].min : 0 %>
-<article class="offer">
-  <% if item.image_url.present? %>
-    <%= image_tag item.image_url, class: "vouch-thumb", alt: "", width: 136, height: 136, loading: "lazy" %>
-  <% else %>
-    <span class="vouch-thumb" aria-hidden="true">◍</span>
-  <% end %>
-  <div class="min0">
-    <div class="offer-title break"><%= item.title %></div>
-    <% if item.note.present? %><div class="offer-note clamp-2"><%= item.note %></div><% end %>
+<% funded = item.remaining_cents.zero? %>
+<article class="wish">
+  <div>
+    <div class="wish-title break"><%= item.title %></div>
+    <% if item.note.present? %><div class="wish-note clamp-2"><%= item.note %></div><% end %>
+  </div>
 
-    <div class="gift-meter">
-      <div class="gift-meter-fill" style="width: <%= pct %>%"></div>
+  <div>
+    <div class="wish-figures">
+      <span class="wish-raised"><%= item.money_label(raised) %></span>
+      <span class="wish-of">of <%= item.money_label(target) %></span>
     </div>
-    <div class="gift-figures">
-      <strong><%= item.money_label(raised) %></strong> of <%= item.money_label(target) %>
+    <div class="wish-track">
+      <div class="wish-bar <%= "wish-bar--funded" if funded %>" style="width: <%= pct %>%"></div>
+    </div>
+    <div class="wish-status <%= "wish-status--funded" if funded %>">
+      <% if funded %>
+        Funded, thank you
+      <% elsif raised.zero? %>
+        Nothing yet, be the first
+      <% else %>
+        <%= item.money_label(remaining) %> still needed
+      <% end %>
       <span class="visually-hidden">(<%= pct %> percent funded)</span>
     </div>
+  </div>
 
-    <% if item.open_for_gifts? %>
-      <% if signed_in? && item.wishlist.user.accepts_upi_manual? %>
-        <div class="offer-actions">
-          <%= link_to new_payment_claim_path(purchasable_type: "WishlistItem", purchasable_id: item.id), class: "button accent small" do %>
-            Gift by UPI
-          <% end %>
-          <span class="muted" style="font-size: var(--t--1)"><%= item.money_label(remaining) %> to go</span>
+  <% if item.open_for_gifts? %>
+    <% if signed_in? && item.wishlist.user.accepts_upi_manual? %>
+      <%= link_to "Gift towards this", new_payment_claim_path(purchasable_type: "WishlistItem", purchasable_id: item.id),
+            class: "btn btn--accent btn--block" %>
+    <% elsif signed_in? %>
+      <%= form_with url: contribute_wishlist_item_path(item), method: :post do %>
+        <div class="field">
+          <%= label_tag "gift_amount_#{item.id}", "Amount (#{minor_unit_hint(item.currency)})", class: "field-label" %>
+          <%= number_field_tag :amount_cents, remaining, id: "gift_amount_#{item.id}",
+                min: 1, max: remaining, step: 1, inputmode: "numeric", class: "num",
+                aria: { describedby: "gift_hint_#{item.id}" } %>
+          <small id="gift_hint_<%= item.id %>"><%= item.money_label(remaining) %> is <%= number_with_delimiter(remaining) %> <%= minor_unit_hint(item.currency) %>.</small>
         </div>
-      <% elsif signed_in? %>
-        <%= form_with url: contribute_wishlist_item_path(item), method: :post, class: "gift-form" do %>
-          <div class="field">
-            <%= label_tag "gift_amount_#{item.id}", "Amount (#{minor_unit_hint(item.currency)})" %>
-            <%= number_field_tag :amount_cents, remaining,
-                  id: "gift_amount_#{item.id}",
-                  min: 1, max: remaining, step: 1,
-                  inputmode: "numeric",
-                  class: "gift-amount num",
-                  aria: { describedby: "gift_hint_#{item.id}" } %>
-          </div>
-          <div class="field gift-note">
-            <%= label_tag "gift_message_#{item.id}", "Note (optional)" %>
-            <%= text_field_tag :message, nil,
-                  id: "gift_message_#{item.id}",
-                  maxlength: 200,
-                  placeholder: "Happy birthday…" %>
-          </div>
-          <%= submit_tag "Gift", class: "button accent small", data: { disable_with: "Gifting…" } %>
-          <p id="gift_hint_<%= item.id %>" class="muted" style="font-size: 0.75rem; flex-basis: 100%">
-            <%= item.money_label(remaining) %> still needed. That is <%= number_with_delimiter(remaining) %> <%= minor_unit_hint(item.currency) %>.
-          </p>
-        <% end %>
-      <% else %>
-        <div class="offer-actions">
-          <%= link_to "Sign in to gift", sign_in_path, class: "button accent small" %>
+        <div class="field">
+          <%= label_tag "gift_message_#{item.id}", "Note (optional)", class: "field-label" %>
+          <%= text_field_tag :message, nil, id: "gift_message_#{item.id}", maxlength: 200, placeholder: "Say something kind" %>
         </div>
+        <%= submit_tag "Gift towards this", class: "btn btn--accent btn--block", data: { disable_with: "Gifting…" } %>
       <% end %>
     <% else %>
-      <div class="offer-actions"><span class="state state--confirmed">Fully funded</span></div>
+      <%= link_to "Sign in to gift", sign_in_path, class: "btn btn--accent btn--block" %>
     <% end %>
-  </div>
+  <% else %>
+    <span class="badge badge--ok">Fully funded</span>
+  <% end %>
 </article>

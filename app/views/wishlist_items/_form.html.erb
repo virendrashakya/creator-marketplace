@@ -19,7 +19,7 @@
       <%= f.url_field :image_url, placeholder: "https://…", spellcheck: false, autocapitalize: "off" %>
     </div>
   </div>
-  <div class="form-actions">
+  <div class="actions" style="margin-top: 18px">
     <%= f.submit(@wishlist_item.persisted? ? "Save gift" : "Add gift", class: "button accent", data: { disable_with: "Saving…" }) %>
     <%= link_to "Cancel", dashboard_path, class: "button light" %>
   </div>

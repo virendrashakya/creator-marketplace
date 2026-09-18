@@ -16,11 +16,11 @@
       <%= f.select :currency, [ [ "Rupees (₹)", "INR" ], [ "Dollars ($)", "USD" ] ] %>
     </div>
   </div>
-  <label class="check">
+  <label class="toggle-wrap">
     <%= f.check_box :published %>
     Show this on my page
   </label>
-  <div class="form-actions">
+  <div class="actions" style="margin-top: 18px">
     <%= f.submit(@contact_reveal.persisted? ? "Save contact reveal" : "Create contact reveal", class: "button accent", data: { disable_with: "Saving…" }) %>
     <%= link_to "Cancel", dashboard_path, class: "button light" %>
   </div>
