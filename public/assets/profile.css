@@ -17,6 +17,13 @@
   --ava-bg: #C9CBC4;
   --ava-ink: #FBF8F4;
 
+  /* Elevation has to be theme-local. A black drop shadow does nothing on a
+     #0C0D10 page, so the dark themes lift surfaces with a light rim instead
+     and keep the shadow only for depth under the card. */
+  --p-raised: 0 1px 2px rgba(20,22,26,.04), 0 2px 8px -2px rgba(20,22,26,.07);
+  --p-lifted: 0 2px 6px rgba(20,22,26,.06), 0 12px 32px -10px rgba(20,22,26,.16);
+  --p-ring: rgba(194,24,91,.12);
+
   background: var(--bg);
   color: var(--p-ink);
   min-height: 80vh;
@@ -70,6 +77,14 @@
   border: 1px solid var(--p-line); border-radius: var(--r-md);
   background: var(--chip); color: var(--p-ink);
   font-size: 14px; font-weight: 600; text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
+}
+.pf-social:active { transform: scale(.96); }
+@media (hover: hover) and (pointer: fine) {
+  .pf-social:hover { border-color: var(--p-accent); }
 }
 
 /* ---------- section headings ---------- */
@@ -92,6 +107,7 @@
 .pf-offers {
   border: 1px solid var(--p-line); border-radius: var(--r-xl);
   background: var(--p-card); overflow: hidden;
+  box-shadow: var(--p-raised);
 }
 .pf-offers-head { padding: 16px clamp(14px, 3vw, 20px) 14px; border-bottom: 1px solid var(--p-line); }
 .pf-offers-head h2 { margin: 0 0 3px; font-size: clamp(19px, 2.8vw, 24px); }
@@ -101,9 +117,15 @@
   display: block; padding: 15px clamp(14px, 3vw, 18px);
   color: inherit; text-decoration: none;
   border-right: 1px solid var(--p-line); border-bottom: 1px solid var(--p-line);
-  transition: background .14s ease;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
 }
-.pf-offer:hover { background: var(--bg); }
+.pf-offer:active { transform: scale(.985); background: var(--bg); }
+@media (hover: hover) and (pointer: fine) {
+  .pf-offer:hover { background: var(--bg); }
+}
 .pf-offer-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
 .pf-offer-name { font-size: 15px; font-weight: 700; }
 .pf-offer-price { font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--p-accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -122,18 +144,45 @@
   display: flex; align-items: stretch;
   border: 1px solid var(--p-line); border-radius: var(--r-lg);
   background: var(--p-card); color: inherit; text-decoration: none;
-  overflow: hidden; transition: transform .14s ease;
+  overflow: hidden;
+  box-shadow: var(--p-raised);
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--t-quick) var(--ease-out),
+    box-shadow var(--t-quick) var(--ease-out),
+    border-color var(--t-quick) var(--ease-out);
 }
-.rec:hover { transform: translateY(-2px); }
+/* Press beats lift on a phone. The previous `:hover { translateY(-2px) }`
+   had no hover guard, so on touch a tapped card stayed stuck 2px up until
+   you tapped elsewhere, on the one screen creators send people to. */
+.rec:active {
+  transform: scale(.985);
+  box-shadow: var(--p-raised);
+  border-color: var(--p-accent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .rec:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--p-lifted);
+  }
+  /* The image pushes in slightly while the card lifts out. Two speeds on one
+     gesture is what stops it reading as a single flat rectangle moving. */
+  .rec:hover .rec-media img { transform: scale(1.04); }
+  .rec:hover .rec-cta .arrow { transform: translateX(3px); }
+}
 .rec-media {
   width: clamp(88px, 22vw, 116px); flex: none; position: relative;
   background: repeating-linear-gradient(135deg, #EDEEEA 0 10px, #E3E4DF 10px 20px);
 }
-.rec-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rec-media img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform var(--t-panel) var(--ease-out);
+}
 .rec-flag {
   position: absolute; top: 10px; left: 10px;
   font-size: 11.5px; font-weight: 700; color: #14161A;
   background: #FBF8F4; border-radius: 999px; padding: 4px 9px;
+  box-shadow: 0 1px 4px rgba(20,22,26,.2);
 }
 .rec-body { padding: 12px 14px; flex: 1; min-width: 0; }
 .rec-top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
@@ -142,6 +191,10 @@
 .rec-merchant { display: inline-block; margin-top: 7px; }
 .rec-reason { margin: 7px 0 0; font-size: 14.5px; line-height: 1.5; color: var(--p-body); text-wrap: pretty; overflow-wrap: anywhere; }
 .rec-cta { margin-top: 11px; display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--p-accent); }
+.rec-cta .arrow {
+  display: inline-block; flex: none;
+  transition: transform var(--t-quick) var(--ease-out);
+}
 
 /* Editorial: the reason becomes the headline. */
 .layout-editorial .rec-list { gap: 28px; }
@@ -167,7 +220,11 @@
 /* ---------- paid media ---------- */
 
 .media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--gap-3); }
-.media-card { border: 1px solid var(--p-line); border-radius: 16px; overflow: hidden; background: var(--p-card); }
+.media-card {
+  border: 1px solid var(--p-line); border-radius: 16px; overflow: hidden;
+  background: var(--p-card);
+  box-shadow: var(--p-raised);
+}
 .media-preview {
   height: 190px; position: relative;
   background: repeating-linear-gradient(135deg, #EDEEEA 0 10px, #E3E4DF 10px 20px);
@@ -177,6 +234,14 @@
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   backdrop-filter: blur(9px); background: rgba(20,22,26,.34);
+  transition:
+    backdrop-filter var(--t-panel) var(--ease-out),
+    background-color var(--t-panel) var(--ease-out);
+}
+/* Easing the blur down on hover shows there is a real photo under there,
+   without showing enough of it to make paying pointless. */
+@media (hover: hover) and (pointer: fine) {
+  .media-card:hover .media-lock { backdrop-filter: blur(7px); background: rgba(20,22,26,.3); }
 }
 .media-lock-pill {
   display: inline-flex; align-items: center; gap: 6px;
@@ -184,12 +249,20 @@
   font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px;
 }
 .media-lock-price { font-family: var(--mono); font-size: 12px; color: #FBF8F4; font-variant-numeric: tabular-nums; }
+/* The unlocked badge is the receipt for a payment a creator approved by hand.
+   It earns a real entrance: this is the rare, first-time moment where delight
+   is the point, not friction. */
 .media-unlocked {
   position: absolute; top: 10px; left: 10px;
   display: inline-flex; align-items: center; gap: 6px;
   background: #14161A; color: #FBF8F4;
   font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px;
-  animation: wf-rise .3s ease both;
+  box-shadow: 0 2px 8px rgba(20,22,26,.3);
+  animation: wf-unlock 420ms var(--ease-out) both;
+}
+@keyframes wf-unlock {
+  from { opacity: 0; transform: scale(.9) translateY(-4px) }
+  to   { opacity: 1; transform: none }
 }
 .media-body { padding: 14px; }
 .media-title { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
@@ -199,7 +272,8 @@
 
 .meet {
   border: 1px solid var(--p-line); border-radius: var(--r-xl);
-  background: var(--p-card); padding: clamp(16px, 3vw, 24px);
+  background: var(--p-card); box-shadow: var(--p-raised);
+  padding: clamp(16px, 3vw, 24px);
   display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;
 }
 .meet-title { font-family: var(--display); font-size: 22px; letter-spacing: -.02em; }
@@ -214,14 +288,25 @@
   font-family: var(--mono); font-size: 13.5px; font-variant-numeric: tabular-nums;
   cursor: pointer; text-decoration: none;
   display: inline-flex; align-items: center;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    background-color var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
 }
-.slot:hover { border-color: var(--p-accent); color: var(--p-ink); }
+/* Slots disappear once booked, so picking one is committing to a real time.
+   The press has to register before the page navigates. */
+.slot:active { transform: scale(.95); border-color: var(--p-accent); }
+@media (hover: hover) and (pointer: fine) {
+  .slot:hover { border-color: var(--p-accent); color: var(--p-ink); }
+}
 
 /* ---------- contact reveal ---------- */
 
 .reveal {
   border: 1px solid var(--p-line); border-radius: var(--r-xl);
-  background: var(--p-card); padding: clamp(16px, 3vw, 22px);
+  background: var(--p-card); box-shadow: var(--p-raised);
+  padding: clamp(16px, 3vw, 22px);
   display: flex; gap: 18px; flex-wrap: wrap; align-items: center; justify-content: space-between;
 }
 .reveal-label { font-size: 16.5px; font-weight: 600; }
@@ -237,7 +322,8 @@
 .wish-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: var(--gap-3); }
 .wish {
   border: 1px solid var(--p-line); border-radius: 16px;
-  background: var(--p-card); padding: 16px;
+  background: var(--p-card); box-shadow: var(--p-raised);
+  padding: 16px;
   display: flex; flex-direction: column; gap: 12px;
 }
 .wish-title { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
@@ -248,8 +334,25 @@
 }
 .wish-raised { font-size: 15px; font-weight: 600; }
 .wish-of { font-size: 12px; color: var(--p-sub); }
-.wish-track { height: 10px; border-radius: 999px; background: var(--p-track); overflow: hidden; }
-.wish-bar { height: 100%; border-radius: 999px; background: var(--p-accent); transition: width .4s ease; }
+.wish-track {
+  height: 10px; border-radius: 999px;
+  background: var(--p-track); overflow: hidden;
+  box-shadow: var(--e-press);
+}
+/* The bar fills from zero on load rather than appearing already full, so a
+   wishlist reads as money arriving over time. clip-path instead of width:
+   width animates layout, clip-path composites. */
+.wish-bar {
+  height: 100%; border-radius: 999px; background: var(--p-accent);
+  transition:
+    clip-path var(--t-panel) var(--ease-out),
+    background-color var(--t-panel) var(--ease-out);
+  animation: wf-fill 700ms var(--ease-out) both;
+}
+@keyframes wf-fill {
+  from { clip-path: inset(0 100% 0 0) }
+  to   { clip-path: inset(0 0 0 0) }
+}
 .wish-bar--funded { background: var(--ok); }
 .wish-status { margin-top: 7px; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--p-sub); }
 .wish-status--funded { color: var(--ok); }
@@ -257,7 +360,11 @@
 /* ---------- posts ---------- */
 
 .posts { display: flex; flex-direction: column; gap: var(--gap-3); max-width: 620px; }
-.post { border: 1px solid var(--p-line); border-radius: 16px; background: var(--p-card); overflow: hidden; }
+.post {
+  border: 1px solid var(--p-line); border-radius: 16px;
+  background: var(--p-card); overflow: hidden;
+  box-shadow: var(--p-raised);
+}
 .post-head { padding: 15px 16px 0; display: flex; gap: 10px; align-items: center; }
 .post-avatar { width: 34px; height: 34px; border-radius: 99px; background: var(--ava-bg); flex: none; overflow: hidden; }
 .post-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -274,11 +381,26 @@
   background: transparent; color: var(--p-sub);
   font: inherit; font-size: 14px; font-weight: 600;
   font-variant-numeric: tabular-nums; cursor: pointer;
-  transition: transform .12s ease;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--t-quick) var(--ease-out),
+    color var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
 }
+/* Liking is the cheapest, most repeated action here, so the feedback is the
+   press itself, fast and small. No bounce: a spring on something tapped this
+   often turns into noise by the fifth post. */
+.post-like:active { transform: scale(.94); }
 .post-like[aria-pressed="true"] { background: var(--p-accent); color: #FFF; }
+@media (hover: hover) and (pointer: fine) {
+  .post-like:hover { background: var(--bg); color: var(--p-ink); }
+  .post-like[aria-pressed="true"]:hover { background: var(--p-accent); color: #FFF; }
+}
 .post-comments { border-top: 1px solid var(--p-line); padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
-.post-comment { display: flex; gap: 10px; }
+.post-comment {
+  display: flex; gap: 10px;
+  animation: wf-rise var(--t-enter) var(--ease-out) both;
+}
 .post-comment-avatar { width: 28px; height: 28px; border-radius: 99px; background: var(--ava-bg); flex: none; }
 .post-comment-who { font-family: var(--mono); font-size: 12px; color: var(--p-sub); }
 .post-comment-text { font-size: 14.5px; line-height: 1.45; color: var(--p-body); overflow-wrap: anywhere; }
@@ -288,7 +410,15 @@
   border: 1.5px solid var(--p-line); border-radius: var(--r-md);
   background: var(--p-card); color: var(--p-ink); font: inherit; outline: none;
 }
-.post-form input:focus { border-color: var(--p-accent); }
+.post-form input {
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    box-shadow var(--t-quick) var(--ease-out);
+}
+.post-form input:focus {
+  border-color: var(--p-accent);
+  box-shadow: 0 0 0 3px var(--p-ring);
+}
 
 .pf-empty {
   margin: 0 var(--gutter);
@@ -303,21 +433,35 @@
 
 /* ---------- themes: token overrides only ---------- */
 
+/* On a dark page a drop shadow does nothing: there is no light for it to
+   block. Depth comes from a 1px inset highlight along the top edge, the way
+   a real surface catches light from above, plus a deeper shadow beneath. */
 .theme-luxury {
   --bg: #14142A; --p-card: #1D1D38; --chip: #222240; --p-ink: #F4F1F7;
   --p-body: #D8D3E2; --p-sub: #A9A4B8; --p-line: #2E2E4A; --p-accent: #F0A9C8;
   --p-track: #2E2E4A; --banner: #221F3D; --ava-bg: #3A3558; --ava-ink: #F4F1F7;
+  --p-raised: inset 0 1px 0 rgba(255,255,255,.05), 0 2px 10px -4px rgba(0,0,0,.5);
+  --p-lifted: inset 0 1px 0 rgba(255,255,255,.08), 0 14px 34px -12px rgba(0,0,0,.7);
+  --p-ring: rgba(240,169,200,.2);
   color-scheme: dark;
 }
 .theme-adventure {
   --bg: #EDF1EA; --p-card: #FFFFFF; --chip: #FFFFFF; --p-ink: #10231C;
   --p-body: #26382F; --p-sub: #4C6058; --p-line: #D2DBD0; --p-accent: #0B5B42;
   --p-track: #D7E0D5; --banner: #13382C; --ava-bg: #B4C2B7; --ava-ink: #10231C;
+  /* Green-tinted shadow rather than neutral grey, so cards sit on this page
+     instead of hovering over a different one. */
+  --p-raised: 0 1px 2px rgba(16,35,28,.05), 0 2px 8px -2px rgba(16,35,28,.09);
+  --p-lifted: 0 2px 6px rgba(16,35,28,.07), 0 12px 32px -10px rgba(16,35,28,.18);
+  --p-ring: rgba(11,91,66,.15);
 }
 .theme-after_dark {
   --bg: #0C0D10; --p-card: #15171C; --chip: #1A1D23; --p-ink: #F0EFEC;
   --p-body: #D3D2CE; --p-sub: #9BA0A8; --p-line: #262A31; --p-accent: #FF5C8A;
   --p-track: #262A31; --banner: #191B20; --ava-bg: #2D3038; --ava-ink: #F0EFEC;
+  --p-raised: inset 0 1px 0 rgba(255,255,255,.04), 0 2px 10px -4px rgba(0,0,0,.6);
+  --p-lifted: inset 0 1px 0 rgba(255,255,255,.07), 0 14px 34px -12px rgba(0,0,0,.8);
+  --p-ring: rgba(255,92,138,.22);
   color-scheme: dark;
 }
 
@@ -325,11 +469,18 @@
 .theme-luxury .btn--accent, .theme-after_dark .btn--accent, .theme-adventure .btn--accent {
   background: var(--p-accent); box-shadow: none;
 }
+/* These overrode box-shadow: none, which also removed the 2px travel that
+   makes the pay button feel pressed. Restore the press as a scale instead. */
+.theme-luxury .btn--accent:active,
+.theme-after_dark .btn--accent:active,
+.theme-adventure .btn--accent:active { transform: scale(.97); }
 .theme-luxury .btn--accent, .theme-after_dark .btn--accent { color: #14161A; }
 .theme-adventure .btn--accent { color: #FFFFFF; }
 .theme-luxury .btn--light, .theme-after_dark .btn--light {
   background: var(--chip); color: var(--p-ink); border-color: var(--p-line);
 }
 .theme-luxury .post-form input, .theme-after_dark .post-form input { background: var(--chip); color: var(--p-ink); }
+/* An inset black shadow on an already-dark track just muddies it. */
+.theme-luxury .wish-track, .theme-after_dark .wish-track { box-shadow: inset 0 1px 2px rgba(0,0,0,.35); }
 .theme-luxury .rec-flag, .theme-after_dark .rec-flag { background: var(--p-accent); color: #14161A; }
 .theme-luxury :focus-visible, .theme-after_dark :focus-visible { outline-color: var(--p-accent); }

@@ -20,7 +20,8 @@
       <span class="rec-reason"><%= card.description %></span>
     <% end %>
     <span class="rec-cta">
-      <%= card.merchant.present? ? "Buy on #{card.merchant}" : "Open the link" %>
+      <span><%= card.merchant.present? ? "Buy on #{card.merchant}" : "Open the link" %></span>
+      <span class="arrow" aria-hidden="true">&rarr;</span>
     </span>
     <span class="visually-hidden">(opens in a new tab)</span>
   </span>

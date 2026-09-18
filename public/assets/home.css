@@ -1,103 +1,543 @@
-/* Wishful marketing home. Ported from the canvas: a phone mock beside a torn
-   payment receipt, then the four-step money path on the dark band. */
+/* Wishful marketing home.
+
+   The page has to do one job: convince an Indian creator with an Instagram
+   following that selling something of their own beats earning a commission on
+   someone else's product. Everything is subordinate to that argument.
+
+   Deliberately absent, because we do not have them and faking them is how a
+   product loses trust in its first week: a brand logo wall, follower counts,
+   app store ratings, a testimonial carousel, "15,000+ creators". When those
+   numbers are real they go in the hero. Until then the artefact argues for
+   itself.
+
+   Deliberately absent as style: the six-card feature grid, the tracked-out
+   eyebrow above every heading, 01/02/03 markers on things that are not a
+   sequence (the money flow IS one, so it is numbered and nothing else is). */
+
+/* ---------- section rhythm ----------
+   Alternating surfaces rather than one page colour with cards floating on it.
+   A long marketing page needs bands so the eye knows a new argument started. */
+
+.hero, .paths-inner, .money-inner, .keep-inner, .close-inner {
+  max-width: var(--shell);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ---------- hero ---------- */
 
 .hero {
-  max-width: var(--shell); margin-inline: auto;
-  padding: 24px var(--gutter) 40px;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 44px; align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  gap: clamp(32px, 5vw, 64px);
+  align-items: center;
+  padding-top: clamp(28px, 5vw, 60px);
+  padding-bottom: clamp(44px, 7vw, 86px);
 }
-.hero h1 {
-  margin: 0 0 18px; font-family: var(--display); font-weight: 500;
-  font-size: clamp(38px, 7.4vw, 66px); line-height: .98;
-  letter-spacing: -.035em; text-wrap: balance;
+@media (max-width: 900px) {
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 40px; }
 }
-.hero-lede {
-  margin: 0 0 26px; font-size: clamp(16px, 2.1vw, 19px);
-  line-height: 1.5; color: var(--secondary); max-width: 46ch; text-wrap: pretty;
-}
-.hero-facts {
-  margin-top: 22px; display: flex; gap: 20px; flex-wrap: wrap;
-  font-family: var(--mono); font-size: 12.5px; color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-.hero-art { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; align-items: flex-start; }
 
-/* Phone mock. */
-.phone {
-  flex: 1 1 240px; min-width: 0; max-width: 268px;
-  border: 8px solid var(--ink); border-radius: 34px;
-  overflow: hidden; background: #F4F5F3;
-  box-shadow: 0 22px 44px rgba(20,22,26,.2);
+.hero-kicker {
+  margin: 0 0 14px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--muted);
 }
-.phone-banner { height: 128px; background: linear-gradient(150deg, var(--accent), #7A1140); position: relative; }
+
+.hero h1 {
+  margin: 0 0 20px;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(36px, 6.6vw, 62px);
+  line-height: 1;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+}
+/* The second line is the whole positioning: links are the hook, selling is
+   the business. It gets the accent so a skimmer reads that line and nothing
+   else. */
+.hero-em { color: var(--accent); }
+
+.hero-lede {
+  margin: 0 0 28px;
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.5;
+  color: var(--secondary);
+  max-width: 44ch;
+  text-wrap: pretty;
+}
+
+.hero-actions { display: flex; gap: var(--gap-2); flex-wrap: wrap; align-items: center; }
+.hero-fine {
+  margin: 18px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
+  max-width: 42ch;
+}
+
+/* Staggered once, on the only screen a person reads before deciding. */
+.hero-copy > * { animation: wf-rise 520ms var(--ease-out) both; }
+.hero-copy > *:nth-child(1) { animation-delay: 30ms }
+.hero-copy > *:nth-child(2) { animation-delay: 90ms }
+.hero-copy > *:nth-child(3) { animation-delay: 150ms }
+.hero-copy > *:nth-child(4) { animation-delay: 210ms }
+.hero-copy > *:nth-child(5) { animation-delay: 260ms }
+
+/* ---------- the artefact: a page, and the receipt it produced ---------- */
+
+.hero-art {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: clamp(10px, 2vw, 20px);
+  min-width: 0;
+}
+
+.phone {
+  flex: 0 1 290px;
+  min-width: 0;
+  max-width: 300px;
+  background: var(--ink);
+  border-radius: 30px;
+  padding: 8px;
+  box-shadow: 0 26px 54px -12px rgba(20,22,26,.34), 0 2px 6px rgba(20,22,26,.1);
+  animation: wf-phone 680ms var(--ease-out) 120ms both;
+}
+@keyframes wf-phone {
+  from { opacity: 0; transform: translateY(20px) scale(.97) }
+  to   { opacity: 1; transform: none }
+}
+
+/* The URL bar is the product. A creator is buying a link they can put in
+   their bio, so show the link. */
+.phone-chrome {
+  display: flex; align-items: center; justify-content: center;
+  height: 26px; padding: 0 10px;
+}
+.phone-url {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--on-ink-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.phone-screen {
+  background: #F4F5F3;
+  border-radius: 23px;
+  overflow: hidden;
+}
+.phone-banner {
+  height: 84px;
+  background: linear-gradient(145deg, var(--accent) 10%, #8E1142 90%);
+  position: relative;
+}
 .phone-avatar {
-  position: absolute; left: 16px; bottom: -26px;
-  width: 58px; height: 58px; border-radius: 99px;
+  position: absolute; left: 14px; bottom: -22px;
+  width: 50px; height: 50px; border-radius: 999px;
   background: var(--page); border: 3px solid #F4F5F3;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--display); font-size: 24px; color: var(--ink);
+  font-family: var(--display); font-size: 21px; color: var(--ink);
 }
-.phone-body { padding: 34px 16px 18px; }
-.phone-name { font-family: var(--display); font-size: 21px; letter-spacing: -.02em; }
-.phone-handle { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
-.phone-links { margin-top: 14px; display: flex; flex-direction: column; gap: 9px; }
+.phone-body { padding: 30px 12px 14px; }
+.phone-name { font-family: var(--display); font-size: 18px; letter-spacing: -.02em; }
+.phone-handle { font-family: var(--mono); font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+
+/* The paid item sits above the links, at a larger size, because that is the
+   hierarchy we are arguing for. */
+.phone-sell {
+  margin-top: 14px;
+  display: flex; gap: 10px; align-items: center;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 9px;
+  box-shadow: 0 2px 8px -3px rgba(20,22,26,.14);
+}
+.phone-sell-media {
+  width: 54px; height: 54px; border-radius: 9px; flex: none;
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #C9CBC4, #A8ABA3);
+  display: flex; align-items: center; justify-content: center;
+}
+/* Blurred because it is locked. The blur IS the product state. */
+.phone-sell-media::before {
+  content: ""; position: absolute; inset: 0;
+  backdrop-filter: blur(4px);
+  background: rgba(20,22,26,.3);
+}
+.phone-lock {
+  position: relative;
+  font-size: 8.5px; font-weight: 700; letter-spacing: .02em;
+  color: #14161A; background: rgba(251,248,244,.95);
+  padding: 2px 6px; border-radius: 999px;
+}
+.phone-sell-title {
+  font-size: 12.5px; font-weight: 700; line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.phone-sell-price {
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  color: var(--accent); margin-top: 3px; font-variant-numeric: tabular-nums;
+}
+
+.phone-divider {
+  display: flex; align-items: center; gap: 8px;
+  margin: 14px 0 9px;
+  font-size: 10px; color: var(--muted);
+}
+.phone-divider::before, .phone-divider::after {
+  content: ""; height: 1px; flex: 1; background: var(--line);
+}
+
 .phone-link {
-  background: var(--white); border: 1px solid var(--line); border-radius: 12px;
-  padding: 10px; display: flex; gap: 10px; align-items: center;
+  background: var(--white); border: 1px solid var(--line); border-radius: 10px;
+  padding: 7px 8px; display: flex; gap: 8px; align-items: center;
+  margin-bottom: 6px;
 }
 .phone-thumb {
-  width: 40px; height: 40px; border-radius: 8px; flex: none;
-  background: repeating-linear-gradient(135deg, #EDEEEA 0 7px, #E3E4DF 7px 14px);
+  width: 32px; height: 32px; border-radius: 6px; flex: none;
+  background: repeating-linear-gradient(135deg, #EDEEEA 0 6px, #E3E4DF 6px 12px);
 }
-.phone-link-title { font-size: 13px; font-weight: 600; }
-.phone-link-price { font-family: var(--mono); font-size: 11.5px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.phone-link-title { font-size: 11.5px; font-weight: 600; }
+.phone-link-meta {
+  font-family: var(--mono); font-size: 9.5px; color: var(--muted);
+  margin-top: 1px; font-variant-numeric: tabular-nums;
+}
 
-/* The receipt slip beside it. */
+/* The receipt. Offset and rotated so it reads as a separate physical object
+   that came out of the phone, not a second panel in a layout. */
 .slip {
-  flex: 1 1 190px; min-width: 0; max-width: 208px; margin-top: 46px;
-  background: var(--card); border-radius: var(--r-sm);
-  padding: 16px 15px; border-top: 3px solid var(--ink);
-  box-shadow: 0 10px 26px rgba(20,22,26,.14);
+  flex: 0 1 200px;
+  min-width: 0;
+  max-width: 212px;
+  align-self: flex-end;
+  margin-bottom: clamp(18px, 4vw, 52px);
+  background: var(--card);
+  border-radius: 3px;
+  border-top: 4px solid var(--ok);
+  padding: 14px 14px 0;
+  box-shadow: 0 14px 30px -8px rgba(20,22,26,.22);
+  transform: rotate(-1.4deg);
+  animation: wf-slip 620ms var(--ease-out) 460ms both;
 }
-.slip-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
+@keyframes wf-slip {
+  from { opacity: 0; transform: translateY(-16px) rotate(-4deg) }
+  to   { opacity: 1; transform: rotate(-1.4deg) }
+}
+@media (max-width: 460px) {
+  /* At phone width the two objects stop being a composition and start being
+     a pile. Stack them and drop the rotation: @keyframes cannot be nested in
+     a media query, so the upright variant is its own animation. */
+  .hero-art { flex-direction: column; align-items: center; }
+  .slip {
+    align-self: center; margin-bottom: 0;
+    transform: none;
+    animation-name: wf-slip-flat;
+  }
+}
+@keyframes wf-slip-flat {
+  from { opacity: 0; transform: translateY(-12px) }
+  to   { opacity: 1; transform: none }
+}
+
+.slip-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.slip-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted);
+}
+.slip .badge { font-size: 10px; padding: 2px 7px; }
 .slip-amount {
-  font-family: var(--mono); font-size: 27px; font-weight: 600;
-  font-variant-numeric: tabular-nums; margin: 6px 0 12px;
+  font-family: var(--mono); font-size: 30px; font-weight: 600;
+  font-variant-numeric: tabular-nums; margin: 8px 0 12px; line-height: 1;
 }
 .slip-lines {
-  border-top: 1px dashed var(--line-strong); padding-top: 10px;
+  border-top: 1px dashed var(--line-strong);
+  padding-top: 10px;
   display: flex; flex-direction: column; gap: 6px;
-  font-family: var(--mono); font-size: 11px; color: var(--secondary);
+  font-family: var(--mono); font-size: 10.5px; color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 .slip-line { display: flex; justify-content: space-between; gap: 8px; }
-.slip-line span:last-child { color: var(--ink); }
+.slip-line span:last-child { color: var(--ink); overflow: hidden; text-overflow: ellipsis; }
 
-/* The four steps. */
-.steps-band { background: var(--ink); padding: 52px var(--gutter); }
-.steps-inner { max-width: var(--shell); margin-inline: auto; }
-.steps-band h2 {
-  margin: 0 0 8px; font-family: var(--display); font-weight: 500;
-  font-size: clamp(27px, 4vw, 38px); letter-spacing: -.03em; color: var(--on-ink);
+/* The tear line, then the number that matters. */
+.slip-foot {
+  margin-top: 12px;
+  padding: 11px 14px 13px;
+  margin-inline: -14px;
+  border-top: 1px dashed var(--line-strong);
+  background: var(--ok-tint);
+  border-radius: 0 0 3px 3px;
 }
-.steps-lede { margin: 0 0 32px; font-size: 16px; color: var(--on-ink-body); max-width: 54ch; line-height: 1.5; }
-.steps {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 2px; background: var(--ink-line); border-radius: 16px; overflow: hidden;
-  list-style: none; padding: 0; margin: 0; counter-reset: step;
+.slip-keep {
+  display: block;
+  font-family: var(--mono); font-size: 14px; font-weight: 600;
+  color: var(--ok); font-variant-numeric: tabular-nums;
 }
-.step { background: var(--ink-2); padding: 22px 20px 26px; counter-increment: step; }
-.step::before {
-  content: counter(step);
-  display: block; font-family: var(--mono); font-size: 12px;
-  font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums;
-}
-.step-title { font-family: var(--display); font-size: 19px; color: var(--on-ink); margin: 10px 0 7px; letter-spacing: -.01em; }
-.step-body { font-size: 14.5px; line-height: 1.5; color: #9BA1A9; text-wrap: pretty; }
+.slip-keep-sub { display: block; font-size: 10.5px; color: var(--ok); opacity: .8; margin-top: 2px; }
 
-/* Auth split. */
-.auth-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); min-height: 80vh; }
+/* ---------- the two paths ---------- */
+
+.paths { background: var(--card); border-block: 1px solid var(--line); }
+.paths-inner { padding-block: clamp(44px, 7vw, 76px); }
+.paths-title {
+  margin: 0 0 clamp(26px, 4vw, 40px);
+  font-size: clamp(25px, 4vw, 40px);
+  letter-spacing: -.03em;
+  max-width: 30ch;
+}
+.paths-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: clamp(14px, 2.5vw, 22px);
+  align-items: start;
+}
+
+.path {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: clamp(20px, 3vw, 28px);
+  box-shadow: var(--e-raised);
+}
+/* Not two equal cards. The one we are selling is dark, which is the strongest
+   contrast move available without introducing a new colour. */
+.path--lead {
+  background: var(--ink);
+  border-color: var(--ink-line);
+  box-shadow: var(--e-lifted);
+}
+
+.path-step {
+  margin: 0 0 10px;
+  font-family: var(--mono); font-size: 11.5px;
+  color: var(--muted);
+}
+.path--lead .path-step { color: var(--accent-on-ink); }
+
+.path-name {
+  margin: 0 0 12px;
+  font-family: var(--display); font-weight: 500;
+  font-size: clamp(20px, 2.6vw, 26px);
+  letter-spacing: -.025em; line-height: 1.1;
+  text-wrap: balance;
+}
+.path--lead .path-name { color: var(--on-ink); }
+
+.path-body {
+  margin: 0 0 18px;
+  font-size: 15.5px; line-height: 1.55;
+  color: var(--secondary); text-wrap: pretty;
+}
+.path--lead .path-body { color: var(--on-ink-body); }
+
+.path-list {
+  margin: 0; padding: 0; list-style: none;
+  border-top: 1px solid var(--line);
+  display: flex; flex-direction: column;
+}
+.path--lead .path-list { border-color: var(--ink-line); }
+.path-list li {
+  padding: 10px 0 10px 22px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14.5px; color: var(--body);
+  position: relative;
+}
+.path--lead .path-list li { border-color: var(--ink-line); color: var(--on-ink-body); }
+.path-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+/* A rule, not a bullet glyph and not a checkmark. Checkmarks on a feature
+   list are the most templated thing in software. */
+.path-list li::before {
+  content: ""; position: absolute; left: 0; top: 19px;
+  width: 11px; height: 1.5px; background: var(--line-strong);
+}
+.path--lead .path-list li::before { background: var(--accent); }
+.path-list li:last-child::before { top: 19px; }
+
+/* ---------- the money flow ---------- */
+
+.money { background: var(--ink); }
+.money-inner { padding-block: clamp(48px, 7vw, 82px); }
+.money h2 {
+  margin: 0 0 10px;
+  font-size: clamp(25px, 4vw, 40px);
+  letter-spacing: -.03em;
+  color: var(--on-ink);
+  max-width: 28ch;
+}
+.money-lede {
+  margin: 0 0 clamp(26px, 4vw, 38px);
+  font-size: clamp(15.5px, 2vw, 18px);
+  line-height: 1.5; color: var(--on-ink-body);
+  max-width: 50ch; text-wrap: pretty;
+}
+
+/* This one genuinely is a sequence, so it is numbered and the numbers mean
+   something. Nothing else on the page gets step markers. */
+.flow {
+  margin: 0; padding: 0; list-style: none;
+  counter-reset: flow;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 1px;
+  background: var(--ink-line);
+  border: 1px solid var(--ink-line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.flow-step {
+  counter-increment: flow;
+  background: var(--ink-2);
+  padding: 20px 18px 22px;
+  transition: background-color var(--t-quick) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .flow-step:hover { background: var(--ink-3); }
+}
+.flow-step::before {
+  content: counter(flow);
+  display: block;
+  font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+  color: var(--on-ink-muted);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 12px;
+}
+/* The last step is the creator's own action, and the trust argument depends
+   on them noticing it is theirs. */
+.flow-step--you { background: var(--ink-3); }
+.flow-step--you::before { color: var(--accent-on-ink); }
+.flow-title {
+  margin: 0 0 6px;
+  font-family: var(--display); font-size: 17.5px;
+  letter-spacing: -.015em; color: var(--on-ink);
+}
+.flow-body {
+  margin: 0; font-size: 14px; line-height: 1.5;
+  color: var(--on-ink-muted); text-wrap: pretty;
+}
+
+.money-note {
+  margin: clamp(22px, 3vw, 30px) 0 0;
+  font-size: 14.5px; line-height: 1.6;
+  color: var(--on-ink-body);
+  max-width: 56ch; text-wrap: pretty;
+  padding-left: 14px;
+  border-left: 2px solid var(--accent);
+}
+
+/* ---------- commission vs paid ---------- */
+
+.keep-inner { padding-block: clamp(44px, 7vw, 78px); }
+.keep-title {
+  margin: 0 0 clamp(24px, 4vw, 36px);
+  font-size: clamp(25px, 4vw, 40px);
+  letter-spacing: -.03em;
+  max-width: 26ch;
+}
+.keep-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: clamp(14px, 2.5vw, 20px);
+}
+.keep-col {
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: clamp(18px, 3vw, 26px);
+  background: var(--card);
+}
+.keep-col--ours {
+  background: var(--white);
+  border-color: var(--ok-line);
+  box-shadow: var(--e-raised);
+}
+.keep-col-label {
+  margin: 0 0 14px;
+  font-family: var(--mono); font-size: 11.5px;
+  color: var(--muted);
+}
+.keep-col--ours .keep-col-label { color: var(--ok); }
+
+/* The comparison is arithmetic, so it is set as arithmetic: tabular figures,
+   an arrow, and the result in the same size as the input. */
+.keep-figure {
+  margin: 0 0 14px;
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  /* Amounts wrap between the terms but never inside a number. */
+  overflow-wrap: break-word;
+  font-family: var(--mono);
+  font-size: clamp(22px, 3.4vw, 30px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--muted);
+}
+.keep-figure strong { font-weight: 600; color: var(--ink); white-space: nowrap; }
+.keep-figure--them strong { color: var(--danger); }
+.keep-col--ours .keep-figure strong { color: var(--ok); }
+.keep-arrow { color: var(--line-strong); font-size: .8em; }
+
+.keep-col-note {
+  margin: 0; font-size: 14.5px; line-height: 1.55;
+  color: var(--secondary); text-wrap: pretty;
+}
+.keep-foot {
+  margin: clamp(22px, 3vw, 30px) 0 0;
+  font-size: 15.5px; line-height: 1.6;
+  color: var(--body);
+  max-width: 58ch; text-wrap: pretty;
+}
+
+/* ---------- close ---------- */
+
+.close { background: var(--card); border-top: 1px solid var(--line); }
+.close-inner {
+  padding-block: clamp(48px, 8vw, 88px);
+  text-align: center;
+}
+.close-title {
+  margin: 0 0 20px;
+  font-size: clamp(26px, 4.6vw, 44px);
+  letter-spacing: -.03em;
+}
+/* The handle field as the closing image: the thing they are actually
+   claiming, with a blinking cursor so it reads as editable. */
+.close-url {
+  margin: 0 auto 26px;
+  display: inline-flex; align-items: center; flex-wrap: wrap;
+  justify-content: center;
+  background: var(--white);
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--r-md);
+  padding: 13px 18px;
+  font-family: var(--mono);
+  font-size: clamp(15px, 2.4vw, 21px);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.close-url-dim { color: var(--muted); }
+.close-url-cursor { color: var(--ink); position: relative; }
+.close-url-cursor::after {
+  content: ""; display: inline-block;
+  width: 1.5px; height: 1.05em;
+  background: var(--accent);
+  margin-left: 3px;
+  vertical-align: -.15em;
+  animation: wf-caret 1.1s steps(1, end) infinite;
+}
+@keyframes wf-caret { 0%, 50% { opacity: 1 } 50.01%, 100% { opacity: 0 } }
+
+.close-fine { margin: 18px 0 0; font-size: 13.5px; color: var(--muted); }
+
+/* A caret that never stops blinking is exactly the kind of motion reduced
+   motion exists to remove. */
+@media (prefers-reduced-motion: reduce) {
+  .close-url-cursor::after { animation: none; opacity: 1; }
+}
+
+/* ---------- auth split (sign in / sign up) ---------- */
+
+.auth-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); min-height: 80vh; }
 .auth-form { padding: 44px 20px; display: flex; align-items: center; justify-content: center; }
 .auth-form-inner { width: 100%; max-width: 420px; }
 .auth-form h1 { margin: 22px 0 6px; font-size: 34px; line-height: 1.05; }

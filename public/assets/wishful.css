@@ -73,6 +73,30 @@
   --gap-3: 14px;
   --gap-4: 22px;
   --gap-5: 38px;
+
+  /* Easing. The built-in CSS curves are too weak to read as intentional:
+     `ease` at 140ms is what "nothing happens on press" looks like. These are
+     the strong variants. Never ease-in on UI, it delays the first frame,
+     which is the exact moment a thumb is watching. */
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --ease-in-out: cubic-bezier(.77, 0, .175, 1);
+  --ease-drawer: cubic-bezier(.32, .72, 0, 1);
+
+  /* Duration. Press feedback has to land inside the tap; anything a person
+     triggers dozens of times a session stays under 200ms. */
+  --t-press: 120ms;
+  --t-quick: 160ms;
+  --t-enter: 220ms;
+  --t-panel: 300ms;
+
+  /* Elevation. Eleven card-shaped components at one depth is why the page
+     reads flat: nothing tells the eye what to look at. Three tiers only.
+     flat = inside another surface, raised = a thing in its own right,
+     lifted = the thing on this screen that matters most. */
+  --e-flat: none;
+  --e-raised: 0 1px 2px rgba(20,22,26,.04), 0 2px 8px -2px rgba(20,22,26,.06);
+  --e-lifted: 0 2px 4px rgba(20,22,26,.05), 0 10px 28px -8px rgba(20,22,26,.13);
+  --e-press: inset 0 1px 2px rgba(20,22,26,.09);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -100,12 +124,28 @@ body {
 @keyframes wf-shimmer { from { background-position: -320px 0 } to { background-position: 320px 0 } }
 @keyframes wf-spin { to { transform: rotate(360deg) } }
 
+/* Reduced motion means fewer and gentler animations, not none. Opacity and
+   colour changes still explain what happened, so they stay; everything that
+   moves an element through space goes. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: .001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: .001ms !important;
+    animation-delay: 0ms !important;
     scroll-behavior: auto !important;
+    transition-property: opacity, background-color, border-color, color, box-shadow, fill, stroke !important;
+    transition-duration: 140ms !important;
+  }
+  .wf-stagger > * { opacity: 1 !important; transform: none !important; }
+
+  /* Dropping transform also drops every scale-on-press, which would leave
+     these users with no press feedback at all. Swap in a brightness shift so
+     the interface still confirms it heard the tap. */
+  .btn:active, .create-action:active, .pf-social:active,
+  .pf-offer:active, .rec:active, .slot:active,
+  .post-like:active, .choice:active, .pick:active,
+  .kind-tab:active, .toggle:active, .upload:active {
+    filter: brightness(.94);
   }
 }
 
@@ -193,42 +233,59 @@ small { font-size: 13px; }
   font: inherit; font-size: 15px; font-weight: 600;
   cursor: pointer; text-decoration: none;
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  transition: background-color .14s ease, border-color .14s ease, transform .1s ease;
+  transition:
+    background-color var(--t-quick) var(--ease-out),
+    border-color var(--t-quick) var(--ease-out),
+    box-shadow var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
 }
-.btn:hover { background: var(--ink-line); color: var(--on-ink); }
 
-/* The paid action. Hard drop shadow that collapses on press. */
+/* Every pressable thing answers the thumb. Without this the whole product
+   feels like a screenshot: you tap, and nothing acknowledges the tap until
+   the next page paints. Scale rather than translate, because scale carries
+   the label and icon down with it. */
+.btn:active { transform: scale(.97); }
+
+/* Hover is a mouse affordance. Left ungated it latches on touch, so a tapped
+   button stays visibly "hovered" until you tap somewhere else. */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { background: var(--ink-line); color: var(--on-ink); }
+  .btn--accent:hover { background: var(--accent-hover); color: #FFF; }
+  .btn--ok:hover { background: var(--ok-hover); color: #FFF; }
+  .btn--light:hover { background: var(--card); border-color: var(--ink); color: var(--ink); }
+  .btn--ghost:hover { border-color: var(--ink); background: transparent; color: var(--ink); }
+  .btn--danger:hover { background: var(--danger-tint); color: var(--danger); }
+}
+
+/* The paid action. Hard drop shadow that collapses on press: the button
+   physically travels the 2px it was floating, so paying has weight. */
 .btn--accent {
   background: var(--accent); color: #FFF;
   box-shadow: 0 2px 0 var(--accent-shadow);
 }
-.btn--accent:hover { background: var(--accent-hover); color: #FFF; }
-.btn--accent:active { transform: translateY(2px); box-shadow: none; }
+.btn--accent:active { transform: translateY(2px) scale(.995); box-shadow: none; }
 
 .btn--ok {
   background: var(--ok); color: #FFF;
   box-shadow: 0 2px 0 var(--ok-shadow);
 }
-.btn--ok:hover { background: var(--ok-hover); color: #FFF; }
-.btn--ok:active { transform: translateY(2px); box-shadow: none; }
+.btn--ok:active { transform: translateY(2px) scale(.995); box-shadow: none; }
 
 .btn--light {
   background: var(--card); color: var(--ink);
   border-color: var(--line-strong);
 }
-.btn--light:hover { background: var(--card); border-color: var(--ink); color: var(--ink); }
+.btn--light:active { box-shadow: var(--e-press); }
 
 .btn--ghost {
   background: transparent; color: var(--ink);
   border-color: var(--line-strong);
 }
-.btn--ghost:hover { border-color: var(--ink); background: transparent; color: var(--ink); }
 
 .btn--danger {
   background: var(--white); color: var(--danger);
   border-color: var(--danger-line);
 }
-.btn--danger:hover { background: var(--danger-tint); color: var(--danger); }
 
 .btn--big { min-height: 52px; padding: 0 24px; font-size: 17px; border-radius: 13px; }
 .btn--small { min-height: 44px; padding: 0 13px; font-size: 14px; border-radius: 10px; }
@@ -246,8 +303,12 @@ small { font-size: 13px; }
   border: none; background: transparent; border-radius: 10px;
   font: inherit; font-size: 14px; font-weight: 600;
   color: var(--secondary); cursor: pointer; text-decoration: none;
+  transition: color var(--t-quick) var(--ease-out), transform var(--t-press) var(--ease-out);
 }
-.btn-back:hover { color: var(--ink); }
+.btn-back:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) {
+  .btn-back:hover { color: var(--ink); }
+}
 
 .actions { display: flex; gap: var(--gap-2); flex-wrap: wrap; align-items: center; }
 .actions--end { justify-content: flex-end; }
@@ -259,7 +320,12 @@ small { font-size: 13px; }
   border: 1px solid var(--line);
   border-radius: var(--r-xl);
   padding: clamp(16px, 3vw, 22px);
+  box-shadow: var(--e-raised);
 }
+/* Nested surfaces sit flat. A card inside a card with the same shadow reads
+   as two competing objects instead of one containing the other. */
+.card--flat { box-shadow: var(--e-flat); }
+.card--lifted { box-shadow: var(--e-lifted); }
 .card--dark {
   background: var(--ink);
   border-color: var(--ink-line);
@@ -285,7 +351,14 @@ small { font-size: 13px; }
   border: 1.5px solid var(--line-strong); border-radius: var(--r-md);
   background: var(--white); color: var(--ink);
   font: inherit; outline: none;
-  transition: border-color .14s ease;
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    box-shadow var(--t-quick) var(--ease-out);
+}
+/* A focused field gets a soft ring as well as a darker border, so it stays
+   findable in a 40 field settings form. */
+.field input:focus, .field textarea:focus, .field select:focus {
+  box-shadow: 0 0 0 3.5px rgba(194,24,91,.1);
 }
 .field textarea { min-height: 96px; padding: 11px 12px; resize: vertical; line-height: 1.5; }
 .field select { padding: 0 10px; }
@@ -302,8 +375,14 @@ small { font-size: 13px; }
   display: flex; align-items: stretch; overflow: hidden;
   border: 1.5px solid var(--line-strong); border-radius: var(--r-md);
   background: var(--white);
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    box-shadow var(--t-quick) var(--ease-out);
 }
-.input-group:focus-within { border-color: var(--ink); }
+.input-group:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3.5px rgba(194,24,91,.1);
+}
 .input-group input {
   flex: 1; min-width: 0; min-height: 48px;
   border: none; outline: none; background: transparent;
@@ -345,14 +424,24 @@ small { font-size: 13px; }
   min-height: 46px; padding: 4px 14px 4px 5px;
   border: 1.5px solid var(--line-strong); border-radius: 999px;
   background: var(--white); cursor: pointer; font: inherit;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
 }
+.toggle:active { transform: scale(.98); }
 .toggle[aria-checked="true"] { border-color: var(--ink); }
 .toggle-knob {
   width: 36px; height: 36px; border-radius: 999px; flex: none;
-  background: #D8D9D4; transition: background .18s ease;
+  background: #D8D9D4;
+  transition:
+    background-color var(--t-quick) var(--ease-out),
+    transform var(--t-enter) var(--ease-out);
 }
-.toggle[aria-checked="true"] .toggle-knob { background: var(--accent); }
-.toggle-label { font-size: 14px; font-weight: 600; color: var(--muted); }
+/* The knob nudges toward the label it just switched on. A toggle that only
+   changes colour makes you re-read the label to know which way it went. */
+.toggle[aria-checked="true"] .toggle-knob { background: var(--accent); transform: translateX(3px); }
+.toggle-label { font-size: 14px; font-weight: 600; color: var(--muted); transition: color var(--t-quick) var(--ease-out); }
 .toggle[aria-checked="true"] .toggle-label { color: var(--ink); }
 
 /* Upload dropzone and its filled state. */
@@ -363,8 +452,16 @@ small { font-size: 13px; }
   background: var(--white); color: var(--secondary);
   font: inherit; font-size: 15px; font-weight: 600;
   cursor: pointer; text-align: center;
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    background-color var(--t-quick) var(--ease-out),
+    color var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
 }
-.upload:hover { border-color: var(--ink); color: var(--ink); }
+.upload:active { transform: scale(.99); border-color: var(--ink); }
+@media (hover: hover) and (pointer: fine) {
+  .upload:hover { border-color: var(--ink); color: var(--ink); background: var(--card); }
+}
 .upload .hint { font-family: var(--mono); font-size: 11.5px; font-weight: 400; color: var(--muted); }
 .upload-filled {
   display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
@@ -429,11 +526,18 @@ legend { padding: 0; }
 
 /* ---------- empty states ---------- */
 
+/* Six of these land on a new creator at once. They are the first thing the
+   product says, so they stay dashed (this is a space waiting to be filled,
+   not a broken panel) and the CTA inside them carries the accent. */
 .empty {
   border: 1.5px dashed var(--line-strong);
   border-radius: var(--r-lg);
   background: var(--white);
   padding: 20px;
+  transition: border-color var(--t-quick) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .empty:hover { border-color: var(--muted); }
 }
 .empty--big { padding: 40px 20px; text-align: center; border-radius: var(--r-xl); background: var(--card); }
 .empty-title {
@@ -458,10 +562,34 @@ legend { padding: 0; }
   border-radius: 12px; padding: 12px 15px;
   font-size: 14.5px; font-weight: 500;
   box-shadow: 0 8px 24px rgba(20,22,26,.3);
-  animation: wf-rise .22s ease both;
+  animation: wf-toast var(--t-panel) var(--ease-drawer) both;
+}
+@keyframes wf-toast {
+  from { opacity: 0; transform: translateY(calc(100% + 22px)) scale(.96) }
+  to   { opacity: 1; transform: none }
 }
 .flash::before { content: ""; width: 8px; height: 8px; border-radius: 99px; flex: none; background: #4ADE9B; }
 .flash.alert::before { background: #FF8A80; }
+
+/* ---------- stagger ---------- */
+
+/* A list that appears all at once reads as a screenshot; one that cascades
+   reads as a page assembling itself. Delays stay short (40ms) because the
+   point is texture, not choreography, and nothing waits on it: entries are
+   animation-only, so rows are clickable from the first frame. */
+.wf-stagger > * {
+  animation: wf-rise var(--t-enter) var(--ease-out) both;
+}
+.wf-stagger > *:nth-child(1) { animation-delay: 0ms }
+.wf-stagger > *:nth-child(2) { animation-delay: 40ms }
+.wf-stagger > *:nth-child(3) { animation-delay: 80ms }
+.wf-stagger > *:nth-child(4) { animation-delay: 120ms }
+.wf-stagger > *:nth-child(5) { animation-delay: 160ms }
+.wf-stagger > *:nth-child(6) { animation-delay: 200ms }
+.wf-stagger > *:nth-child(7) { animation-delay: 230ms }
+.wf-stagger > *:nth-child(8) { animation-delay: 260ms }
+/* Past eight the delay stops growing, or a long list crawls in. */
+.wf-stagger > *:nth-child(n+9) { animation-delay: 280ms }
 
 /* ---------- utilities ---------- */
 
@@ -489,5 +617,7 @@ legend { padding: 0; }
   min-height: 46px; padding: 4px 0;
   font-size: 14px; font-weight: 600; color: var(--body);
   cursor: pointer;
+  transition: color var(--t-quick) var(--ease-out);
 }
 .toggle-wrap input { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+.toggle-wrap:active { color: var(--ink); }

@@ -16,14 +16,33 @@
   background: var(--ink); border: none; border-left: 4px solid var(--warn-dot);
   border-radius: var(--r-lg); padding: 16px 18px;
   cursor: pointer; text-decoration: none;
+  box-shadow: var(--e-lifted);
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--t-quick) var(--ease-out),
+    box-shadow var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
+  animation: wf-rise var(--t-enter) var(--ease-out) both;
 }
-.pending-alert:hover { background: #1F2226; }
+/* Money waiting on the creator is the only lifted surface on the dashboard.
+   Everything else is raised or flat, so this reads as the one thing to do. */
+.pending-alert:active { transform: scale(.995); box-shadow: var(--e-raised); }
+@media (hover: hover) and (pointer: fine) {
+  .pending-alert:hover { background: #1F2226; }
+}
 .pending-dot { width: 9px; height: 9px; border-radius: 99px; background: #E0A93A; flex: none; animation: wf-pulse 2s infinite; }
 .pending-title { font-size: 16.5px; font-weight: 600; color: var(--on-ink); }
 .pending-sub { font-size: 14px; color: var(--on-ink-body); margin-top: 2px; }
-.pending-cta { font-size: 15px; font-weight: 600; color: var(--on-ink); white-space: nowrap; }
+.pending-cta {
+  font-size: 15px; font-weight: 600; color: var(--on-ink); white-space: nowrap;
+  transition: transform var(--t-quick) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pending-alert:hover .pending-cta { transform: translateX(2px); }
+}
 
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+/* Stats are readouts, not things you act on, so they stay flat. */
 .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px 18px; }
 .stat-label { font-size: 13px; font-weight: 600; color: var(--muted); }
 .stat-value {
@@ -51,7 +70,9 @@
   background: transparent; color: var(--on-ink);
   border-color: var(--ink-line-2);
 }
-.btn--on-dark:hover { background: transparent; border-color: var(--accent-bright); color: var(--on-ink); }
+@media (hover: hover) and (pointer: fine) {
+  .btn--on-dark:hover { background: transparent; border-color: var(--accent-bright); color: var(--on-ink); }
+}
 
 /* Create actions, grouped by intent rather than by form. */
 .create-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: var(--gap-3); }
@@ -60,6 +81,8 @@
   background: var(--white); padding: 15px;
   display: flex; flex-direction: column; gap: 10px;
 }
+/* Groups live inside .card, so they stay flat and let the parent hold the
+   elevation. */
 .create-group-name { font-size: 15.5px; font-weight: 700; }
 .create-group-desc { font-size: 13px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
 .create-action {
@@ -69,29 +92,58 @@
   background: var(--card); color: var(--ink);
   font: inherit; font-size: 14.5px; font-weight: 600;
   cursor: pointer; text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--t-quick) var(--ease-out),
+    border-color var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
 }
-.create-action:hover { background: var(--addon); border-color: var(--ink); color: var(--ink); }
-.create-action .plus { color: var(--muted); }
+.create-action:active { transform: scale(.98); background: var(--addon); border-color: var(--ink); }
+@media (hover: hover) and (pointer: fine) {
+  .create-action:hover { background: var(--addon); border-color: var(--ink); color: var(--ink); }
+  /* The plus rotates a quarter turn: eleven create actions in a grid need
+     something other than colour to say which one the cursor is on. */
+  .create-action:hover .plus { color: var(--accent); transform: rotate(90deg); }
+}
+.create-action .plus {
+  color: var(--muted); flex: none;
+  transition: color var(--t-quick) var(--ease-out), transform var(--t-enter) var(--ease-out);
+}
 
 /* Managed lists. */
 .managed { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--gap-3); }
 .managed-card {
   background: var(--card); border: 1px solid var(--line); border-radius: 16px;
   padding: 16px; display: flex; flex-direction: column; gap: 12px;
+  box-shadow: var(--e-raised);
 }
 .managed-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
 .managed-name { font-size: 15.5px; font-weight: 700; }
 .managed-count { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* Rows are contents of a managed card: flat, with the thumbnail doing the
+   visual work instead of another border-plus-shadow. */
 .row {
   display: flex; gap: 11px; align-items: center;
   background: var(--white); border: 1px solid var(--line);
   border-radius: var(--r-md); padding: 9px 10px;
+  transition: border-color var(--t-quick) var(--ease-out);
 }
+@media (hover: hover) and (pointer: fine) {
+  .row:hover { border-color: var(--line-strong); }
+}
+/* 38px was too small to read as an image at all, which is why every list
+   looked like text. 48 is the smallest that shows what the thing is. */
 .row-thumb {
-  width: 38px; height: 38px; border-radius: 8px; flex: none; overflow: hidden;
+  width: 48px; height: 48px; border-radius: 9px; flex: none; overflow: hidden;
   background: repeating-linear-gradient(135deg, #EDEEEA 0 7px, #E3E4DF 7px 14px);
 }
-.row-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.row-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform var(--t-panel) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .row:hover .row-thumb img { transform: scale(1.06); }
+}
 .row-title { font-size: 14.5px; font-weight: 600; }
 .row-meta { display: flex; gap: 8px; align-items: center; margin-top: 3px; flex-wrap: wrap; }
 .row-meta-text { font-family: var(--mono); font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -110,7 +162,9 @@
 .claim {
   background: var(--card); border: 1px solid var(--line);
   border-left: 4px solid var(--warn-dot); border-radius: 16px;
-  overflow: hidden; animation: wf-rise .25s ease both;
+  overflow: hidden;
+  box-shadow: var(--e-lifted);
+  animation: wf-rise var(--t-enter) var(--ease-out) both;
 }
 .claim-head {
   padding: 16px clamp(14px, 3vw, 20px);
@@ -152,6 +206,8 @@
 .claim-decide { padding: 0 clamp(14px, 3vw, 20px) 16px; display: flex; gap: 9px; flex-wrap: wrap; }
 .claim-decide .btn { flex: 1; min-width: 140px; min-height: 48px; }
 
+/* Already-decided claims are history: flat, no shadow competing with the
+   pending ones above them. */
 .reviewed-row {
   background: var(--card); border: 1px solid var(--line); border-radius: 12px;
   padding: 12px 14px; display: flex; gap: 12px; align-items: center;
@@ -164,7 +220,14 @@
   background: var(--card); border-radius: var(--r-sm);
   box-shadow: 0 12px 30px rgba(20,22,26,.13);
   border-top: 4px solid var(--ink);
-  overflow: hidden; animation: wf-rise .3s ease both;
+  overflow: hidden;
+  animation: wf-receipt var(--t-panel) var(--ease-out) both;
+}
+/* The payment screen is the moment a stranger decides whether to trust this.
+   It prints: a receipt sliding out rather than a panel fading in. */
+@keyframes wf-receipt {
+  from { opacity: 0; transform: translateY(-10px) }
+  to   { opacity: 1; transform: none }
 }
 .receipt--pending { border-top-color: var(--warn-dot); }
 .receipt-head { padding: 22px clamp(16px, 4vw, 28px) 18px; border-bottom: 1px dashed var(--line-strong); }
@@ -210,8 +273,14 @@
   background: var(--white); color: var(--ink); outline: none;
   font-family: var(--mono); font-size: 20px;
   letter-spacing: .08em; font-variant-numeric: tabular-nums;
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    box-shadow var(--t-quick) var(--ease-out);
 }
-.utr-input:focus { border-color: var(--ink); }
+.utr-input:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 4px rgba(194,24,91,.12);
+}
 .utr-input[aria-invalid="true"] { border-color: var(--invalid); }
 .utr-hint { margin-top: 7px; font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
 
@@ -226,9 +295,22 @@
   display: block; text-align: left; padding: 0; overflow: hidden;
   border: 2px solid var(--line); border-radius: 13px;
   background: var(--white); cursor: pointer; font: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    box-shadow var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
 }
 .choice input { position: absolute; opacity: 0; pointer-events: none; }
-.choice:has(input:checked) { border-color: var(--accent); }
+.choice:active { transform: scale(.98); }
+.choice:has(input:checked) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(194,24,91,.1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .choice:hover { border-color: var(--line-strong); }
+  .choice:has(input:checked):hover { border-color: var(--accent); }
+}
 .choice:has(input:focus-visible) { outline: 2.5px solid var(--accent-bright); outline-offset: 2px; }
 .choice-swatch { height: 58px; display: flex; align-items: center; gap: 7px; padding: 0 12px; }
 .choice-dot { width: 20px; height: 20px; border-radius: 99px; }
@@ -237,7 +319,7 @@
 .choice-fig span { border-radius: 4px; background: #D8D9D4; }
 .choice-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 11px 10px; }
 .choice-name { font-size: 14px; font-weight: 600; }
-.choice-tick { font-size: 13px; font-weight: 700; color: transparent; }
+.choice-tick { font-size: 13px; font-weight: 700; color: transparent; transition: color var(--t-quick) var(--ease-out); }
 .choice:has(input:checked) .choice-tick { color: var(--accent); }
 
 /* Payment methods live on a dark card. */
@@ -278,8 +360,16 @@
   color: var(--body); font: inherit; font-size: 13.5px; font-weight: 600;
   cursor: pointer; text-decoration: none;
   display: inline-flex; align-items: center;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--t-quick) var(--ease-out),
+    border-color var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
 }
-.kind-tab:hover { border-color: var(--ink); color: var(--body); }
+.kind-tab:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) {
+  .kind-tab:hover { border-color: var(--ink); color: var(--body); }
+}
 .kind-tab[aria-current="page"] { background: var(--accent); border-color: var(--accent); color: #FFF; }
 
 /* "How this earns" note above every create form. */
@@ -289,6 +379,7 @@
 
 .form-card {
   background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl);
+  box-shadow: var(--e-raised);
   padding: clamp(16px, 3vw, 24px);
   display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px;
 }
@@ -306,6 +397,7 @@
   display: flex; gap: 10px; align-items: center;
   background: var(--white); border: 1px solid var(--line);
   border-radius: var(--r-md); padding: 9px 11px;
+  animation: wf-rise var(--t-enter) var(--ease-out) both;
 }
 .slot-row-label { font-family: var(--mono); font-size: 14px; font-variant-numeric: tabular-nums; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 
@@ -317,7 +409,12 @@
   border: 1.5px solid var(--line); background: var(--white);
   font: inherit; font-size: 14.5px; font-weight: 600; color: var(--ink);
   cursor: pointer; text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
 }
+.pick:active { transform: scale(.99); }
 .pick:has(input:checked) { border-color: var(--accent); }
 .pick input { position: absolute; opacity: 0; pointer-events: none; }
 .pick-box {
@@ -325,6 +422,10 @@
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 700;
   border: 1.5px solid var(--line-strong); background: var(--white); color: transparent;
+  transition:
+    border-color var(--t-quick) var(--ease-out),
+    background-color var(--t-quick) var(--ease-out),
+    color var(--t-quick) var(--ease-out);
 }
 .pick:has(input:checked) .pick-box { border-color: var(--accent); background: var(--accent); color: #FFF; }
 .pick-thumb {

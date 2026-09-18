@@ -73,7 +73,7 @@
             <span class="pf-count"><%= pluralize(collection.product_links.size, "item") %></span>
           </div>
           <% if first_group %><p class="rec-note">These are referral links. If you buy, the store pays a small cut at no extra cost to you.</p><% first_group = false %><% end %>
-          <div class="rec-list"><%= render partial: "product_links/card", collection: collection.product_links %></div>
+          <div class="rec-list wf-stagger"><%= render partial: "product_links/card", collection: collection.product_links %></div>
         </section>
       <% end %>
       <% if @uncategorized_links.any? %>
@@ -83,7 +83,7 @@
             <span class="pf-count"><%= pluralize(@uncategorized_links.size, "item") %></span>
           </div>
           <% if first_group %><p class="rec-note">These are referral links. If you buy, the store pays a small cut at no extra cost to you.</p><% end %>
-          <div class="rec-list"><%= render partial: "product_links/card", collection: @uncategorized_links %></div>
+          <div class="rec-list wf-stagger"><%= render partial: "product_links/card", collection: @uncategorized_links %></div>
         </section>
       <% end %>
     <% end %>
@@ -91,7 +91,7 @@
     <% if @paid_media_posts.any? %>
       <section class="pf-section">
         <div class="pf-section-head"><h2>Behind the haul</h2></div>
-        <div class="media-grid"><%= render partial: "paid_media_posts/card", collection: @paid_media_posts %></div>
+        <div class="media-grid wf-stagger"><%= render partial: "paid_media_posts/card", collection: @paid_media_posts %></div>
       </section>
     <% end %>
 
@@ -113,7 +113,7 @@
       <% next if wishlist.wishlist_items.empty? %>
       <section class="pf-section">
         <div class="pf-section-head"><h2><%= wishlist.title %></h2></div>
-        <div class="wish-grid"><%= render partial: "wishlists/item", collection: wishlist.wishlist_items %></div>
+        <div class="wish-grid wf-stagger"><%= render partial: "wishlists/item", collection: wishlist.wishlist_items %></div>
       </section>
     <% end %>
 

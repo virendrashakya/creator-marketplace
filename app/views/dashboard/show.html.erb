@@ -25,7 +25,7 @@
     <% end %>
   <% end %>
 
-  <section class="stats">
+  <section class="stats wf-stagger">
     <div class="stat">
       <div class="stat-label">Recommendations</div>
       <strong class="stat-value"><%= number_with_delimiter(@links.count) %></strong>
@@ -49,7 +49,7 @@
       <h2>Add to your page</h2>
       <span class="muted" style="font-size: 13.5px">Pick what you are adding, not which form to open</span>
     </div>
-    <div class="create-groups">
+    <div class="create-groups wf-stagger">
       <% [
         [ "Things you back", "Links out, with your reason attached.",
           [ [ "Recommendation", new_product_link_path ], [ "Collection", new_collection_path ] ] ],
@@ -82,7 +82,7 @@
     <h2>What is on your page</h2>
   </div>
 
-  <section class="managed">
+  <section class="managed wf-stagger">
     <%= render "dashboard/managed", name: "Recommendations", count: pluralize(@links.size, "live"),
           empty_title: "Nothing recommended yet",
           empty_body: "The thing you keep getting asked about. Start there.",

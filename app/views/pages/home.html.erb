@@ -1,85 +1,221 @@
-<% content_for :title, "Wishful: one link for everything you recommend" %>
+<% content_for :title, "Wishful: get paid for what only you have" %>
+<% content_for :description, "Indian creators put their recommendations and their paid photos, videos and time on one page. Fans pay over UPI, straight into your bank. You keep everything." %>
 <% content_for :head do %>
   <link rel="stylesheet" href="/assets/home.css">
 <% end %>
 
+<%#
+  The argument of this page, in order:
+    1. Links are how you start. Selling is how you get paid.
+    2. Here is the money path, and you are the one who approves it.
+    3. Here is what a page looks like.
+    4. Here is why 100% is different from a commission.
+  Everything else is cut. A creator deciding whether to sign up does not need
+  a feature grid, and we have no logo wall or follower counts to show yet.
+%>
+
 <section class="hero">
-  <div>
-    <h1>One link for everything you actually recommend.</h1>
-    <p class="hero-lede">Your thrift finds, your presets, your time, your wishlist. Fans pay you straight over UPI, into your own account. No gateway sitting in the middle, no cut of your money going anywhere else.</p>
-    <div class="actions">
-      <%= link_to "Claim your handle", sign_up_path, class: "btn btn--accent btn--big" %>
+  <div class="hero-copy">
+    <p class="hero-kicker">For Indian creators</p>
+    <h1>Your links earn clicks.<br><span class="hero-em">Your photos earn money.</span></h1>
+    <p class="hero-lede">
+      Put your recommendations and the things only you can sell on one page.
+      Fans pay over UPI, into your own bank account, and you keep every rupee.
+    </p>
+    <div class="hero-actions">
+      <%= link_to sign_up_path, class: "btn btn--accent btn--big" do %>
+        Claim your handle
+      <% end %>
       <% if (sample = @creators.find { |c| c.product_links.any? } || @creators.first) %>
-        <%= link_to "See a live page", profile_path(sample.handle), class: "btn btn--ghost btn--big" %>
+        <%= link_to "See a real page", profile_path(sample.handle), class: "btn btn--ghost btn--big" %>
       <% end %>
     </div>
-    <div class="hero-facts">
-      <span>GPay, PhonePe, Paytm</span>
-      <span>settles to your UPI ID</span>
-    </div>
+    <p class="hero-fine">
+      Free to start. No gateway, no monthly fee, no cut of your money.
+    </p>
   </div>
 
-  <%# The artefact the product makes: a creator page, and the receipt it produces. %>
-  <div class="hero-art" aria-hidden="true">
-    <div class="phone">
-      <div class="phone-banner">
-        <div class="phone-avatar">A</div>
-      </div>
-      <div class="phone-body">
-        <div class="phone-name">Ananya Rao</div>
-        <div class="phone-handle">@ananyarao</div>
-        <div class="phone-links">
+  <%# The artefact this product makes: a creator page, and the receipt it
+      produces. Two objects, because the whole pitch is that one turns into
+      the other. %>
+  <div class="hero-art">
+    <div class="phone" aria-hidden="true">
+      <div class="phone-chrome"><span class="phone-url">wishful.app/@ananyarao</span></div>
+      <div class="phone-screen">
+        <div class="phone-banner"><div class="phone-avatar">A</div></div>
+        <div class="phone-body">
+          <div class="phone-name">Ananya Rao</div>
+          <div class="phone-handle">@ananyarao · Mumbai</div>
+
+          <div class="phone-sell">
+            <div class="phone-sell-media">
+              <span class="phone-lock">Locked</span>
+            </div>
+            <div class="min0">
+              <div class="phone-sell-title">The full Goa set, 48 photos</div>
+              <div class="phone-sell-price">₹499 to unlock</div>
+            </div>
+          </div>
+
+          <div class="phone-divider"><span>and things I actually use</span></div>
+
           <div class="phone-link">
             <div class="phone-thumb"></div>
             <div class="min0">
-              <div class="phone-link-title truncate">Levi's 501, 1990s</div>
-              <div class="phone-link-price">₹2,499</div>
+              <div class="phone-link-title truncate">Levi's 501, thrifted</div>
+              <div class="phone-link-meta">₹2,499 · Myntra</div>
             </div>
           </div>
           <div class="phone-link">
             <div class="phone-thumb"></div>
             <div class="min0">
-              <div class="phone-link-title truncate">Closet audit, 40 min</div>
-              <div class="phone-link-price">₹1,200</div>
+              <div class="phone-link-title truncate">The sunscreen, finally</div>
+              <div class="phone-link-meta">₹649 · Nykaa</div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="slip">
-      <div class="slip-label">Payment received</div>
-      <div class="slip-amount">₹2,499</div>
-      <div class="slip-lines">
-        <div class="slip-line"><span>UTR</span><span>402913887561</span></div>
-        <div class="slip-line"><span>IST</span><span>19 Sep, 4:12 pm</span></div>
+    <div class="slip" aria-hidden="true">
+      <div class="slip-head">
+        <span class="slip-label">Paid to you</span>
+        <span class="badge badge--ok">Approved</span>
       </div>
-      <div class="badge badge--ok" style="margin-top: 12px">Approved by you</div>
+      <div class="slip-amount">₹499</div>
+      <div class="slip-lines">
+        <div class="slip-line"><span>UTR</span><span class="ref">402913887561</span></div>
+        <div class="slip-line"><span>To</span><span>ananya@okaxis</span></div>
+        <div class="slip-line"><span>When</span><span>4:12 pm IST</span></div>
+      </div>
+      <div class="slip-foot">
+        <span class="slip-keep">You keep ₹499</span>
+        <span class="slip-keep-sub">No commission deducted</span>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="steps-band">
-  <div class="steps-inner">
-    <h2>How the money reaches you</h2>
-    <p class="steps-lede">Four steps, and you are the one who says yes at the end.</p>
-    <ol class="steps">
-      <li class="step">
-        <div class="step-title">They tap and see your QR</div>
-        <div class="step-body">Your UPI ID, your QR, your payee name. Nothing of ours in between.</div>
+<%# The two paths, stated as a sequence rather than as equal features. The
+    second card is the one we want them to read, so it carries the accent. %>
+<section class="paths" aria-labelledby="paths-heading">
+  <div class="paths-inner">
+    <h2 class="paths-title" id="paths-heading">Two ways to earn, and they work together</h2>
+    <div class="paths-grid">
+      <article class="path">
+        <p class="path-step">Start here</p>
+        <h3 class="path-name">Link what you already post about</h3>
+        <p class="path-body">
+          Every haul, every "where is it from", every reply in your DMs becomes
+          a card on your page with your reason attached. You see which ones
+          your audience actually taps.
+        </p>
+        <ul class="path-list">
+          <li>Group links into collections</li>
+          <li>Click counts on every item</li>
+          <li>Your reason, not a product description</li>
+        </ul>
+      </article>
+
+      <article class="path path--lead">
+        <p class="path-step">Then get paid</p>
+        <h3 class="path-name">Sell the thing nobody else has</h3>
+        <p class="path-body">
+          The outtakes, the full set, the preset, forty minutes of your time,
+          your number. Put it behind a price. A fan pays you on UPI and you
+          approve it yourself.
+        </p>
+        <ul class="path-list">
+          <li>Photos and video behind a one time unlock</li>
+          <li>Paid meetups with real time slots</li>
+          <li>Gift wishlists your audience funds</li>
+          <li>Pay to reach you directly</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<%# The money path. This is the trust argument, and it is the thing a fan
+    sending money to a stranger needs to see spelled out. %>
+<section class="money" aria-labelledby="money-heading">
+  <div class="money-inner">
+    <h2 id="money-heading">How the money reaches you</h2>
+    <p class="money-lede">
+      There is no payment gateway in the middle. Your fan pays your UPI ID,
+      and you are the one who says yes.
+    </p>
+    <ol class="flow">
+      <li class="flow-step">
+        <p class="flow-title">They see your QR</p>
+        <p class="flow-body">Your UPI ID, your QR, your name as the payee.</p>
       </li>
-      <li class="step">
-        <div class="step-title">They pay from their app</div>
-        <div class="step-body">GPay, PhonePe, Paytm, whatever they already use. Straight to your bank.</div>
+      <li class="flow-step">
+        <p class="flow-title">They pay from their app</p>
+        <p class="flow-body">GPay, PhonePe, Paytm. Straight into your bank.</p>
       </li>
-      <li class="step">
-        <div class="step-title">They send you the UTR</div>
-        <div class="step-body">The 12 digit reference their app shows, plus a screenshot if they want.</div>
+      <li class="flow-step">
+        <p class="flow-title">They send the UTR</p>
+        <p class="flow-body">The reference their app shows, and a screenshot if they want.</p>
       </li>
-      <li class="step">
-        <div class="step-title">You approve it</div>
-        <div class="step-body">Check it against your statement, tap approve, and their access opens instantly.</div>
+      <li class="flow-step flow-step--you">
+        <p class="flow-title">You approve it</p>
+        <p class="flow-body">Check it against your statement. Their access opens the moment you tap yes.</p>
       </li>
     </ol>
+    <p class="money-note">
+      Because the money never passes through us, there is nothing for us to
+      take a cut of, and nothing to wait for. It is in your account before you
+      have approved it.
+    </p>
+  </div>
+</section>
+
+<%# The comparison. Named as a mechanism, not as a competitor, because the
+    point is the structure and not a logo. %>
+<section class="keep" aria-labelledby="keep-heading">
+  <div class="keep-inner">
+    <h2 class="keep-title" id="keep-heading">A commission is not the same as being paid</h2>
+    <div class="keep-grid">
+      <div class="keep-col">
+        <p class="keep-col-label">Affiliate commission</p>
+        <p class="keep-figure keep-figure--them">
+          <span>₹2,499</span>
+          <span class="keep-arrow" aria-hidden="true">&rarr;</span>
+          <span class="visually-hidden">earns you</span>
+          <strong>₹200</strong>
+        </p>
+        <p class="keep-col-note">
+          A fan buys the jeans you recommended. The store keeps the sale, pays
+          a percentage, and confirms it next month. You earned 8%.
+        </p>
+      </div>
+      <div class="keep-col keep-col--ours">
+        <p class="keep-col-label">Sold on Wishful</p>
+        <p class="keep-figure">
+          <span>₹499</span>
+          <span class="keep-arrow" aria-hidden="true">&rarr;</span>
+          <span class="visually-hidden">earns you</span>
+          <strong>₹499</strong>
+        </p>
+        <p class="keep-col-note">
+          A fan unlocks the set you shot. They pay you directly. It is in your
+          account today, and all of it is yours.
+        </p>
+      </div>
+    </div>
+    <p class="keep-foot">
+      Keep doing both. The links are how people find what you are worth. The
+      things you sell are how you get paid for it.
+    </p>
+  </div>
+</section>
+
+<section class="close" aria-labelledby="close-heading">
+  <div class="close-inner">
+    <h2 class="close-title" id="close-heading">Your handle is probably still free</h2>
+    <p class="close-url" aria-hidden="true"><span class="close-url-dim">wishful.app/@</span><span class="close-url-cursor">yourname</span></p>
+    <%= link_to "Claim it", sign_up_path, class: "btn btn--accent btn--big" %>
+    <p class="close-fine">Takes a minute. You need a UPI ID and something worth sharing.</p>
   </div>
 </section>
