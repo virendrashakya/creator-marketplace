@@ -1,27 +1,33 @@
-/* Wishful design system
-   Marigold + indigo. Grounded in the UPI receipt: reference codes, confirmed
-   and pending states, rupee amounts that line up in a column.
-   Single stylesheet, served statically — this app has no asset pipeline. */
+/* Wishful design system: "Ledger and Marigold"
+   Source material is the Indian bank passbook, not warm-craft DTC: a cool
+   off-white stock, dense ledger ink, a stamped confirmation. Against that cool
+   neutral sits one warm accent, marigold, because marigold is the colour of
+   gifting and celebration here and gifting is what the product moves.
+   Cool ground plus a single warm accent, deliberately not the warm-paper and
+   brass family that every premium-consumer page defaults to.
+   Single stylesheet, served statically. This app has no asset pipeline. */
 
 /* ---------- tokens ---------- */
 
 :root {
   color-scheme: light;
 
-  --ink: #1A1714;
-  --paper: #FBF7F0;
-  --marigold: #E8A33D;
-  --indigo: #2C3E7B;
-  --clay: #EDE4D6;
+  --ink: #16181D;
+  --paper: #F4F5F7;
+  --marigold: #E2A02F;
+  --slate: #3D4A5C;
+  --clay: #E7EAEF;
 
-  --ink-soft: #6B6157;
+  --ink-soft: #5C6472;
   --card: #FFFFFF;
-  --rule: var(--clay);
+  --rule: #DDE1E7;
   --accent: var(--marigold);
-  --accent-ink: #4A3410;
-  --confirmed: var(--indigo);
-  --pending: #8A6A22;
-  --danger: #A32E32;
+  --accent-ink: #3A2708;
+  /* Confirmed reads as ledger ink, not as a second accent: the marigold stays
+     the only hue that competes for attention. */
+  --confirmed: var(--slate);
+  --pending: #8A6320;
+  --danger: #A32733;
 
   /* major third, 1.25 */
   --t--1: 0.8125rem;
@@ -33,7 +39,7 @@
   --t-5: 3.0625rem;
 
   --sans: "Public Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --serif: "Playfair Display", Georgia, "Times New Roman", serif;
 
   --measure: 66ch;
   --shell: 68rem;
@@ -76,7 +82,6 @@ h1, h2, h3, h4 {
   letter-spacing: -0.015em;
   text-wrap: balance;
   margin: 0;
-  font-variation-settings: "SOFT" 20, "WONK" 1;
 }
 
 h1 { font-size: var(--t-4); }
@@ -95,7 +100,7 @@ small { font-size: var(--t--1); }
 .num { font-variant-numeric: tabular-nums; }
 .brandname { font-family: var(--serif); }
 
-/* Reference codes, UTRs, UPI ids — the receipt vernacular. */
+/* Reference codes, UTRs, UPI ids: the receipt vernacular. */
 .ref {
   font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
   font-size: 0.9375em;
@@ -107,10 +112,12 @@ small { font-size: var(--t--1); }
 /* ---------- focus, motion, targets ---------- */
 
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--indigo);
+  outline: 2px solid var(--slate);
   outline-offset: 2px;
   border-radius: var(--r-sm);
 }
+
+html { scroll-behavior: smooth; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -157,7 +164,6 @@ small { font-size: var(--t--1); }
   font-weight: 600;
   letter-spacing: -0.03em;
   text-decoration: none;
-  font-variation-settings: "SOFT" 40, "WONK" 1;
 }
 .brand em { font-style: normal; color: var(--marigold); }
 
@@ -195,8 +201,8 @@ small { font-size: var(--t--1); }
   -webkit-tap-highlight-color: transparent;
   transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
-.button:hover { background: #332C25; }
-.button:active { background: #0F0D0B; }
+.button:hover { background: #262A31; }
+.button:active { background: #0C0D10; }
 
 /* The single paid action. Spend the boldness here and nowhere else. */
 .button.pink,
@@ -205,17 +211,26 @@ small { font-size: var(--t--1); }
   color: var(--accent-ink);
   font-weight: 700;
 }
-.button.pink:hover, .button.accent:hover { background: #D8901F; }
-.button.pink:active, .button.accent:active { background: #C07E14; }
+.button.pink:hover, .button.accent:hover { background: #CE9027; }
+.button.pink:active, .button.accent:active { background: #C28A20; }
 
 .button.light {
   background: var(--card);
   color: var(--ink);
   border-color: var(--rule);
 }
-.button.light:hover { background: var(--clay); border-color: #DFD2BE; }
+.button.light:hover { background: var(--clay); border-color: #C9D0DA; }
 
 .button.small { min-height: 38px; padding: 0.4375rem 0.75rem; font-size: 0.75rem; }
+
+/* Price rides in its own slot, divided by a hairline rather than a middle dot. */
+.buy { gap: 0; }
+.buy-price {
+  margin-left: 0.5rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  font-weight: 700;
+}
 
 .button[disabled], .button[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
 
@@ -250,7 +265,7 @@ small { font-size: var(--t--1); }
   padding: 0.875rem 1rem;
   border-radius: var(--r-md);
   border-left: 3px solid var(--confirmed);
-  background: color-mix(in srgb, var(--indigo) 8%, var(--paper));
+  background: color-mix(in srgb, var(--slate) 8%, var(--paper));
   color: var(--ink);
   font-size: var(--t--1);
 }
@@ -281,17 +296,17 @@ small { font-size: var(--t--1); }
 .field select {
   width: 100%;
   padding: 0.6875rem 0.75rem;
-  border: 1px solid #D8CCBA;
+  border: 1px solid #C9D0DA;
   border-radius: var(--r-md);
   background: var(--card);
   color: var(--ink);
   font: inherit;
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
-.field input:hover, .field textarea:hover, .field select:hover { border-color: #C4B49C; }
+.field input:hover, .field textarea:hover, .field select:hover { border-color: #AEB8C6; }
 .field input:focus, .field textarea:focus, .field select:focus {
-  border-color: var(--indigo);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--indigo) 18%, transparent);
+  border-color: var(--slate);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--slate) 18%, transparent);
   outline: none;
 }
 .field textarea { min-height: 6rem; resize: vertical; }
@@ -310,7 +325,7 @@ small { font-size: var(--t--1); }
   font-weight: 550;
   cursor: pointer;
 }
-.check input { width: 1.125rem; height: 1.125rem; accent-color: var(--indigo); flex: none; }
+.check input { width: 1.125rem; height: 1.125rem; accent-color: var(--slate); flex: none; }
 
 .field-row { display: grid; gap: var(--gap-2); grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
 
@@ -320,7 +335,7 @@ small { font-size: var(--t--1); }
   display: inline-flex;
   align-items: center;
   padding: 0 0.75rem;
-  border: 1px solid #D8CCBA;
+  border: 1px solid #C9D0DA;
   border-right: 0;
   border-radius: var(--r-md) 0 0 var(--r-md);
   background: var(--clay);
@@ -389,7 +404,7 @@ legend {
   letter-spacing: 0.01em;
 }
 .state::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
-.state--confirmed { color: var(--confirmed); background: color-mix(in srgb, var(--indigo) 10%, transparent); }
+.state--confirmed { color: var(--confirmed); background: color-mix(in srgb, var(--slate) 10%, transparent); }
 .state--pending { color: var(--pending); background: color-mix(in srgb, var(--marigold) 18%, transparent); }
 .state--rejected { color: var(--danger); background: color-mix(in srgb, var(--danger) 9%, transparent); }
 .state--hidden { color: var(--ink-soft); background: var(--clay); }
@@ -398,7 +413,7 @@ legend {
 
 .empty {
   padding: var(--gap-3);
-  border: 1px dashed #DCCEB8;
+  border: 1px dashed #C9D0DA;
   border-radius: var(--r-md);
   background: color-mix(in srgb, var(--clay) 40%, var(--paper));
   color: var(--ink-soft);

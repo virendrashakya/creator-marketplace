@@ -14,11 +14,11 @@
         <% slots.each do |slot| %>
           <% slot_label = l(slot.starts_at, format: :slot_short) %>
           <% if !signed_in? %>
-            <%= link_to sign_in_path, class: "button accent small num" do %><%= slot_label %><span class="visually-hidden"> — sign in to book</span><% end %>
+            <%= link_to sign_in_path, class: "button accent small num" do %><%= slot_label %><span class="visually-hidden">: sign in to book</span><% end %>
           <% elsif card.user.accepts_upi_manual? %>
-            <%= link_to new_payment_claim_path(purchasable_type: "MeetSlot", purchasable_id: slot.id), class: "button accent small num" do %><%= slot_label %><span class="visually-hidden"> — book this time</span><% end %>
+            <%= link_to new_payment_claim_path(purchasable_type: "MeetSlot", purchasable_id: slot.id), class: "button accent small num" do %><%= slot_label %><span class="visually-hidden">: book this time</span><% end %>
           <% else %>
-            <%= button_to book_meet_slot_path(slot), class: "button accent small num", form: { data: { turbo_submits_with: "Booking…" } } do %><%= slot_label %><span class="visually-hidden"> — book this time</span><% end %>
+            <%= button_to book_meet_slot_path(slot), class: "button accent small num", form: { data: { turbo_submits_with: "Booking…" } } do %><%= slot_label %><span class="visually-hidden">: book this time</span><% end %>
           <% end %>
         <% end %>
       </div>

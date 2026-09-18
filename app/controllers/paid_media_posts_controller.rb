@@ -41,7 +41,7 @@ class PaidMediaPostsController < ApplicationController
     deliver post.media
   end
 
-  # The teaser image is intentionally public — it is what a locked visitor sees.
+  # The teaser image is intentionally public. It is what a locked visitor sees.
   def preview
     post = PaidMediaPost.published.find(params[:id])
     return head :not_found unless post.preview.attached?
@@ -59,7 +59,7 @@ class PaidMediaPostsController < ApplicationController
     purchase = current_user.media_purchases.find_or_initialize_by(paid_media_post: post)
     purchase.assign_attributes(amount_cents: post.price_cents, currency: post.currency, status: "paid", payment_reference: "test_#{SecureRandom.hex(8)}")
     if purchase.save
-      redirect_to profile_path(post.user.handle), notice: "Unlocked in test mode — no payment was collected."
+      redirect_to profile_path(post.user.handle), notice: "Unlocked in test mode. No payment was collected."
     else
       redirect_to profile_path(post.user.handle), alert: purchase.errors.full_messages.to_sentence
     end

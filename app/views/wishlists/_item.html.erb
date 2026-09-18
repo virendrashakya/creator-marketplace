@@ -17,7 +17,7 @@
     </div>
     <div class="gift-figures">
       <strong><%= item.money_label(raised) %></strong> of <%= item.money_label(target) %>
-      <span class="visually-hidden">— <%= pct %> percent funded</span>
+      <span class="visually-hidden">(<%= pct %> percent funded)</span>
     </div>
 
     <% if item.open_for_gifts? %>
@@ -48,7 +48,7 @@
           </div>
           <%= submit_tag "Gift", class: "button accent small", data: { disable_with: "Gifting…" } %>
           <p id="gift_hint_<%= item.id %>" class="muted" style="font-size: 0.75rem; flex-basis: 100%">
-            <%= item.money_label(remaining) %> still needed — that is <%= number_with_delimiter(remaining) %> <%= minor_unit_hint(item.currency) %>.
+            <%= item.money_label(remaining) %> still needed. That is <%= number_with_delimiter(remaining) %> <%= minor_unit_hint(item.currency) %>.
           </p>
         <% end %>
       <% else %>

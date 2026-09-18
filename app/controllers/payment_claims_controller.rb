@@ -59,7 +59,7 @@ class PaymentClaimsController < ApplicationController
   def approve
     claim = current_user.received_payment_claims.pending.find(params[:id])
     claim.approve!(current_user)
-    redirect_to payment_claims_path, notice: "Payment approved — access granted to @#{claim.claimant.handle}."
+    redirect_to payment_claims_path, notice: "Payment approved. Access granted to @#{claim.claimant.handle}."
   rescue ActiveRecord::RecordInvalid, PaymentFulfillment::UnsupportedPurchasable => e
     redirect_to payment_claims_path, alert: "Could not grant access: #{e.message}"
   end

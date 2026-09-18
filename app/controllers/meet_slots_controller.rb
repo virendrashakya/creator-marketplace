@@ -37,7 +37,7 @@ class MeetSlotsController < ApplicationController
       status: "paid",
       payment_reference: "test_meet_#{SecureRandom.hex(8)}"
     )
-    redirect_to profile_path(offer.user.handle), notice: "Booked in test mode — no payment was collected."
+    redirect_to profile_path(offer.user.handle), notice: "Booked in test mode. No payment was collected."
   rescue ActiveRecord::RecordNotUnique
     # The unique index on meet_slot_id is what actually prevents double booking;
     # two concurrent requests both pass any read-time check.

@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title><%= content_for(:title).presence || "Wishful — things worth vouching for" %></title>
+    <title><%= content_for(:title).presence || "Wishful: things worth vouching for" %></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="description" content="<%= content_for(:description).presence || "Wishful gives Indian creators one page for everything they recommend, and a direct UPI way to be paid for it." %>">
-    <meta name="theme-color" content="#FBF7F0">
+    <meta name="theme-color" content="#F4F5F7">
     <%= csrf_meta_tags %>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/favicon.svg">
+    <meta property="og:site_name" content="Wishful">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<%= content_for(:title).presence || "Wishful: things worth vouching for" %>">
+    <meta property="og:description" content="<%= content_for(:description).presence || "Wishful gives Indian creators one page for everything they recommend, and a direct UPI way to be paid for it." %>">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Public+Sans:wght@400;500;550;600;650;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Public+Sans:wght@400..700&display=swap">
     <link rel="stylesheet" href="/assets/wishful.css">
     <%= yield :head %>
   </head>

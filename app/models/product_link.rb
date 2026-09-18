@@ -13,7 +13,7 @@ class ProductLink < ApplicationRecord
   )\z/xi
 
   # Returns an error message, or nil when the URL is a safe public http(s) one.
-  # Public so `visit` can re-check at redirect time — rows written before this
+  # Public so `visit` can re-check at redirect time. Rows written before this
   # validation existed are still in the database.
   def self.http_url_error(value)
     # Anchored: Rails' `format:` matcher is unanchored, so an embedded newline

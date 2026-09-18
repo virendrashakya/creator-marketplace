@@ -1,6 +1,6 @@
 module ApplicationHelper
   # Every amount in the database is an integer of the currency's minor unit
-  # (paise, cents). Views must never do this arithmetic themselves — they did,
+  # (paise, cents). Views must never do this arithmetic themselves. They did,
   # five different ways, and all of them hardcoded the rupee sign.
   def money(minor_units, currency = "INR")
     major = minor_units.to_i / 100.0
@@ -10,7 +10,7 @@ module ApplicationHelper
   end
 
   # Rupees group by lakh and crore: 1,50,000 rather than 150,000. Rails'
-  # delimiter cannot express this, so the integer part is grouped by hand —
+  # delimiter cannot express this, so the integer part is grouped by hand:
   # last three digits, then pairs.
   def indian_grouping(formatted)
     whole, decimals = formatted.split(".")

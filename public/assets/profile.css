@@ -1,4 +1,4 @@
-/* Wishful — public profile.
+/* Wishful: public profile.
    The page is an endorsement, so each row leads with the creator's reason.
    Themes are token overrides only; structure never changes between them. */
 
@@ -147,7 +147,7 @@
 
 .slots { display: flex; flex-wrap: wrap; gap: var(--gap-1); margin-top: var(--gap-2); }
 
-/* Gift progress — a real meter, not a decorated div. */
+/* Gift progress: a real meter, not a decorated div. */
 .gift-meter {
   height: 6px;
   border-radius: 3px;
@@ -215,34 +215,34 @@
 /* ---------- themes: token overrides only ---------- */
 
 .theme-luxury {
-  --p-ground: #12100E;
-  --p-card: #1C1915;
-  --p-ink: #F2EBDD;
-  --p-soft: #A79B86;
-  --p-rule: #2E2921;
+  --p-ground: #141518;
+  --p-card: #1D1F24;
+  --p-ink: #EFEFF2;
+  --p-soft: #9BA1AD;
+  --p-rule: #2A2D34;
   --p-accent: #C9A227;
-  --p-accent-ink: #1A1508;
+  --p-accent-ink: #14120A;
   color-scheme: dark;
 }
 
 .theme-adventure {
-  --p-ground: #E8EFE2;
+  --p-ground: #E9EDE8;
   --p-card: #FFFFFF;
-  --p-ink: #1F3329;
-  --p-soft: #5A6B5C;
-  --p-rule: #CBD9C3;
+  --p-ink: #1B2A22;
+  --p-soft: #54635A;
+  --p-rule: #CBD6C9;
   --p-accent: #2C6E49;
   --p-accent-ink: #FFFFFF;
 }
 
 .theme-after_dark {
-  --p-ground: #140E16;
-  --p-card: #1E1620;
-  --p-ink: #F3E6F0;
-  --p-soft: #A895A6;
-  --p-rule: #312433;
-  --p-accent: #C2417E;
-  --p-accent-ink: #1A0B13;
+  --p-ground: #141017;
+  --p-card: #1E1823;
+  --p-ink: #F0E9F3;
+  --p-soft: #A398AC;
+  --p-rule: #2E2637;
+  --p-accent: #DC6398;
+  --p-accent-ink: #170810;
   color-scheme: dark;
 }
 

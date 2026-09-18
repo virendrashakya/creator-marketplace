@@ -40,7 +40,7 @@ class ContactRevealsController < ApplicationController
     purchase = current_user.access_purchases.find_or_initialize_by(purchasable: reveal)
     purchase.assign_attributes(amount_cents: reveal.price_cents, currency: reveal.currency, status: "paid", payment_reference: "test_contact_#{SecureRandom.hex(8)}")
     if purchase.save
-      redirect_to profile_path(reveal.user.handle), notice: "Revealed in test mode — no payment was collected."
+      redirect_to profile_path(reveal.user.handle), notice: "Revealed in test mode. No payment was collected."
     else
       redirect_to profile_path(reveal.user.handle), alert: purchase.errors.full_messages.to_sentence
     end

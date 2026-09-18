@@ -1,4 +1,4 @@
-/* Wishful — creator dashboard and payment confirmation.
+/* Wishful: creator dashboard and payment confirmation.
    The ledger is the organising idea: rows that line up, amounts in a column,
    state carried by the same grammar everywhere. */
 
@@ -87,7 +87,11 @@
 @media (max-width: 52rem) { .dash-grid { grid-template-columns: 1fr; } }
 
 .panel { min-width: 0; }
-.panel + .panel { margin-top: var(--gap-4); }
+/* Spacing belongs to every panel that follows anything, not only to a panel
+   following another panel. The grid sits between them on the dashboard. */
+.dash-grid + .panel,
+.panel + .panel,
+.stats + .panel { margin-top: var(--gap-5); }
 .panel h2 { font-size: var(--t-1); }
 
 .row {

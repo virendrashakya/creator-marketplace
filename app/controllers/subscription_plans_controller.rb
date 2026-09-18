@@ -12,7 +12,7 @@ class SubscriptionPlansController < ApplicationController
     return if deny_if_blocked_by(plan.user)
     subscription = current_user.creator_subscriptions.find_or_initialize_by(subscription_plan: plan)
     subscription.update!(status: "active", current_period_ends_at: 1.month.from_now, payment_reference: "test_sub_#{SecureRandom.hex(8)}")
-    redirect_to profile_path(plan.user.handle), notice: "Subscribed in test mode — no payment was collected."
+    redirect_to profile_path(plan.user.handle), notice: "Subscribed in test mode. No payment was collected."
   end
   private
   def set_plan; @subscription_plan = current_user.subscription_plans.find(params[:id]); end

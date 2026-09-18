@@ -70,7 +70,7 @@ class WishlistItemsController < ApplicationController
     return redirect_to(profile_path(creator.handle), alert: error) if error
 
     redirect_to profile_path(creator.handle),
-                notice: "Test contribution of #{item.money_label(contribution.amount_cents)} recorded — no payment was collected."
+                notice: "Test contribution of #{item.money_label(contribution.amount_cents)} recorded. No payment was collected."
   end
 
   private

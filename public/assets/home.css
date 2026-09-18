@@ -1,4 +1,4 @@
-/* Wishful — signed-out home.
+/* Wishful: signed-out home.
    The hero shows the product's actual artefact (a vouch row) at full size.
    One orchestrated entrance on load; nothing else moves on its own. */
 
@@ -20,7 +20,6 @@
   line-height: 1.02;
   letter-spacing: -0.032em;
   max-width: 17ch;
-  font-variation-settings: "SOFT" 30, "WONK" 1;
 }
 
 .hero-lede {
@@ -61,7 +60,7 @@
   background: var(--clay);
   display: grid;
   place-items: center;
-  color: #C9B99E;
+  color: #B9C0CB;
   font-size: var(--t-1);
 }
 
