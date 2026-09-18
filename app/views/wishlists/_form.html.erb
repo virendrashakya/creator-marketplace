@@ -1,1 +1,19 @@
-<%= form_with model: @wishlist do |f| %><%= render "shared/errors", record: @wishlist %><div class="field"><%= f.label :title %><%= f.text_field :title, placeholder: "My birthday wishlist" %></div><div class="field"><%= f.label :description %><%= f.text_area :description, placeholder: "A small note for supporters" %></div><div class="field"><label><%= f.check_box :published %> Show on my public profile</label></div><div class="form-actions"><%= f.submit class: "button pink" %><%= link_to "Cancel", dashboard_path, class: "button light" %></div><% end %>
+<%= form_with model: @wishlist do |f| %>
+  <%= render "shared/errors", record: @wishlist %>
+  <div class="field">
+    <%= f.label :title, "Wishlist name" %>
+    <%= f.text_field :title, placeholder: "My birthday wishlist" %>
+  </div>
+  <div class="field">
+    <%= f.label :description, "Description" %>
+    <%= f.text_area :description, placeholder: "A note for anyone thinking of gifting…" %>
+  </div>
+  <label class="check">
+    <%= f.check_box :published %>
+    Show this on my page
+  </label>
+  <div class="form-actions">
+    <%= f.submit(@wishlist.persisted? ? "Save wishlist" : "Create wishlist", class: "button accent", data: { disable_with: "Saving…" }) %>
+    <%= link_to "Cancel", dashboard_path, class: "button light" %>
+  </div>
+<% end %>

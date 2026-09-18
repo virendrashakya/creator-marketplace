@@ -1,8 +1,26 @@
 <%= form_with model: @subscription_plan do |f| %>
   <%= render "shared/errors", record: @subscription_plan %>
-  <div class="field"><%= f.label :name, "Plan name" %><%= f.text_field :name, placeholder: "Inner circle" %></div>
-  <div class="field"><%= f.label :description %><%= f.text_area :description, placeholder: "What members get every month" %></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="field"><%= f.label :price_cents, "Monthly price (paise/cents)" %><%= f.number_field :price_cents, min: 1, placeholder: "49900" %></div><div class="field"><%= f.label :currency %><%= f.select :currency, [["INR", "INR"], ["USD", "USD"]] %></div></div>
-  <div class="field"><label><%= f.check_box :active %> Available for new subscribers</label></div>
-  <div class="form-actions"><%= f.submit class: "button pink" %><%= link_to "Cancel", dashboard_path, class: "button light" %></div>
+  <div class="field">
+    <%= f.label :name, "Plan name" %>
+    <%= f.text_field :name, placeholder: "Inner circle" %>
+  </div>
+  <div class="field">
+    <%= f.label :description, "What members get" %>
+    <%= f.text_area :description, placeholder: "What lands in their feed every month…" %>
+  </div>
+  <div class="field-row">
+    <%= render "shared/price_field", f: f, record: @subscription_plan, field: :price_cents, label: "Monthly price", placeholder: "49900" %>
+    <div class="field">
+      <%= f.label :currency, "Currency" %>
+      <%= f.select :currency, [ [ "Rupees (₹)", "INR" ], [ "Dollars ($)", "USD" ] ] %>
+    </div>
+  </div>
+  <label class="check">
+    <%= f.check_box :active %>
+    Open to new subscribers
+  </label>
+  <div class="form-actions">
+    <%= f.submit(@subscription_plan.persisted? ? "Save plan" : "Create plan", class: "button accent", data: { disable_with: "Saving…" }) %>
+    <%= link_to "Cancel", dashboard_path, class: "button light" %>
+  </div>
 <% end %>

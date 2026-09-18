@@ -1,0 +1,206 @@
+/* Wishful — creator dashboard and payment confirmation.
+   The ledger is the organising idea: rows that line up, amounts in a column,
+   state carried by the same grammar everywhere. */
+
+.dash-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--gap-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--gap-4);
+}
+.dash-head h1 { font-size: var(--t-3); }
+.dash-head p { margin-top: 0.25rem; font-size: var(--t--1); }
+
+/* One primary action, one escape hatch, everything else behind a menu. */
+.dash-menu { position: relative; }
+.dash-menu summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.625rem 1.125rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-md);
+  background: var(--card);
+  font-size: var(--t--1);
+  font-weight: 600;
+  touch-action: manipulation;
+}
+.dash-menu summary::-webkit-details-marker { display: none; }
+.dash-menu summary:hover { background: var(--clay); }
+.dash-menu[open] summary { background: var(--clay); }
+.dash-menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 20;
+  min-width: 15rem;
+  padding: var(--gap-1);
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-md);
+  box-shadow: 0 12px 28px rgb(26 23 20 / 12%);
+  display: grid;
+  gap: 2px;
+}
+.dash-menu-panel a {
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--r-sm);
+  font-size: var(--t--1);
+  font-weight: 550;
+  text-decoration: none;
+}
+.dash-menu-panel a:hover { background: var(--clay); }
+
+@media (max-width: 34rem) {
+  .dash-menu-panel { position: static; box-shadow: none; margin-top: var(--gap-1); min-width: 0; }
+}
+
+/* ---------- stats ---------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--gap-2);
+  margin-bottom: var(--gap-4);
+  padding: var(--gap-3) 0;
+  border-block: 1px solid var(--rule);
+}
+.stat-value {
+  display: block;
+  font-family: var(--serif);
+  font-size: var(--t-3);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.stat-label { display: block; margin-top: 0.375rem; color: var(--ink-soft); font-size: var(--t--1); }
+
+/* ---------- panels and ledger rows ---------- */
+
+.dash-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: var(--gap-4); align-items: start; }
+@media (max-width: 52rem) { .dash-grid { grid-template-columns: 1fr; } }
+
+.panel { min-width: 0; }
+.panel + .panel { margin-top: var(--gap-4); }
+.panel h2 { font-size: var(--t-1); }
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--gap-2);
+  align-items: center;
+  padding: var(--gap-2) 0;
+  border-bottom: 1px solid var(--rule);
+}
+.row:last-child { border-bottom: 0; }
+
+.row--media { grid-template-columns: 52px minmax(0, 1fr) auto; }
+@media (max-width: 34rem) {
+  .row, .row--media { grid-template-columns: minmax(0, 1fr); }
+  .row .actions { justify-content: flex-start; }
+}
+
+.row-thumb {
+  width: 52px; height: 52px;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+  background: var(--clay);
+  flex: none;
+}
+.row-title { font-weight: 650; overflow-wrap: anywhere; }
+.row-meta { color: var(--ink-soft); font-size: var(--t--1); margin-top: 0.125rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.row-amount { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------- payment claims ---------- */
+
+.claim {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--gap-3);
+  align-items: start;
+  padding: var(--gap-3) 0;
+  border-bottom: 1px solid var(--rule);
+}
+.claim:last-of-type { border-bottom: 0; }
+@media (max-width: 40rem) { .claim { grid-template-columns: 1fr; } }
+
+.claim-head { display: flex; align-items: baseline; gap: var(--gap-2); flex-wrap: wrap; }
+.claim-who { font-weight: 700; }
+.claim-amount { font-family: var(--serif); font-size: var(--t-1); font-weight: 600; font-variant-numeric: tabular-nums; }
+.claim-what { color: var(--ink-soft); font-size: var(--t--1); margin-top: 0.125rem; overflow-wrap: anywhere; }
+
+.claim-ref {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: var(--gap-2);
+  padding: 0.375rem 0.625rem;
+  background: var(--clay);
+  border-radius: var(--r-sm);
+  font-size: var(--t--1);
+}
+.claim-ref-label { color: var(--ink-soft); font-weight: 600; }
+
+.claim-mismatch {
+  margin-top: var(--gap-2);
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--danger);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  color: var(--ink);
+  font-size: var(--t--1);
+  font-weight: 600;
+}
+.claim-note { margin-top: var(--gap-2); font-size: var(--t--1); color: var(--ink-soft); overflow-wrap: anywhere; }
+.claim-proof { margin-top: var(--gap-2); border-radius: var(--r-sm); border: 1px solid var(--rule); max-width: 12rem; height: auto; }
+.claim-decide { display: grid; gap: var(--gap-1); justify-items: stretch; align-content: start; }
+@media (max-width: 40rem) { .claim-decide { grid-auto-flow: column; justify-content: start; } }
+
+/* ---------- pay screen ---------- */
+
+.pay-card {
+  margin: var(--gap-3) 0;
+  padding: var(--gap-4) var(--gap-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg);
+  background: var(--card);
+  text-align: center;
+}
+.pay-qr { width: 200px; height: 200px; object-fit: contain; border-radius: var(--r-sm); }
+.pay-upi { margin-top: var(--gap-3); }
+.pay-upi-id { font-size: var(--t-1); font-weight: 700; margin-top: 0.125rem; }
+.pay-amount {
+  margin-top: var(--gap-3);
+  padding-top: var(--gap-3);
+  border-top: 1px solid var(--rule);
+  font-family: var(--serif);
+  font-size: var(--t-4);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* The handshake, stated once, in order. */
+.pay-steps { counter-reset: step; list-style: none; padding: 0; margin: var(--gap-3) 0 0; display: grid; gap: var(--gap-2); }
+.pay-steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 1.5rem 1fr;
+  gap: var(--gap-2);
+  font-size: var(--t--1);
+  color: var(--ink-soft);
+}
+.pay-steps li::before {
+  content: counter(step);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--ink);
+}
+.pay-steps li strong { color: var(--ink); font-weight: 650; }

@@ -29,3 +29,12 @@
 
 en:
   hello: "Hello world"
+  time:
+    formats:
+      slot: "%-d %b %Y, %-I:%M %p"
+      slot_short: "%-d %b, %-I:%M %p"
+      time_only: "%-I:%M %p"
+      stamp: "%-d %b %Y"
+  date:
+    formats:
+      stamp: "%-d %b %Y"

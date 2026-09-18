@@ -1,4 +1,23 @@
-<%= link_to visit_product_link_path(card), class: "public-card", target: "_blank", rel: "noopener" do %>
-  <% if card.image_url.present? %><%= image_tag card.image_url, class: "public-image", alt: "" %><% else %><div class="public-image"></div><% end %>
-  <div><div class="public-title"><%= "★ " if card.featured? %><%= card.title %></div><div class="public-note"><%= [card.merchant, card.price, card.description].compact.join(" · ") %></div></div><span class="arrow">→</span>
+<%# The reason leads. The product name is the credit line beneath it, because
+    a recommendation is the creator's sentence, not the merchant's title. %>
+<%= link_to visit_product_link_path(card), class: "vouch", target: "_blank", rel: "noopener noreferrer" do %>
+  <% if card.image_url.present? %>
+    <%= image_tag card.image_url, class: "vouch-thumb", alt: "", width: 136, height: 136, loading: "lazy" %>
+  <% else %>
+    <span class="vouch-thumb" aria-hidden="true">◍</span>
+  <% end %>
+  <span class="vouch-body">
+    <% if card.description.present? %>
+      <span class="vouch-reason clamp-3"><%= card.description %></span>
+    <% end %>
+    <span class="vouch-title">
+      <% if card.featured? %><span class="vouch-flag" aria-hidden="true"></span><span class="visually-hidden">Featured. </span><% end %>
+      <%= card.title %>
+    </span>
+    <% if card.merchant.present? %><span class="vouch-merchant break"><%= card.merchant %></span><% end %>
+  </span>
+  <% if card.price.present? %>
+    <span class="vouch-price"><%= card.price %></span>
+  <% end %>
+  <span class="visually-hidden">(opens in a new tab)</span>
 <% end %>

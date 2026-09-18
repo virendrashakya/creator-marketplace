@@ -1,1 +1,26 @@
-<%= form_with model: [@wishlist, @wishlist_item] do |f| %><%= render "shared/errors", record: @wishlist_item %><div class="field"><%= f.label :title, "Gift item" %><%= f.text_field :title, placeholder: "Camera lens" %></div><div class="field"><%= f.label :product_url, "Store URL (optional)" %><%= f.url_field :product_url %></div><div class="field"><%= f.label :image_url, "Image URL (optional)" %><%= f.url_field :image_url %></div><div class="field"><%= f.label :target_cents, "Gift value (paise/cents)" %><%= f.number_field :target_cents, min: 1, placeholder: "500000" %></div><div class="field"><%= f.label :note %><%= f.text_area :note, placeholder: "Why this would mean so much" %></div><div class="form-actions"><%= f.submit class: "button pink" %><%= link_to "Cancel", dashboard_path, class: "button light" %></div><% end %>
+<%= form_with model: [ @wishlist, @wishlist_item ] do |f| %>
+  <%= render "shared/errors", record: @wishlist_item %>
+  <div class="field">
+    <%= f.label :title, "Gift" %>
+    <%= f.text_field :title, placeholder: "35mm lens" %>
+  </div>
+  <div class="field">
+    <%= f.label :note, "Why you want it" %>
+    <%= f.text_area :note, placeholder: "What you would use it for…" %>
+  </div>
+  <div class="field-row">
+    <%= render "shared/price_field", f: f, record: @wishlist_item, field: :target_cents, label: "Gift value", placeholder: "500000" %>
+    <div class="field">
+      <%= f.label :product_url, "Store link (optional)" %>
+      <%= f.url_field :product_url, placeholder: "https://…", spellcheck: false, autocapitalize: "off" %>
+    </div>
+    <div class="field">
+      <%= f.label :image_url, "Image link (optional)" %>
+      <%= f.url_field :image_url, placeholder: "https://…", spellcheck: false, autocapitalize: "off" %>
+    </div>
+  </div>
+  <div class="form-actions">
+    <%= f.submit(@wishlist_item.persisted? ? "Save gift" : "Add gift", class: "button accent", data: { disable_with: "Saving…" }) %>
+    <%= link_to "Cancel", dashboard_path, class: "button light" %>
+  </div>
+<% end %>

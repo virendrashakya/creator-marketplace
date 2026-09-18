@@ -1,6 +1,16 @@
 <% revealed = card.revealed_for?(current_user) %>
-<article class="public-card">
-  <div class="public-image" style="display:grid;place-items:center"><%= revealed ? "✉" : "🔒" %></div>
-  <div><div class="public-title"><%= card.label %></div><% if revealed %><div class="public-note" style="user-select:all"><%= card.secret_value %></div><% else %><div class="public-note">Unlocks instantly after payment</div><div style="margin-top:8px"><%= render "shared/buy_button", purchasable: card, creator: card.user, label: "Reveal", signed_out_label: "Sign in to reveal", price_label: card.price_label, fallback_path: purchase_contact_reveal_path(card) %></div><% end %></div>
-  <span class="arrow"><%= revealed ? "✦" : "🔒" %></span>
+<article class="offer">
+  <span class="vouch-thumb" aria-hidden="true">◍</span>
+  <div class="min0">
+    <div class="offer-title break"><%= card.label %></div>
+    <% if revealed %>
+      <div class="offer-note ref"><%= card.secret_value %></div>
+      <div class="offer-actions"><span class="state state--confirmed">Revealed</span></div>
+    <% else %>
+      <div class="offer-note">Shown to you as soon as <%= card.user.name %> confirms your payment.</div>
+      <div class="offer-actions">
+        <%= render "shared/buy_button", purchasable: card, creator: card.user, label: "Reveal", signed_out_label: "Sign in to reveal", price_label: card.price_label, fallback_path: purchase_contact_reveal_path(card) %>
+      </div>
+    <% end %>
+  </div>
 </article>

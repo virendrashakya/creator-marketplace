@@ -1,1 +1,44 @@
-<article style="background:#fff;border:1px solid var(--line);border-radius:15px;margin-bottom:14px;overflow:hidden;text-align:left"><div style="padding:14px 15px;font-weight:800;font-size:14px">@<%= post.user.handle %></div><% if post.media.attached? %><% if post.media.content_type.start_with?("video/") %><%= video_tag post.media, controls: true, style: "width:100%;max-height:500px;background:#111" %><% else %><%= image_tag post.media, style: "width:100%;max-height:520px;object-fit:cover", alt: "Post by #{post.user.name}" %><% end %><% end %><div style="padding:14px 15px"><p style="margin:0 0 11px;white-space:pre-wrap"><%= post.body %></p><div class="muted" style="font-size:13px"><%= pluralize(post.creator_post_likes.size, "like") %> · <%= pluralize(post.creator_post_comments.size, "comment") %></div><div style="display:flex;gap:12px;margin:10px 0"><% if signed_in? %><% liked = post.creator_post_likes.any? { |like| like.user_id == current_user.id } %><% if liked %><%= button_to "♥ Unlike", creator_post_creator_post_like_path(post), method: :delete, class: "danger" %><% else %><%= button_to "♡ Like", creator_post_creator_post_like_path(post), method: :post, class: "danger" %><% end %><% else %><%= link_to "Sign in to like", sign_in_path, class: "muted" %><% end %></div><% post.creator_post_comments.each do |comment| %><div style="font-size:13px;margin:5px 0"><strong>@<%= comment.user.handle %></strong> <%= comment.body %></div><% end %><% if signed_in? %><%= form_with model: [post, CreatorPostComment.new], url: creator_post_creator_post_comments_path(post), style: "display:flex;gap:8px;margin-top:10px" do |f| %><%= f.text_field :body, placeholder: "Add a comment...", style: "padding:8px" %><%= f.submit "Post", class: "button", style: "padding:8px 11px;font-size:12px" %><% end %><% end %></div></article>
+<article class="post">
+  <div class="post-head">
+    <span translate="no">@<%= post.user.handle %></span>
+    <time class="muted" datetime="<%= post.created_at.iso8601 %>" title="<%= l post.created_at, format: :slot %>"><%= l post.created_at.to_date, format: :stamp %></time>
+  </div>
+  <% if post.media.attached? %>
+    <% if post.media.content_type.to_s.start_with?("video/") %>
+      <%= video_tag post.media, controls: true, preload: "metadata", playsinline: true, class: "post-media" %>
+    <% else %>
+      <%= image_tag post.media, class: "post-media", alt: "", width: 1080, height: 1080, loading: "lazy" %>
+    <% end %>
+  <% end %>
+  <div class="post-body">
+    <p class="post-text"><%= post.body %></p>
+    <div class="post-counts">
+      <%= pluralize(post.creator_post_likes.size, "like") %> · <%= pluralize(post.creator_post_comments.size, "comment") %>
+    </div>
+    <div class="actions" style="margin-top: var(--gap-2)">
+      <% if signed_in? %>
+        <% liked = post.creator_post_likes.any? { |like| like.user_id == current_user.id } %>
+        <% if liked %>
+          <%= button_to "Liked", creator_post_creator_post_like_path(post), method: :delete, class: "button light small", form: { data: { turbo_submits_with: "Working…" } }, aria: { pressed: "true", label: "Unlike this post" } %>
+        <% else %>
+          <%= button_to "Like", creator_post_creator_post_like_path(post), method: :post, class: "button light small", form: { data: { turbo_submits_with: "Working…" } }, aria: { pressed: "false", label: "Like this post" } %>
+        <% end %>
+      <% else %>
+        <%= link_to "Sign in to like", sign_in_path, class: "button light small" %>
+      <% end %>
+    </div>
+    <% post.creator_post_comments.first(10).each do |comment| %>
+      <p class="post-comment break"><strong translate="no">@<%= comment.user.handle %></strong> <%= comment.body %></p>
+    <% end %>
+    <% if post.creator_post_comments.size > 10 %>
+      <p class="post-comment muted"><%= pluralize(post.creator_post_comments.size - 10, "earlier comment") %> not shown.</p>
+    <% end %>
+    <% if signed_in? %>
+      <%= form_with url: creator_post_creator_post_comments_path(post), class: "post-form" do |f| %>
+        <%= label_tag "comment_body_#{post.id}", "Add a comment", class: "visually-hidden" %>
+        <%= text_field_tag "creator_post_comment[body]", nil, id: "comment_body_#{post.id}", placeholder: "Add a comment…", maxlength: 500 %>
+        <%= submit_tag "Post", class: "button light small", data: { disable_with: "Posting…" } %>
+      <% end %>
+    <% end %>
+  </div>
+</article>

@@ -1,19 +1,40 @@
-<main class="page"><section class="auth"><h1>Edit meet offer</h1><%= render "form" %></section></main>
-<main class="page" style="padding-top:0"><section class="panel">
-  <h2>Time slots</h2>
-  <% if @meet_offer.meet_slots.order(:starts_at).any? %>
-    <% @meet_offer.meet_slots.order(:starts_at).each do |slot| %>
-      <div class="collection-row"><div><strong><%= slot.starts_at.strftime("%d %b %Y, %-I:%M %p") %></strong><span class="muted"> — <%= slot.ends_at.strftime("%-I:%M %p") %><%= slot.booked? ? " · booked" : "" %></span></div><% unless slot.booked? %><%= button_to "Remove", meet_offer_meet_slot_path(@meet_offer, slot), method: :delete, class: "danger", data: { turbo_confirm: "Remove this slot?" } %><% end %></div>
+<% content_for :title, "Edit meet offer — Wishful" %>
+<div class="page"><section class="auth"><h1>Edit meet offer</h1><%= render "form" %></section></div>
+<div class="page">
+  <section class="panel auth auth--wide">
+    <h2>Times you are free</h2>
+    <p class="muted">People book one of these slots and pay for it up front.</p>
+    <% slots = @meet_offer.meet_slots.order(:starts_at) %>
+    <% if slots.any? %>
+      <% slots.each do |slot| %>
+        <div class="row">
+          <div class="min0">
+            <div class="row-title num"><%= l slot.starts_at, format: :slot %></div>
+            <div class="row-meta">
+              Until <%= l slot.ends_at, format: :time_only %> · <%= slot_timezone_label %>
+              <% if slot.booked? %><span class="state state--confirmed">Booked</span><% end %>
+            </div>
+          </div>
+          <% unless slot.booked? %>
+            <div class="actions actions--end">
+              <%= button_to "Remove", meet_offer_meet_slot_path(@meet_offer, slot), method: :delete, class: "danger", form: { data: { turbo_confirm: "Remove the slot on #{l slot.starts_at, format: :slot}?" } } %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="empty"><strong>No times yet.</strong> Add your first slot below so people can book you.</div>
     <% end %>
-  <% else %>
-    <div class="empty">No slots yet. Add one below so people can book.</div>
-  <% end %>
-  <%= form_with model: [@meet_offer, @meet_slot || @meet_offer.meet_slots.new] do |f| %>
-    <%= render "shared/errors", record: (@meet_slot || @meet_offer.meet_slots.new) %>
-    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end">
-      <div class="field"><%= f.label :starts_at, "Starts" %><%= f.datetime_field :starts_at %></div>
-      <div class="field"><%= f.label :ends_at, "Ends" %><%= f.datetime_field :ends_at %></div>
-      <div class="field"><%= f.submit "Add slot", class: "button pink" %></div>
-    </div>
-  <% end %>
-</section></main>
+
+    <% new_slot = @meet_slot || @meet_offer.meet_slots.new %>
+    <%= form_with model: [ @meet_offer, new_slot ] do |f| %>
+      <%= render "shared/errors", record: new_slot %>
+      <div class="field-row">
+        <div class="field"><%= f.label :starts_at, "Starts" %><%= f.datetime_field :starts_at %></div>
+        <div class="field"><%= f.label :ends_at, "Ends" %><%= f.datetime_field :ends_at %></div>
+      </div>
+      <p class="muted" style="font-size: var(--t--1)">Times are in <%= slot_timezone_label %>.</p>
+      <div class="form-actions"><%= f.submit "Add slot", class: "button accent", data: { disable_with: "Adding…" } %></div>
+    <% end %>
+  </section>
+</div>

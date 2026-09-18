@@ -1,0 +1,267 @@
+/* Wishful — public profile.
+   The page is an endorsement, so each row leads with the creator's reason.
+   Themes are token overrides only; structure never changes between them. */
+
+.profile {
+  --p-ground: var(--paper);
+  --p-card: var(--card);
+  --p-ink: var(--ink);
+  --p-soft: var(--ink-soft);
+  --p-rule: var(--rule);
+  --p-accent: var(--marigold);
+  --p-accent-ink: var(--accent-ink);
+
+  max-width: 44rem;
+  margin: 0 auto var(--gap-5);
+  padding: var(--gap-3) var(--gap-3) var(--gap-4);
+  border-radius: var(--r-lg);
+  background: var(--p-ground);
+  color: var(--p-ink);
+  text-align: left;
+}
+
+.profile a { color: inherit; }
+.profile .muted { color: var(--p-soft); }
+
+/* ---------- identity ---------- */
+
+.profile-banner {
+  display: block;
+  width: 100%;
+  height: clamp(120px, 26vw, 190px);
+  object-fit: cover;
+  border-radius: var(--r-md);
+  margin-bottom: var(--gap-3);
+  background: var(--clay);
+}
+
+.profile-id { display: grid; grid-template-columns: auto 1fr; gap: var(--gap-3); align-items: start; }
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--p-accent);
+  color: var(--p-accent-ink);
+  font-family: var(--serif);
+  font-size: var(--t-2);
+  font-weight: 600;
+  flex: none;
+}
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.profile h1 { font-size: var(--t-3); margin-bottom: 0.125rem; }
+
+.profile-handle { color: var(--p-soft); font-size: var(--t--1); font-weight: 600; }
+.profile-meta { color: var(--p-soft); font-size: var(--t--1); margin-top: 0.25rem; }
+.profile-bio { margin-top: var(--gap-2); max-width: 54ch; color: var(--p-ink); }
+
+.profile-socials { display: flex; flex-wrap: wrap; gap: var(--gap-1); margin-top: var(--gap-3); }
+.profile-socials .button.light {
+  background: transparent;
+  border-color: var(--p-rule);
+  color: var(--p-ink);
+}
+.profile-socials .button.light:hover { background: color-mix(in srgb, var(--p-ink) 7%, transparent); }
+
+.profile .band { color: var(--p-ink); }
+.profile .band::after { background: var(--p-rule); }
+
+/* ---------- the vouch row ---------- */
+
+.vouch {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr) auto;
+  gap: var(--gap-3);
+  align-items: start;
+  padding: var(--gap-2) 0;
+  border-bottom: 1px solid var(--p-rule);
+  text-decoration: none;
+  color: inherit;
+}
+.vouch:last-child { border-bottom: 0; }
+.vouch:hover .vouch-title { text-decoration: underline; text-underline-offset: 3px; }
+
+.vouch-thumb {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--r-md);
+  object-fit: cover;
+  background: color-mix(in srgb, var(--p-ink) 7%, transparent);
+  display: grid;
+  place-items: center;
+  font-size: var(--t-1);
+  flex: none;
+}
+
+.vouch-body { min-width: 0; }
+
+/* The reason leads; the product name is the credit line beneath it. */
+.vouch-reason {
+  font-family: var(--serif);
+  font-size: var(--t-1);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.25rem;
+  overflow-wrap: anywhere;
+}
+.vouch-title { font-size: var(--t--1); font-weight: 650; overflow-wrap: anywhere; }
+.vouch-merchant { color: var(--p-soft); font-size: var(--t--1); }
+
+.vouch-price {
+  font-size: var(--t--1);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
+  padding-top: 0.125rem;
+}
+
+.vouch-flag {
+  display: inline-block;
+  width: 0.5rem; height: 0.5rem;
+  border-radius: 50%;
+  background: var(--p-accent);
+  vertical-align: 0.15em;
+  margin-right: 0.375rem;
+}
+
+/* ---------- paid rows ---------- */
+
+.offer {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: var(--gap-3);
+  align-items: start;
+  padding: var(--gap-3) 0;
+  border-bottom: 1px solid var(--p-rule);
+}
+.offer:last-child { border-bottom: 0; }
+.offer-title { font-family: var(--serif); font-size: var(--t-1); font-weight: 550; letter-spacing: -0.01em; }
+.offer-note { color: var(--p-soft); font-size: var(--t--1); margin-top: 0.125rem; overflow-wrap: anywhere; }
+.offer-actions { margin-top: var(--gap-2); }
+
+.slots { display: flex; flex-wrap: wrap; gap: var(--gap-1); margin-top: var(--gap-2); }
+
+/* Gift progress — a real meter, not a decorated div. */
+.gift-meter {
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--p-ink) 10%, transparent);
+  overflow: hidden;
+  margin: var(--gap-2) 0 0.375rem;
+}
+.gift-meter-fill { height: 100%; background: var(--p-accent); border-radius: 3px; }
+.gift-figures { font-size: var(--t--1); font-variant-numeric: tabular-nums; color: var(--p-soft); }
+.gift-figures strong { color: var(--p-ink); font-weight: 700; }
+
+.gift-form { display: flex; flex-wrap: wrap; gap: var(--gap-1); align-items: flex-end; margin-top: var(--gap-2); }
+.gift-form .field { margin: 0; }
+.gift-form .field > label { font-size: 0.75rem; margin-bottom: 0.25rem; }
+.gift-form input { padding: 0.5rem 0.625rem; font-size: var(--t--1); }
+.gift-amount { width: 9rem; }
+.gift-note { min-width: 10rem; flex: 1; }
+
+/* ---------- posts ---------- */
+
+.post {
+  border: 1px solid var(--p-rule);
+  border-radius: var(--r-md);
+  background: var(--p-card);
+  overflow: hidden;
+  margin-bottom: var(--gap-3);
+}
+.post-head { padding: var(--gap-2) var(--gap-3); font-weight: 650; font-size: var(--t--1); display: flex; justify-content: space-between; gap: var(--gap-2); }
+.post-media { display: block; width: 100%; max-height: 32rem; object-fit: cover; background: color-mix(in srgb, var(--p-ink) 6%, transparent); }
+.post-body { padding: var(--gap-3); }
+.post-text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 var(--gap-2); }
+.post-counts { font-size: var(--t--1); color: var(--p-soft); font-variant-numeric: tabular-nums; }
+.post-comment { font-size: var(--t--1); margin: 0.375rem 0; overflow-wrap: anywhere; }
+.post-comment strong { font-weight: 650; }
+.post-form { display: flex; gap: var(--gap-1); margin-top: var(--gap-2); }
+.post-form input { flex: 1; min-width: 0; padding: 0.5rem 0.625rem; font-size: var(--t--1); }
+
+.empty-profile {
+  padding: var(--gap-4) var(--gap-3);
+  border: 1px dashed var(--p-rule);
+  border-radius: var(--r-md);
+  color: var(--p-soft);
+}
+
+/* ---------- layouts ---------- */
+
+.layout-editorial { max-width: 52rem; }
+.layout-editorial .profile-id { grid-template-columns: 1fr; }
+.layout-editorial .profile h1 { font-size: var(--t-4); }
+.layout-editorial .vouch-reason { font-size: var(--t-2); font-weight: 400; max-width: 30ch; }
+
+.layout-gallery .vouch-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gap-3); }
+.layout-gallery .vouch { grid-template-columns: 1fr; border-bottom: 0; padding: 0; }
+.layout-gallery .vouch-thumb { width: 100%; height: 11rem; }
+.layout-gallery .vouch-price { text-align: left; }
+
+@media (max-width: 34rem) {
+  .layout-gallery .vouch-list { grid-template-columns: 1fr; }
+  .vouch { grid-template-columns: 56px minmax(0, 1fr); }
+  .vouch-thumb { width: 56px; height: 56px; }
+  .vouch-price { grid-column: 2; text-align: left; padding-top: 0.25rem; }
+  .offer { grid-template-columns: 56px minmax(0, 1fr); }
+}
+
+/* ---------- themes: token overrides only ---------- */
+
+.theme-luxury {
+  --p-ground: #12100E;
+  --p-card: #1C1915;
+  --p-ink: #F2EBDD;
+  --p-soft: #A79B86;
+  --p-rule: #2E2921;
+  --p-accent: #C9A227;
+  --p-accent-ink: #1A1508;
+  color-scheme: dark;
+}
+
+.theme-adventure {
+  --p-ground: #E8EFE2;
+  --p-card: #FFFFFF;
+  --p-ink: #1F3329;
+  --p-soft: #5A6B5C;
+  --p-rule: #CBD9C3;
+  --p-accent: #2C6E49;
+  --p-accent-ink: #FFFFFF;
+}
+
+.theme-after_dark {
+  --p-ground: #140E16;
+  --p-card: #1E1620;
+  --p-ink: #F3E6F0;
+  --p-soft: #A895A6;
+  --p-rule: #312433;
+  --p-accent: #C2417E;
+  --p-accent-ink: #1A0B13;
+  color-scheme: dark;
+}
+
+/* Dark themes need their inputs and buttons re-grounded. */
+.theme-luxury .field input, .theme-luxury .field textarea,
+.theme-after_dark .field input, .theme-after_dark .field textarea {
+  background: var(--p-card);
+  color: var(--p-ink);
+  border-color: var(--p-rule);
+}
+.theme-luxury .button.light, .theme-after_dark .button.light {
+  background: transparent;
+  color: var(--p-ink);
+  border-color: var(--p-rule);
+}
+.theme-luxury .button.accent, .theme-luxury .button.pink,
+.theme-after_dark .button.accent, .theme-after_dark .button.pink,
+.theme-adventure .button.accent, .theme-adventure .button.pink {
+  background: var(--p-accent);
+  color: var(--p-accent-ink);
+}
+.theme-luxury :focus-visible, .theme-after_dark :focus-visible { outline-color: var(--p-accent); }

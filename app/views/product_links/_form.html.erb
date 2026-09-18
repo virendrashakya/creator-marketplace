@@ -1,1 +1,36 @@
-<%= form_with model: @product_link do |f| %><%= render "shared/errors", record: @product_link %><div class="field"><%= f.label :title, "What are you recommending?" %><%= f.text_field :title, placeholder: "The perfect everyday tote", autofocus: true %></div><div class="field"><%= f.label :url, "Destination URL" %><%= f.url_field :url, placeholder: "https://..." %></div><div class="field"><%= f.label :image_url, "Image URL (optional)" %><%= f.url_field :image_url, placeholder: "https://..." %></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="field"><%= f.label :merchant %><%= f.text_field :merchant, placeholder: "Brand or store" %></div><div class="field"><%= f.label :price %><%= f.text_field :price, placeholder: "₹2,499" %></div></div><div class="field"><%= f.label :link_collection_id, "Collection" %><%= f.collection_select :link_collection_id, current_user.link_collections, :id, :name, { include_blank: "No collection" } %></div><div class="field"><%= f.label :description, "Why you love it (optional)" %><%= f.text_area :description, placeholder: "A short personal note..." %></div><div class="field"><label><%= f.check_box :featured %> Feature this recommendation</label></div><div class="form-actions"><%= f.submit class: "button pink" %><%= link_to "Cancel", dashboard_path, class: "button light" %></div><% end %>
+<%= form_with model: @product_link do |f| %>
+  <%= render "shared/errors", record: @product_link %>
+  <div class="field">
+    <%= f.label :title, "What are you recommending?" %>
+    <%= f.text_field :title, placeholder: "The everyday tote" %>
+  </div>
+  <div class="field">
+    <%= f.label :description, "Why you use it" %>
+    <%= f.text_area :description, placeholder: "Carried it every day for eight months and the strap still hasn't gone soft…", aria: { describedby: "why_hint" } %>
+    <small id="why_hint">This leads on your page. It is the part people actually read.</small>
+  </div>
+  <div class="field">
+    <%= f.label :url, "Link" %>
+    <%= f.url_field :url, placeholder: "https://…", spellcheck: false, autocapitalize: "off" %>
+  </div>
+  <div class="field">
+    <%= f.label :image_url, "Image link (optional)" %>
+    <%= f.url_field :image_url, placeholder: "https://…", spellcheck: false, autocapitalize: "off" %>
+  </div>
+  <div class="field-row">
+    <div class="field"><%= f.label :merchant, "Brand or shop" %><%= f.text_field :merchant, placeholder: "Zouk" %></div>
+    <div class="field"><%= f.label :price, "Price" %><%= f.text_field :price, placeholder: "₹2,499" %></div>
+  </div>
+  <div class="field">
+    <%= f.label :link_collection_id, "Collection" %>
+    <%= f.collection_select :link_collection_id, current_user.link_collections, :id, :name, { include_blank: "No collection" } %>
+  </div>
+  <label class="check">
+    <%= f.check_box :featured %>
+    Pin this to the top of my page
+  </label>
+  <div class="form-actions">
+    <%= f.submit(@product_link.persisted? ? "Save recommendation" : "Add recommendation", class: "button accent", data: { disable_with: "Saving…" }) %>
+    <%= link_to "Cancel", dashboard_path, class: "button light" %>
+  </div>
+<% end %>

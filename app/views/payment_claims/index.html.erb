@@ -1,37 +1,79 @@
-<main class="page"><section class="panel">
-  <div style="display:flex;justify-content:space-between;align-items:center"><h1 style="margin:0;letter-spacing:-1.5px">Payments to confirm</h1><%= link_to "Back to dashboard", dashboard_path, class: "muted" %></div>
-  <p class="muted">Check each reference against your bank statement before approving. Approving grants access immediately.</p>
+<% content_for :title, "Payments to confirm — Wishful" %>
+<% content_for :head do %>
+  <link rel="stylesheet" href="/assets/dashboard.css">
+<% end %>
 
-  <% if @pending_claims.any? %>
-    <% @pending_claims.each do |claim| %>
-      <div class="link-row" style="grid-template-columns:1fr auto;align-items:start;margin-top:12px">
-        <div>
-          <div class="link-title">@<%= claim.claimant.handle %> · <%= claim.money_label %></div>
-          <div class="link-meta">
-            <%= claim.purchasable_type.underscore.humanize %>: <%= claim.purchasable.try(:title) || claim.purchasable.try(:label) || claim.purchasable.try(:name) || "item ##{claim.purchasable_id}" %>
-            · <%= time_ago_in_words(claim.created_at) %> ago
+<div class="page">
+  <div class="section-head">
+    <h1>Payments to confirm</h1>
+    <%= link_to "Back to dashboard", dashboard_path, class: "muted" %>
+  </div>
+  <p class="muted">Match each reference number against your bank statement before you approve. Approving opens access straight away.</p>
+
+  <section class="panel">
+    <% if @pending_claims.any? %>
+      <% @pending_claims.each do |claim| %>
+        <article class="claim">
+          <div class="min0">
+            <div class="claim-head">
+              <span class="claim-who" translate="no">@<%= claim.claimant.handle %></span>
+              <span class="claim-amount"><%= money(claim.amount_cents, claim.currency) %></span>
+              <span class="state state--pending">Pending</span>
+            </div>
+            <div class="claim-what break">
+              <%= claim.purchasable_type.underscore.humanize %>:
+              <%= claim.purchasable.try(:title) || claim.purchasable.try(:label) || claim.purchasable.try(:name) || "item ##{claim.purchasable_id}" %>
+              ·
+              <time datetime="<%= claim.created_at.iso8601 %>" title="<%= l claim.created_at, format: :slot %>"><%= time_ago_in_words(claim.created_at) %> ago</time>
+            </div>
+
+            <div class="claim-ref">
+              <span class="claim-ref-label">UTR</span>
+              <span class="ref"><%= claim.utr.presence || "not provided" %></span>
+            </div>
+
+            <% if claim.amount_mismatch? %>
+              <p class="claim-mismatch">
+                They say they sent <%= money(claim.claimed_amount_cents, claim.currency) %>, but <%= money(claim.amount_cents, claim.currency) %> was due. Check your statement before approving.
+              </p>
+            <% end %>
+
+            <% if claim.note.present? %>
+              <p class="claim-note break">“<%= claim.note %>”</p>
+            <% end %>
+
+            <% if claim.proof.attached? %>
+              <%= image_tag claim.proof, alt: "Payment screenshot from @#{claim.claimant.handle}", width: 400, height: 400, loading: "lazy", class: "claim-proof" %>
+            <% end %>
           </div>
-          <div class="link-meta">UTR: <strong style="user-select:all"><%= claim.utr.presence || "not provided" %></strong></div>
-          <% if claim.amount_mismatch? %>
-            <div style="color:#bd3d5a;font-size:12px;font-weight:700;margin-top:4px">⚠ They say they sent <%= claim.money_label(claim.claimed_amount_cents) %>, expected <%= claim.money_label %></div>
-          <% end %>
-          <% if claim.note.present? %><div class="link-meta">“<%= claim.note %>”</div><% end %>
-          <% if claim.proof.attached? %><div style="margin-top:8px"><%= image_tag claim.proof, style: "max-width:190px;border-radius:9px;border:1px solid var(--line)" %></div><% end %>
-        </div>
-        <div style="display:grid;gap:6px;justify-items:end">
-          <%= button_to "Approve", approve_payment_claim_path(claim), class: "button pink", style: "padding:8px 12px;font-size:12px", data: { turbo_confirm: "Confirm you received #{claim.money_label} from @#{claim.claimant.handle}?" } %>
-          <%= button_to "Reject", reject_payment_claim_path(claim), class: "danger", data: { turbo_confirm: "Reject this payment claim?" } %>
-        </div>
-      </div>
+
+          <div class="claim-decide">
+            <%= button_to "Approve", approve_payment_claim_path(claim), class: "button accent small",
+                  form: { data: { turbo_confirm: "Confirm you received #{money(claim.amount_cents, claim.currency)} from @#{claim.claimant.handle}? This opens their access immediately." } } %>
+            <%= button_to "Reject", reject_payment_claim_path(claim), class: "button light small",
+                  form: { data: { turbo_confirm: "Reject this payment from @#{claim.claimant.handle}?" } } %>
+          </div>
+        </article>
+      <% end %>
+    <% else %>
+      <div class="empty"><strong>Nothing waiting.</strong> New payments appear here as soon as someone submits one.</div>
     <% end %>
-  <% else %>
-    <div class="empty">No payments waiting for confirmation.</div>
-  <% end %>
+  </section>
 
   <% if @reviewed_claims.any? %>
-    <h2 style="margin-top:30px;font-size:19px">Recently reviewed</h2>
-    <% @reviewed_claims.each do |claim| %>
-      <div class="collection-row"><div><strong>@<%= claim.claimant.handle %></strong><span class="muted"> · <%= claim.money_label %> · <%= claim.utr.presence || "no UTR" %></span></div><span style="font-size:12px;font-weight:700;color:<%= claim.approved? ? "#43845e" : "#bd3d5a" %>"><%= claim.status.capitalize %></span></div>
-    <% end %>
+    <section class="panel">
+      <h2>Recently reviewed</h2>
+      <% @reviewed_claims.each do |claim| %>
+        <div class="row">
+          <div class="min0">
+            <div class="row-title" translate="no">@<%= claim.claimant.handle %></div>
+            <div class="row-meta break">
+              <%= money(claim.amount_cents, claim.currency) %> · <span class="ref"><%= claim.utr.presence || "no UTR" %></span>
+            </div>
+          </div>
+          <span class="state <%= claim.approved? ? "state--confirmed" : "state--rejected" %>"><%= claim.status.capitalize %></span>
+        </div>
+      <% end %>
+    </section>
   <% end %>
-</section></main>
+</div>

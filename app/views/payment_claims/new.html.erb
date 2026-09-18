@@ -1,25 +1,86 @@
-<main class="page"><section class="auth" style="max-width:560px">
-  <h1>Pay <%= @creator.name %></h1>
-  <p class="muted">Send <strong><%= @payment_claim.money_label(@amount_cents) rescue "" %></strong> using any UPI app, then enter the reference number below so <%= @creator.name.split.first %> can confirm it.</p>
+<% content_for :title, "Pay #{@creator.name} — Wishful" %>
+<% content_for :head do %>
+  <link rel="stylesheet" href="/assets/dashboard.css">
+<% end %>
 
-  <div style="border:1px solid var(--line);border-radius:14px;padding:18px;text-align:center;background:#fff;margin:18px 0">
-    <% if @creator.upi_qr.attached? %>
-      <%= image_tag @creator.upi_qr, alt: "UPI QR code for #{@creator.name}", style: "width:210px;height:210px;object-fit:contain" %>
-      <div class="muted" style="font-size:12px;margin-top:6px">Scan with any UPI app</div>
-    <% end %>
-    <% if @creator.upi_id.present? %>
-      <div style="margin-top:12px"><small class="muted">UPI ID</small><div style="font-weight:800;font-size:16px;user-select:all"><%= @creator.upi_id %></div><% if @creator.upi_payee_name.present? %><small class="muted">Payee: <%= @creator.upi_payee_name %></small><% end %></div>
-    <% end %>
-    <div style="margin-top:14px;font-size:22px;font-weight:800;letter-spacing:-1px"><%= number_to_currency(@amount_cents / 100.0, unit: "₹", precision: 2) %></div>
-  </div>
+<div class="page">
+  <section class="auth auth--wide">
+    <h1>Pay <%= @creator.name %></h1>
+    <p class="muted">Send the amount by UPI, then tell us the reference number so <%= @creator.name %> can match it to their statement.</p>
 
-  <%= form_with model: @payment_claim, url: payment_claims_create_path(purchasable_type: params[:purchasable_type], purchasable_id: params[:purchasable_id]), method: :post do |f| %>
-    <%= render "shared/errors", record: @payment_claim %>
-    <div class="field"><%= f.label :utr, "UPI reference / UTR number" %><%= f.text_field :utr, placeholder: "421812345678", maxlength: 24 %><small class="muted">Your UPI app shows this after payment succeeds.</small></div>
-    <div class="field"><%= f.label :proof, "Payment screenshot (optional but faster)" %><%= f.file_field :proof, accept: "image/*" %></div>
-    <div class="field"><%= f.label :claimed_amount_cents, "Amount you actually sent (paise)" %><%= f.number_field :claimed_amount_cents, min: 1 %></div>
-    <div class="field"><%= f.label :note, "Note for the creator (optional)" %><%= f.text_area :note, maxlength: 300, placeholder: "e.g. paid from my work UPI ID" %></div>
-    <div class="form-actions"><%= f.submit "I have paid", class: "button pink" %><%= link_to "Cancel", profile_path(@creator.handle), class: "button light" %></div>
-  <% end %>
-  <p class="muted" style="font-size:12px;margin-top:14px">Access is granted once <%= @creator.name.split.first %> confirms the payment against their bank statement. This is a manual check, so it may take a little while.</p>
-</section></main>
+    <div class="pay-card">
+      <% if @creator.upi_qr.attached? %>
+        <%= image_tag @creator.upi_qr, alt: "UPI QR code for #{@creator.name}", width: 200, height: 200, class: "pay-qr" %>
+        <div class="muted" style="font-size: var(--t--1); margin-top: 0.375rem">Scan with any UPI app</div>
+      <% end %>
+      <% if @creator.upi_id.present? %>
+        <div class="pay-upi">
+          <small class="muted">UPI ID</small>
+          <div class="pay-upi-id ref"><%= @creator.upi_id %></div>
+          <% if @creator.upi_payee_name.present? %>
+            <small class="muted">Payee: <%= @creator.upi_payee_name %></small>
+          <% end %>
+        </div>
+      <% end %>
+      <div class="pay-amount"><%= money(@amount_cents, @payment_claim.currency || "INR") %></div>
+    </div>
+
+    <ol class="pay-steps">
+      <li><strong>Send the amount</strong> from any UPI app to the ID above.</li>
+      <li><strong>Copy the reference number</strong> your app shows once the payment succeeds.</li>
+      <li><strong>Enter it below.</strong> <%= @creator.name %> checks it against their bank statement, then your access opens.</li>
+    </ol>
+
+    <%= form_with model: @payment_claim, url: payment_claims_create_path(purchasable_type: params[:purchasable_type], purchasable_id: params[:purchasable_id]), method: :post do |f| %>
+      <%= render "shared/errors", record: @payment_claim %>
+
+      <div class="field">
+        <%= f.label :utr, "UPI reference number" %>
+        <%= f.text_field :utr,
+              placeholder: "421812345678",
+              maxlength: 24,
+              inputmode: "numeric",
+              autocomplete: "off",
+              spellcheck: false,
+              autocapitalize: "off",
+              class: "ref",
+              aria: { describedby: "utr_hint" } %>
+        <small id="utr_hint">Also called the UTR or transaction ID. Your UPI app shows it on the success screen.</small>
+      </div>
+
+      <div class="field">
+        <%= f.label :claimed_amount_cents, "Amount you sent (#{minor_unit_hint(@payment_claim.currency || 'INR')})" %>
+        <div class="money-input">
+          <span class="money-unit" aria-hidden="true"><%= (@payment_claim.currency || "INR") == "USD" ? "$" : "₹" %></span>
+          <%= f.number_field :claimed_amount_cents, min: 1, step: 1, inputmode: "numeric", class: "num",
+                aria: { describedby: "amount_hint" } %>
+        </div>
+        <small id="amount_hint">
+          Pre-filled with the expected <%= money(@amount_cents, @payment_claim.currency || "INR") %>
+          (<%= number_with_delimiter(@amount_cents) %> <%= minor_unit_hint(@payment_claim.currency || "INR") %>).
+          Change it only if you sent a different amount.
+        </small>
+      </div>
+
+      <div class="field">
+        <%= f.label :proof, "Screenshot of the payment (optional)" %>
+        <%= f.file_field :proof, accept: "image/*" %>
+        <small>A screenshot usually gets you confirmed faster.</small>
+      </div>
+
+      <div class="field">
+        <%= f.label :note, "Note for #{@creator.name} (optional)" %>
+        <%= f.text_area :note, maxlength: 300, placeholder: "e.g. sent from my work UPI ID…" %>
+      </div>
+
+      <div class="form-actions">
+        <%= f.submit "I have paid", class: "button accent", data: { disable_with: "Submitting…" } %>
+        <%= link_to "Cancel", profile_path(@creator.handle), class: "button light" %>
+      </div>
+    <% end %>
+
+    <p class="muted" style="font-size: var(--t--1); margin-top: var(--gap-3)">
+      Confirmation is manual, so it can take a little while. You will see the payment as pending until <%= @creator.name %> approves it.
+    </p>
+  </section>
+</div>

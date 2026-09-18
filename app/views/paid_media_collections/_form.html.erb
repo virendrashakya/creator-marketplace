@@ -1,9 +1,30 @@
 <%= form_with model: @paid_media_collection do |f| %>
   <%= render "shared/errors", record: @paid_media_collection %>
-  <div class="field"><%= f.label :title %><%= f.text_field :title, placeholder: "Behind the scenes, March" %></div>
-  <div class="field"><%= f.label :description %><%= f.text_area :description, placeholder: "What is inside this set" %></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="field"><%= f.label :price_cents, "Bundle price (paise/cents, optional)" %><%= f.number_field :price_cents, min: 1, placeholder: "99900" %></div><div class="field"><%= f.label :currency %><%= f.select :currency, [["INR", "INR"], ["USD", "USD"]] %></div></div>
-  <div class="field"><%= f.label :subscription_plan_id, "Or include with a plan" %><%= f.collection_select :subscription_plan_id, current_user.subscription_plans, :id, :name, { include_blank: "Not tied to a plan" } %></div>
-  <div class="field"><label><%= f.check_box :published %> Show on my public profile</label></div>
-  <div class="form-actions"><%= f.submit class: "button pink" %><%= link_to "Cancel", dashboard_path, class: "button light" %></div>
+  <div class="field">
+    <%= f.label :title, "Title" %>
+    <%= f.text_field :title, placeholder: "Behind the scenes, March" %>
+  </div>
+  <div class="field">
+    <%= f.label :description, "What is inside" %>
+    <%= f.text_area :description, placeholder: "Describe the set…" %>
+  </div>
+  <div class="field-row">
+    <%= render "shared/price_field", f: f, record: @paid_media_collection, field: :price_cents, label: "Bundle price (optional)", placeholder: "99900" %>
+    <div class="field">
+      <%= f.label :currency, "Currency" %>
+      <%= f.select :currency, [ [ "Rupees (₹)", "INR" ], [ "Dollars ($)", "USD" ] ] %>
+    </div>
+  </div>
+  <div class="field">
+    <%= f.label :subscription_plan_id, "Or include with a plan" %>
+    <%= f.collection_select :subscription_plan_id, current_user.subscription_plans, :id, :name, { include_blank: "Not included with a plan" } %>
+  </div>
+  <label class="check">
+    <%= f.check_box :published %>
+    Show this on my page
+  </label>
+  <div class="form-actions">
+    <%= f.submit(@paid_media_collection.persisted? ? "Save collection" : "Create collection", class: "button accent", data: { disable_with: "Saving…" }) %>
+    <%= link_to "Cancel", dashboard_path, class: "button light" %>
+  </div>
 <% end %>

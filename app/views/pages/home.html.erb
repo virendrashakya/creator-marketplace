@@ -1,15 +1,65 @@
-<style>
-  .hero { min-height:520px; display:grid; grid-template-columns:1.05fr .95fr; align-items:center; gap:55px; padding:55px 0 75px }.eyebrow { color:#bd3d5a; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:1.2px }.hero h1 { font-size:clamp(44px,6vw,76px); line-height:.98; letter-spacing:-4px; margin:14px 0 22px }.hero p { max-width:490px; font-size:18px; line-height:1.55; color:var(--muted); margin-bottom:28px }.phone { max-width:355px; margin:auto; padding:16px; border-radius:36px; color:#2b242a; background:#f5dae0; box-shadow:16px 20px 0 #e7c8d0 }.phone-in { border-radius:26px; padding:35px 20px 22px; background:#fffaf7; text-align:center }.avatar { width:68px; height:68px; margin:auto; display:grid; place-items:center; background:#ffca71; border-radius:50%; font-size:28px }.phone h3 { margin:13px 0 4px }.mini-link { display:block; text-align:left; margin-top:11px; border-radius:12px; padding:13px; background:#fff; box-shadow:0 2px 10px #dfcfd155; font-size:13px; font-weight:700 }.steps { background:var(--lav); margin:0 -30px; padding:56px max(30px, calc((100vw - 1120px)/2)); }.steps h2 { font-size:34px; letter-spacing:-1.8px; text-align:center }.step-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:28px }.step { background:#fff; border-radius:16px; padding:24px }.step b { color:var(--pink); font-size:13px }.step h3 { margin:10px 0 }.step p { color:var(--muted); line-height:1.5; font-size:14px } @media(max-width:700px){.hero{grid-template-columns:1fr;padding-top:25px}.phone{display:none}.step-grid{grid-template-columns:1fr}.steps{margin:0 -18px;padding:40px 18px}}
-</style>
-<main class="page">
+<% content_for :title, "Wishful — things worth vouching for" %>
+<% content_for :head do %>
+  <link rel="stylesheet" href="/assets/home.css">
+<% end %>
+
+<div class="page home">
   <section class="hero">
-    <div>
-      <div class="eyebrow">Your taste has a home</div>
-      <h1>Share what you love. Earn as you grow.</h1>
-      <p>Create a beautiful page for every product, place, and find your community asks you about—then see what resonates.</p>
-      <%= link_to "Create your free page", sign_up_path, class: "button pink" %>
+    <div class="hero-text">
+      <h1>The things you actually use, on one page people can pay you for.</h1>
+      <p class="hero-lede">Wishful is where you put the shampoo you repurchased, the lens you saved for, the café you send everyone to. Followers tap through, or pay you straight to your UPI.</p>
+      <div class="actions">
+        <%= link_to "Make your page", sign_up_path, class: "button accent" %>
+        <% if (sample = @creators.find { |creator| creator.product_links.any? } || @creators.first) %>
+          <%= link_to "See a real page", profile_path(sample.handle), class: "button light" %>
+        <% end %>
+      </div>
+      <p class="hero-fine muted">Free to start. No cut taken on gifts.</p>
     </div>
-    <div class="phone"><div class="phone-in"><div class="avatar">✦</div><h3>@miraedits</h3><small class="muted">Little things I’m loving lately</small><span class="mini-link">☼ Summer skincare favourites</span><span class="mini-link">◌ The everyday gold stack</span><span class="mini-link">✷ My travel essentials</span></div></div>
+
+    <%# The hero is a real vouch row at full size — the thing the product makes,
+        shown in its own vernacular, rather than a phone mockup. %>
+    <figure class="hero-sample" aria-labelledby="sample-cap">
+      <div class="sample-row">
+        <div class="sample-thumb" aria-hidden="true">◍</div>
+        <div class="min0">
+          <p class="sample-reason">“Carried it every day for eight months and the strap still hasn’t gone soft.”</p>
+          <div class="sample-title">The everyday tote</div>
+          <div class="sample-merchant">Zouk</div>
+        </div>
+        <div class="sample-price num">₹2,499</div>
+      </div>
+      <div class="sample-row sample-row--gift">
+        <div class="sample-thumb" aria-hidden="true">◍</div>
+        <div class="min0">
+          <p class="sample-reason">“Saving for this one. Gifts go straight to my UPI.”</p>
+          <div class="sample-title">35mm lens</div>
+          <div class="sample-meter" role="img" aria-label="62 percent funded">
+            <span style="width:62%"></span>
+          </div>
+          <div class="sample-merchant num">₹31,000 of ₹50,000</div>
+        </div>
+        <div class="sample-price num">Gift</div>
+      </div>
+      <figcaption id="sample-cap" class="muted">A page in progress, by @miraedits.</figcaption>
+    </figure>
   </section>
-  <section class="steps"><h2>Made for your recommendations</h2><div class="step-grid"><article class="step"><b>01</b><h3>Build your page</h3><p>Add the links, products, and collections your audience already asks for.</p></article><article class="step"><b>02</b><h3>Share anywhere</h3><p>One link for your social bios, video descriptions, and newsletters.</p></article><article class="step"><b>03</b><h3>Learn what lands</h3><p>See clicks at a glance and give your best finds the spotlight.</p></article></div></section>
-</main>
+
+  <section class="facets">
+    <h2 class="facets-head">Made for recommendations, not for ads.</h2>
+    <div class="facet-grid">
+      <div class="facet">
+        <h3>Say why, not just what</h3>
+        <p>A link on its own persuades nobody. Every recommendation leads with your reason for it, in your words.</p>
+      </div>
+      <div class="facet">
+        <h3>Paid directly, by UPI</h3>
+        <p>Followers pay to your own UPI ID and send the reference number. You confirm it against your statement before anything unlocks.</p>
+      </div>
+      <div class="facet">
+        <h3>Gifts, meetups, and private posts</h3>
+        <p>Run a wishlist your audience can fund, sell a coffee and a portfolio review, or put a set of photos behind a one-time unlock.</p>
+      </div>
+    </div>
+  </section>
+</div>

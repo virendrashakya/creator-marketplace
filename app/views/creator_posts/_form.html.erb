@@ -1,1 +1,19 @@
-<%= form_with model: @creator_post do |f| %><%= render "shared/errors", record: @creator_post %><div class="field"><%= f.label :body, "Caption" %><%= f.text_area :body, placeholder: "Share an update with your followers..." %></div><div class="field"><%= f.label :media, "Photo or video (optional)" %><%= f.file_field :media, accept: "image/*,video/*" %></div><div class="field"><label><%= f.check_box :published %> Publish now</label></div><div class="form-actions"><%= f.submit class: "button pink" %><%= link_to "Cancel", dashboard_path, class: "button light" %></div><% end %>
+<%= form_with model: @creator_post do |f| %>
+  <%= render "shared/errors", record: @creator_post %>
+  <div class="field">
+    <%= f.label :body, "Post" %>
+    <%= f.text_area :body, placeholder: "Share an update with the people who follow you…" %>
+  </div>
+  <div class="field">
+    <%= f.label :media, "Photo or video (optional)" %>
+    <%= f.file_field :media, accept: "image/*,video/*" %>
+  </div>
+  <label class="check">
+    <%= f.check_box :published %>
+    Publish now
+  </label>
+  <div class="form-actions">
+    <%= f.submit(@creator_post.persisted? ? "Save post" : "Publish post", class: "button accent", data: { disable_with: "Saving…" }) %>
+    <%= link_to "Cancel", dashboard_path, class: "button light" %>
+  </div>
+<% end %>

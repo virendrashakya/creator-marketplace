@@ -1,0 +1,18 @@
+<%#
+  Amounts are stored in minor units (paise/cents). A bare number field labelled
+  "(paise)" invites someone to type 499 and charge ₹4.99, so the unit is shown
+  on the input itself and restated as a live example beneath it.
+%>
+<% currency = record.try(:currency).presence || "INR" %>
+<% hint_id = "#{f.object_name.parameterize}_#{field}_hint" %>
+<div class="field">
+  <%= f.label field, label %>
+  <div class="money-input">
+    <span class="money-unit" aria-hidden="true"><%= currency == "USD" ? "$" : "₹" %></span>
+    <%= f.number_field field, min: 1, step: 1, inputmode: "numeric", class: "num",
+          placeholder: placeholder, aria: { describedby: hint_id } %>
+  </div>
+  <small id="<%= hint_id %>">
+    In <%= minor_unit_hint(currency) %>. <%= money(100_000, currency) %> is <%= number_with_delimiter(100_000) %>.
+  </small>
+</div>

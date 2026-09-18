@@ -1,11 +1,50 @@
 <%= form_with model: @paid_media_post do |f| %>
   <%= render "shared/errors", record: @paid_media_post %>
-  <div class="field"><%= f.label :title %><%= f.text_field :title, placeholder: "My editing presets" %></div>
-  <div class="field"><%= f.label :caption, "Description" %><%= f.text_area :caption, placeholder: "Tell people what they will unlock" %></div>
-  <div class="field"><%= f.label :media, "Upload private media" %><%= f.file_field :media, accept: "image/*,video/*" %><small class="muted">This file stays hidden until a buyer unlocks it.</small></div>
-  <div class="field"><%= f.label :preview, "Public preview image (optional)" %><%= f.file_field :preview, accept: "image/*" %></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"><div class="field"><%= f.label :media_type %><%= f.select :media_type, [["Image", "image"], ["Video", "video"]] %></div><div class="field"><%= f.label :price_cents, "One-time price (paise/cents)" %><%= f.number_field :price_cents, min: 1, placeholder: "19900" %></div><div class="field"><%= f.label :currency %><%= f.select :currency, [["INR", "INR"], ["USD", "USD"]] %></div></div>
-  <div class="field"><%= f.label :paid_media_collection_id, "Paid collection (optional)" %><%= f.collection_select :paid_media_collection_id, current_user.paid_media_collections, :id, :title, { include_blank: "No collection" } %></div>
-  <div class="field"><%= f.label :subscription_plan_id, "Subscription required (optional)" %><%= f.collection_select :subscription_plan_id, current_user.subscription_plans.where(active: true), :id, :name, { include_blank: "No subscription required" } %></div>
-  <div class="field"><label><%= f.check_box :published %> Publish on my profile</label></div><div class="form-actions"><%= f.submit class: "button pink" %><%= link_to "Cancel", dashboard_path, class: "button light" %></div>
+  <div class="field">
+    <%= f.label :title, "Title" %>
+    <%= f.text_field :title, placeholder: "My editing presets" %>
+  </div>
+  <div class="field">
+    <%= f.label :caption, "What buyers get" %>
+    <%= f.text_area :caption, placeholder: "Describe what unlocking this gives them…" %>
+  </div>
+  <div class="field">
+    <%= f.label :media, "The private file" %>
+    <%= f.file_field :media, accept: "image/*,video/*" %>
+    <small>Stays hidden until you confirm a payment.</small>
+  </div>
+  <div class="field">
+    <%= f.label :preview, "Public preview image (optional)" %>
+    <%= f.file_field :preview, accept: "image/*" %>
+    <small>Shown blurred on your page to tempt people in.</small>
+  </div>
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :media_type, "Type" %>
+      <%= f.select :media_type, [ [ "Image", "image" ], [ "Video", "video" ] ] %>
+    </div>
+    <%= render "shared/price_field", f: f, record: @paid_media_post, field: :price_cents, label: "One-time price", placeholder: "19900" %>
+    <div class="field">
+      <%= f.label :currency, "Currency" %>
+      <%= f.select :currency, [ [ "Rupees (₹)", "INR" ], [ "Dollars ($)", "USD" ] ] %>
+    </div>
+  </div>
+  <div class="field-row">
+    <div class="field">
+      <%= f.label :paid_media_collection_id, "Collection (optional)" %>
+      <%= f.collection_select :paid_media_collection_id, current_user.paid_media_collections, :id, :title, { include_blank: "No collection" } %>
+    </div>
+    <div class="field">
+      <%= f.label :subscription_plan_id, "Include with a plan (optional)" %>
+      <%= f.collection_select :subscription_plan_id, current_user.subscription_plans.where(active: true), :id, :name, { include_blank: "Not included with a plan" } %>
+    </div>
+  </div>
+  <label class="check">
+    <%= f.check_box :published %>
+    Show this on my page
+  </label>
+  <div class="form-actions">
+    <%= f.submit(@paid_media_post.persisted? ? "Save paid media" : "Create paid media", class: "button accent", data: { disable_with: "Saving…" }) %>
+    <%= link_to "Cancel", dashboard_path, class: "button light" %>
+  </div>
 <% end %>
