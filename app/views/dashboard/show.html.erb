@@ -1,6 +1,6 @@
 <% content_for :title, "Dashboard | Wishful" %>
 <% content_for :head do %>
-  <link rel="stylesheet" href="/assets/dashboard.css">
+  <link rel="stylesheet" href="/assets/dashboard.css" data-turbo-track="reload">
 <% end %>
 
 <div class="page dash">
@@ -9,7 +9,38 @@
       <h1>Hello, <%= current_user.name.to_s.split.first.presence || current_user.handle %></h1>
       <%= link_to "wishful.app/@#{current_user.handle}", profile_path(current_user.handle), class: "dash-link" %>
     </div>
-    <%= link_to "View my page", profile_path(current_user.handle), class: "btn btn--light" %>
+    <%# The three things a creator reaches for from here. Go live and Inbox
+        carry state, because "you are already live" and "someone is waiting"
+        are both things you should see before you click. %>
+    <div class="dash-head-actions">
+      <% if @airing_live %>
+        <%= link_to live_session_path(@airing_live), class: "btn btn--accent dash-live-on" do %>
+          <span class="dash-live-dot" aria-hidden="true"></span>You are live
+        <% end %>
+      <% else %>
+        <%= link_to "Go live", new_live_session_path, class: "btn btn--accent" %>
+      <% end %>
+
+      <%# Calendar: where the creator has to be, meets and lives together.
+          Icon-only with a label for screen readers, because three worded
+          buttons plus this one would wrap the header on a laptop. %>
+      <%= link_to schedule_path, class: "btn btn--light dash-icon-btn",
+            title: "Schedule", aria: { label: "Schedule" } do %>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="dash-icon">
+          <rect x="3.5" y="5" width="17" height="15.5" rx="2.5"
+                stroke="currentColor" stroke-width="1.6"/>
+          <path d="M3.5 9.5h17" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M8 3.5v3M16 3.5v3" stroke="currentColor" stroke-width="1.6"
+                stroke-linecap="round"/>
+        </svg>
+      <% end %>
+
+      <%= link_to conversations_path, class: "btn btn--light dash-inbox" do %>
+        Inbox<% if @unread_messages.to_i.positive? %><span class="dash-inbox-badge"><%= @unread_messages %></span><% end %>
+      <% end %>
+
+      <%= link_to "View my page", profile_path(current_user.handle), class: "btn btn--light" %>
+    </div>
   </div>
 
   <% if @pending_claim_count.to_i.positive? %>

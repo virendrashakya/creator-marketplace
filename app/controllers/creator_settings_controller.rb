@@ -8,7 +8,7 @@ class CreatorSettingsController < ApplicationController
   def update
     @user = current_user
     if @user.update(settings_params)
-      redirect_to dashboard_path, notice: "Creator profile updated."
+      redirect_to inline_edit_redirect(dashboard_path), notice: "Creator profile updated."
     else
       render :edit, status: :unprocessable_entity
     end

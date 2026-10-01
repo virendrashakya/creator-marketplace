@@ -1,0 +1,53 @@
+<%= form_with model: @live, url: (@live.persisted? ? live_session_path(@live) : live_sessions_path) do |f| %>
+  <%= render "shared/errors", record: @live %>
+
+  <div class="field">
+    <%= f.label :title, "What is this live about?" %>
+    <%= f.text_field :title, placeholder: "Thrift haul, live from Bandra", autofocus: true %>
+  </div>
+
+  <div class="field">
+    <%= f.label :description, "Description (optional)" %>
+    <%= f.text_area :description, rows: 3,
+          placeholder: "What you will cover, and anything people should bring questions about." %>
+  </div>
+
+  <div class="field">
+    <%= f.label :scheduled_for, "When" %>
+    <%= f.datetime_field :scheduled_for %>
+    <small class="muted">Times are IST.</small>
+  </div>
+
+  <div class="field">
+    <%= f.label :access, "Who can watch" %>
+    <%= f.select :access, [ [ "Members with an active subscription", "members" ],
+                            [ "Anyone (a free live)", "public" ] ] %>
+  </div>
+
+  <%# Only worth showing if the creator actually sells more than one tier:
+      with a single plan "any plan" and "this plan" are the same thing. %>
+  <% plans = current_user.subscription_plans.to_a %>
+  <% if plans.size > 1 %>
+    <div class="field">
+      <%= f.label :subscription_plan_id, "Limit to one plan (optional)" %>
+      <%= f.select :subscription_plan_id,
+            plans.map { |p| [ "#{p.name} - #{p.price_label}", p.id ] },
+            { include_blank: "Any of my plans" } %>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :playback_url, "Stream link" %>
+    <%= f.text_field :playback_url, placeholder: "https://…" %>
+    <small class="muted">
+      The embed or player link from whatever you stream with. Only people
+      allowed to watch ever see it.
+    </small>
+  </div>
+
+  <div class="actions" style="margin-top: 18px">
+    <%= f.submit(@live.persisted? ? "Save live" : "Schedule live", class: "button accent",
+          data: { disable_with: "Saving…" }) %>
+    <%= link_to "Cancel", dashboard_path, class: "button light" %>
+  </div>
+<% end %>

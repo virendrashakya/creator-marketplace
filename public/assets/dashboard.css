@@ -484,3 +484,54 @@
   background: repeating-linear-gradient(135deg, #EDEEEA 0 7px, #E3E4DF 7px 14px);
 }
 .pick-meta { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------- header actions ---------- */
+
+.dash-head-actions {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+
+/* "You are live" has to read as a state, not another button. The dot is the
+   same device the live room uses, so the two pages agree. */
+.dash-live-on { display: inline-flex; align-items: center; gap: 7px; }
+.dash-live-dot {
+  width: 7px; height: 7px; border-radius: 999px;
+  background: #FFFFFF; flex: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dash-live-dot { animation: dash-live-pulse 2s ease-in-out infinite; }
+}
+@keyframes dash-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .4; }
+}
+
+.dash-inbox { display: inline-flex; align-items: center; gap: 7px; }
+/* #FFFFFF on #C2185B is about 5.8:1, which clears AA at this size. */
+.dash-inbox-badge {
+  min-width: 19px; height: 19px; padding: 0 6px;
+  border-radius: 999px; background: #C2185B; color: #FFFFFF;
+  font-size: 11.5px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 560px) {
+  /* Stacked, the actions get a full row rather than squeezing next to the
+     greeting. */
+  .dash-head-actions { width: 100%; }
+  .dash-head-actions .btn { flex: 1 1 auto; justify-content: center; }
+}
+
+/* Icon-only header button. Square so it reads as a companion to the worded
+   buttons rather than a short one. */
+.dash-icon-btn {
+  padding: 0; width: 40px;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: none;
+}
+.dash-icon { width: 19px; height: 19px; display: block; }
+@media (max-width: 560px) {
+  /* Keep it square when the worded buttons stretch to fill the row. */
+  .dash-head-actions .dash-icon-btn { flex: 0 0 44px; }
+}

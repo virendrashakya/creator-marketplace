@@ -1,0 +1,28 @@
+<%#
+  Owner-only editing affordances, Instagram-style: the controls live on the
+  thing they change rather than in a panel above the page.
+
+    - hover the cover or the avatar -> a drop zone appears over it. Click to
+      pick a file, or drag one on. Either way it uploads and the page comes
+      back with the new photo.
+    - every other region gets a quiet "Manage" button that leads to the real
+      editor for that kind of thing, because a collection or a paid post has
+      far more fields than belong in an overlay.
+
+  Each drop zone is a real multipart form wrapping a real file input, so with
+  JS off it is still a working "choose a file, press the button" upload. JS
+  adds drag-and-drop and submit-on-choose.
+%>
+
+<%# The one persistent marker that you are looking at your own page. Kept to
+    a single line: the point of this design is that the page looks like the
+    page, not like an admin screen. %>
+<div class="ie-strip">
+  <div class="ie-strip-inner">
+    <span class="ie-strip-label">
+      <span class="ie-dot" aria-hidden="true"></span>
+      Your page. Hover a photo to replace it.
+    </span>
+    <%= link_to "Open dashboard", dashboard_path, class: "ie-mini" %>
+  </div>
+</div>

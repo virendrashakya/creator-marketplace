@@ -1,0 +1,44 @@
+<%#
+  One hover-to-replace photo target, laid over the cover or the avatar.
+
+  locals:
+    field    :banner or :profile_picture
+    title    what the overlay says
+    hint     the smaller line under it (optional)
+    variant  "cover" or "avatar", for sizing only
+
+  It is a real form: a file input and a submit button inside a label, so
+  clicking anywhere in the zone opens the picker and, with JS off, the button
+  below sends it. JS submits on choose and accepts a dropped file.
+%>
+<%= form_with model: user, url: creator_settings_path, method: :patch,
+      html: { class: "ie-drop ie-drop--#{variant}", multipart: true,
+              data: { ie_drop: field } } do |f| %>
+  <%= hidden_field_tag :inline, "1" %>
+
+  <%# The label is the whole hit area, which is what makes a click anywhere
+      on the photo open the file picker. %>
+  <label class="ie-drop-face">
+    <%= f.file_field field, accept: "image/*",
+          class: "ie-drop-input", data: { ie_drop_input: true } %>
+    <span class="ie-drop-copy">
+      <span class="ie-drop-icon" aria-hidden="true">
+        <%# Plain geometry: a frame with an arrow into it. Drawn inline
+            because it is one 16px glyph and the app has no icon set. %>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 16V4m0 0L8 8m4-4 4 4" stroke="currentColor"
+                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor"
+                stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="ie-drop-title"><%= title %></span>
+      <% if hint.present? %>
+        <span class="ie-drop-hint"><%= hint %></span>
+      <% end %>
+    </span>
+  </label>
+
+  <%# Fallback for no JS, hidden by CSS once the script marks the page. %>
+  <%= f.submit "Upload", class: "ie-mini ie-nojs-submit" %>
+<% end %>

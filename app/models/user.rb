@@ -2,6 +2,27 @@ class User < ApplicationRecord
   # e.g. "name@okhdfcbank" - handle@psp
   UPI_ID_FORMAT = /\A[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}\z/
 
+  # The page-look choices, in one place so the settings screen, the inline
+  # editor on the public page and the validation below cannot drift apart.
+  # The two colours are only for the swatch a creator picks from; the real
+  # tokens live in profile.css.
+  #   value, label, swatch background, swatch dot
+  THEME_CHOICES = [
+    [ "minimal",    "Minimal",    "#F4F5F3", "#C2185B" ],
+    [ "luxury",     "Luxury",     "#14142A", "#F0A9C8" ],
+    [ "adventure",  "Adventure",  "#EDF1EA", "#0B5B42" ],
+    [ "after_dark", "After dark", "#0C0D10", "#FF5C8A" ],
+    [ "atelier",    "Atelier",    "#050505", "#E91E63" ]
+  ].freeze
+  THEMES = THEME_CHOICES.map(&:first).freeze
+
+  LAYOUT_CHOICES = [
+    [ "classic",   "List" ],
+    [ "editorial", "Editorial" ],
+    [ "gallery",   "Gallery" ]
+  ].freeze
+  LAYOUTS = LAYOUT_CHOICES.map(&:first).freeze
+
   has_secure_password
 
   has_many :link_collections, dependent: :destroy
@@ -17,6 +38,17 @@ class User < ApplicationRecord
   has_many :wishlists, dependent: :destroy
   has_many :gift_contributions, foreign_key: :giver_id, dependent: :destroy, inverse_of: :giver
   has_many :creator_posts, dependent: :destroy
+  has_many :live_sessions, dependent: :destroy
+  has_many :live_messages, dependent: :destroy
+
+  # Direct messages. A user is a creator in some threads and a fan in others,
+  # so both sides are associations and `conversations` is the union.
+  has_many :creator_conversations, class_name: "Conversation", foreign_key: :creator_id,
+           dependent: :destroy, inverse_of: :creator
+  has_many :fan_conversations, class_name: "Conversation", foreign_key: :fan_id,
+           dependent: :destroy, inverse_of: :fan
+  has_many :sent_direct_messages, class_name: "DirectMessage", foreign_key: :sender_id,
+           dependent: :destroy, inverse_of: :sender
   has_many :creator_post_likes, dependent: :destroy
   has_many :creator_post_comments, dependent: :destroy
   has_many :creator_blocks, foreign_key: :creator_id, dependent: :destroy, inverse_of: :creator
@@ -66,8 +98,8 @@ class User < ApplicationRecord
   validates :name, presence: true
   validates :email, presence: true, uniqueness: { case_sensitive: false }, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :handle, presence: true, uniqueness: { case_sensitive: false }, format: { with: /\A[a-z0-9_]+\z/, message: "can use lowercase letters, numbers, and underscores" }, length: { maximum: 30 }
-  validates :theme, inclusion: { in: %w[minimal luxury adventure after_dark] }
-  validates :profile_layout, inclusion: { in: %w[classic editorial gallery] }
+  validates :theme, inclusion: { in: THEMES }
+  validates :profile_layout, inclusion: { in: LAYOUTS }
   validates :account_type, inclusion: { in: %w[creator personal business] }
   validates :upi_id, format: { with: UPI_ID_FORMAT, message: "should look like yourname@bank" }, allow_blank: true
   validate :upi_details_present_when_accepting
@@ -90,6 +122,32 @@ class User < ApplicationRecord
 
   def subscribed_to?(plan)
     creator_subscriptions.where(subscription_plan: plan, status: "active").where("current_period_ends_at > ?", Time.current).exists?
+  end
+
+  # Active subscription to ANY of this creator's plans. What gates a
+  # members-only live, where the question is "is this person a member",
+  # not "which tier".
+  def subscribed_to_creator?(creator)
+    return false if creator.blank?
+
+    creator_subscriptions
+      .joins(:subscription_plan)
+      .where(subscription_plans: { user_id: creator.id })
+      .where(status: "active")
+      .where("current_period_ends_at > ?", Time.current)
+      .exists?
+  end
+
+  # Every thread this person is in, as a relation so callers can order and
+  # paginate. Both sides are indexed with last_message_at, so the inbox's
+  # ORDER BY is served by an index whichever side the row matches.
+  def conversations
+    Conversation.where(creator_id: id).or(Conversation.where(fan_id: id))
+  end
+
+  def total_unread_messages
+    Conversation.where(creator_id: id).sum(:creator_unread_count) +
+      Conversation.where(fan_id: id).sum(:fan_unread_count)
   end
 
   def blocks?(other_user)

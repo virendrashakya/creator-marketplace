@@ -17,6 +17,17 @@ class ApplicationController < ActionController::Base
     redirect_to sign_in_path, alert: "Please sign in to continue."
   end
 
+  # Inline editing happens on the creator's own public page, so a save has to
+  # come back there rather than to the dashboard. The flag is a bare "1", never
+  # a URL: taking a path from the params would be an open redirect, and the
+  # only place this is ever allowed to land is the signed-in creator's own
+  # profile, which we can build ourselves.
+  def inline_edit_redirect(fallback, tab: nil)
+    return fallback unless params[:inline].to_s == "1" && current_user
+
+    profile_path(current_user.handle, tab: tab)
+  end
+
   # A creator blocking someone must stop interaction, not only viewing.
   # Every write aimed at a creator routes through here.
   def deny_if_blocked_by(creator)

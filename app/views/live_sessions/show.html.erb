@@ -1,0 +1,201 @@
+<% content_for :title, "#{@live.title} | #{@creator.name} | Wishful" %>
+<%# A members-only live must not be indexed or previewed: the title is fine,
+    the stream is not, and a social card should not advertise what is behind
+    the paywall as if it were open. %>
+<% content_for :description, @live.members_only? ? "A members-only live from #{@creator.name}." : @live.description.to_s.truncate(150) %>
+<% content_for :head do %>
+  <link rel="stylesheet" href="/assets/live.css" data-turbo-track="reload">
+  <% if @watchable %>
+    <%# The socket only ships to people who are allowed in the room. %>
+    <script src="/assets/js/actioncable.js" data-turbo-track="reload" defer></script>
+    <script src="/assets/js/chat.js" data-turbo-track="reload" defer></script>
+  <% end %>
+<% end %>
+
+<div class="page live-page">
+
+  <header class="live-head">
+    <div class="live-head-main">
+      <%# Status is the first thing: whether this is on now changes what the
+          whole page means. %>
+      <div class="live-status">
+        <% if @live.live? %>
+          <span class="live-badge live-badge--on">
+            <span class="live-pulse" aria-hidden="true"></span>Live now
+          </span>
+        <% elsif @live.scheduled? %>
+          <span class="live-badge"><%= @live.scheduled_for.strftime("%-d %b, %-I:%M %p") %> IST</span>
+        <% elsif @live.ended? %>
+          <span class="live-badge">Ended</span>
+        <% end %>
+        <% if @live.members_only? %>
+          <span class="live-badge live-badge--members">Members only</span>
+        <% end %>
+      </div>
+
+      <h1 class="live-title"><%= @live.title %></h1>
+      <p class="live-by">
+        <%= link_to profile_path(@creator.handle), class: "live-by-link" do %>
+          <%= @creator.name %> <span class="mono" translate="no">@<%= @creator.handle %></span>
+        <% end %>
+      </p>
+      <% if @live.description.present? %>
+        <p class="live-desc"><%= @live.description %></p>
+      <% end %>
+    </div>
+
+    <%# The creator's own controls, on the page they are already looking at. %>
+    <% if current_user == @creator %>
+      <div class="live-owner">
+        <% if @live.scheduled? %>
+          <%= button_to "Go live", start_live_session_path(@live), class: "button accent" %>
+        <% elsif @live.live? %>
+          <%= button_to "End live", finish_live_session_path(@live), class: "button light" %>
+        <% end %>
+        <%= link_to "Edit", edit_live_session_path(@live), class: "button light" %>
+      </div>
+    <% end %>
+  </header>
+
+  <div class="live-body">
+
+    <section class="live-stage">
+      <% if !@watchable %>
+        <%# The paywall. It says what is behind it and what to do, rather
+            than only refusing: someone who landed here from a story is the
+            person most likely to subscribe. %>
+        <div class="live-gate">
+          <div class="live-gate-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="10.5" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="live-gate-title">This live is for members</h2>
+
+          <% if @block_reason == :sign_in %>
+            <p class="live-gate-body">
+              Sign in to check whether your subscription covers it.
+            </p>
+            <div class="actions">
+              <%= link_to "Sign in", sign_in_path, class: "button accent" %>
+              <%= link_to "Create an account", sign_up_path, class: "button light" %>
+            </div>
+          <% else %>
+            <p class="live-gate-body">
+              Subscribe to <%= @creator.name.to_s.split.first.presence || "this creator" %>
+              to watch this and everything else behind the door.
+            </p>
+            <% if @plans.any? %>
+              <div class="live-plans">
+                <% @plans.each do |plan| %>
+                  <div class="live-plan">
+                    <div class="live-plan-name"><%= plan.name %></div>
+                    <div class="live-plan-price">
+                      <%= plan.price_label %>
+                    </div>
+                    <%= render "shared/buy_button", purchasable: plan, creator: @creator,
+                          label: "Subscribe", signed_out_label: "Sign in to subscribe",
+                          price_label: plan.price_label,
+                          fallback_path: subscribe_subscription_plan_path(plan) %>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <p class="live-gate-body muted">
+                <%= @creator.name %> has not opened subscriptions yet.
+              </p>
+            <% end %>
+          <% end %>
+        </div>
+
+      <% elsif @live.scheduled? %>
+        <%# Allowed in, but there is nothing on yet. %>
+        <div class="live-gate">
+          <h2 class="live-gate-title">Not started yet</h2>
+          <p class="live-gate-body">
+            This goes on at <%= @live.scheduled_for.strftime("%-d %B, %-I:%M %p") %> IST.
+            You are on the list: open this page again then.
+          </p>
+        </div>
+
+      <% elsif @live.ended? %>
+        <div class="live-gate">
+          <h2 class="live-gate-title">This live has ended</h2>
+          <p class="live-gate-body">
+            <% if @messages.any? %>
+              The chat from it is below.
+            <% else %>
+              <%= link_to "See #{@creator.name.to_s.split.first}'s page", profile_path(@creator.handle) %>
+              for what else is on.
+            <% end %>
+          </p>
+        </div>
+
+      <% elsif @live.playback_url.present? %>
+        <%# The stream. Rendered only past every gate above, which is why
+            the URL never reaches a non-member's HTML at all. %>
+        <div class="live-video">
+          <iframe src="<%= @live.playback_url %>"
+                  title="<%= @live.title %>"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowfullscreen
+                  referrerpolicy="no-referrer"></iframe>
+        </div>
+
+      <% else %>
+        <div class="live-gate">
+          <h2 class="live-gate-title">Live, but no stream link yet</h2>
+          <p class="live-gate-body">
+            <% if current_user == @creator %>
+              <%= link_to "Add your stream link", edit_live_session_path(@live) %> and this
+              page will start playing.
+            <% else %>
+              <%= @creator.name.to_s.split.first %> is setting up. The chat is open.
+            <% end %>
+          </p>
+        </div>
+      <% end %>
+    </section>
+
+    <%# Live chat. Public to everyone in the room, and a different thing from
+        the private threads under /conversations. %>
+    <% if @watchable %>
+      <section class="live-chat"
+               data-chat="live"
+               data-live-id="<%= @live.id %>"
+               data-me="<%= current_user&.id %>"
+               data-creator-id="<%= @creator.id %>">
+        <div class="live-chat-head">
+          <h2>Chat</h2>
+          <span class="live-chat-count"><%= pluralize(@live.live_messages_count, "message") %></span>
+        </div>
+
+        <ol class="chat-log" data-chat-log>
+          <% @messages.each do |m| %>
+            <li class="chat-line<%= " is-creator" if m.user_id == @creator.id %>" data-id="<%= m.id %>">
+              <span class="chat-who mono" translate="no">@<%= m.user.handle %></span>
+              <span class="chat-body"><%= m.body %></span>
+            </li>
+          <% end %>
+        </ol>
+
+        <% if @can_chat %>
+          <%# A real form, so chat works with the socket down. JS takes it
+              over and sends through the channel instead. %>
+          <%= form_with url: live_session_live_messages_path(@live), method: :post,
+                class: "chat-form", data: { chat_form: true } do %>
+            <label class="visually-hidden" for="chat_body">Your message</label>
+            <input type="text" name="body" id="chat_body" maxlength="300"
+                   placeholder="Say something…" autocomplete="off" class="chat-input">
+            <button type="submit" class="button accent chat-send">Send</button>
+          <% end %>
+        <% elsif @live.ended? %>
+          <p class="chat-closed">Chat closed when the live ended.</p>
+        <% elsif @live.scheduled? %>
+          <p class="chat-closed">Chat opens when the live starts.</p>
+        <% end %>
+      </section>
+    <% end %>
+  </div>
+</div>

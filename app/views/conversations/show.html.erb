@@ -1,0 +1,40 @@
+<% content_for :title, "#{@other.name} | Messages | Wishful" %>
+<% content_for :head do %>
+  <link rel="stylesheet" href="/assets/live.css" data-turbo-track="reload">
+  <script src="/assets/js/actioncable.js" data-turbo-track="reload" defer></script>
+    <script src="/assets/js/chat.js" data-turbo-track="reload" defer></script>
+<% end %>
+
+<div class="page dm-page">
+  <header class="dm-head">
+    <%= link_to "← Messages", conversations_path, class: "dm-back" %>
+    <h1 class="dm-who">
+      <%= link_to profile_path(@other.handle) do %>
+        <%= @other.name %>
+        <span class="mono dm-handle" translate="no">@<%= @other.handle %></span>
+      <% end %>
+    </h1>
+  </header>
+
+  <%# Private to two people: the gate is participation, not a subscription. %>
+  <section class="dm-thread"
+           data-chat="dm"
+           data-conversation-id="<%= @conversation.id %>"
+           data-me="<%= current_user.id %>">
+    <ol class="chat-log chat-log--dm" data-chat-log>
+      <% @messages.each do |m| %>
+        <li class="dm-line<%= m.sender_id == current_user.id ? " is-mine" : "" %>" data-id="<%= m.id %>">
+          <span class="dm-bubble"><%= m.body %></span>
+        </li>
+      <% end %>
+    </ol>
+
+    <%= form_with url: conversation_direct_messages_path(@conversation), method: :post,
+          class: "chat-form", data: { chat_form: true } do %>
+      <label class="visually-hidden" for="dm_body">Your message</label>
+      <input type="text" name="body" id="dm_body" maxlength="2000"
+             placeholder="Write a message…" autocomplete="off" class="chat-input">
+      <button type="submit" class="button accent chat-send">Send</button>
+    <% end %>
+  </section>
+</div>

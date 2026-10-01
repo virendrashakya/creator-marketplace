@@ -9,7 +9,7 @@ class CreatorPostsController < ApplicationController
   def create
     @creator_post = current_user.creator_posts.new(post_params)
     if @creator_post.save
-      redirect_to dashboard_path, notice: "Post published."
+      redirect_to inline_edit_redirect(dashboard_path, tab: "posts"), notice: "Post published."
     else
       render :new, status: :unprocessable_entity
     end
@@ -19,7 +19,7 @@ class CreatorPostsController < ApplicationController
 
   def update
     if @creator_post.update(post_params)
-      redirect_to dashboard_path, notice: "Post updated."
+      redirect_to inline_edit_redirect(dashboard_path, tab: "posts"), notice: "Post updated."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -27,7 +27,7 @@ class CreatorPostsController < ApplicationController
 
   def destroy
     @creator_post.destroy
-    redirect_to dashboard_path, notice: "Post removed."
+    redirect_to inline_edit_redirect(dashboard_path, tab: "posts"), notice: "Post removed."
   end
 
   private

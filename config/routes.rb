@@ -53,6 +53,33 @@ Rails.application.routes.draw do
     resources :creator_post_comments, only: :create
   end
 
+  # The websocket. Live chat and direct messages both ride it, and the
+  # connection authenticates from the same session cookie as every request,
+  # so a socket is never more trusted than a page load.
+  mount ActionCable.server => "/cable"
+
+  # Scheduled lives. The room is public so a non-member can open the link
+  # from a story; the stream inside is gated on an active subscription.
+  resources :live_sessions, path: "lives", except: :index do
+    member do
+      # The creator's control room, as distinct from the viewer's page.
+      get :studio
+      post :start
+      post :finish
+    end
+    resources :live_messages, only: %i[create index], path: "messages"
+  end
+
+  # One calendar for booked meets and scheduled lives.
+  get "schedule", to: "schedule#show"
+
+  # Direct messages, which are a different feature from live chat: private to
+  # two people and kept after the broadcast ends.
+  resources :conversations, only: %i[index show] do
+    resources :direct_messages, only: %i[create index], path: "messages"
+  end
+  post "/:handle/message", to: "conversations#create", as: :message_creator
+
   # Follow lives under the handle so the button can post from the public page
   # without knowing an internal id. Declared before the catch-all show route.
   post   "/:handle/follow", to: "creator_follows#create",  as: :follow_creator

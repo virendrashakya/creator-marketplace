@@ -1,0 +1,189 @@
+/* Owner-only editing affordances on a creator's own public page.
+
+   Loaded only for the owner. Colours come from the theme tokens that
+   .profile sets in profile.css, so these controls look native on all five
+   themes instead of being a grey admin box bolted onto a black page.
+
+   The design rule: the page still looks like the page. Nothing is revealed
+   until you hover the thing it changes, except on touch, where there is no
+   hover and the controls are simply always there. */
+
+/* ---------- the one persistent marker ---------- */
+
+.ie-strip {
+  background: var(--p-card);
+  border-bottom: 1px solid var(--p-line);
+}
+.ie-strip-inner {
+  max-width: var(--shell); margin-inline: auto;
+  padding: 8px var(--gutter);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.ie-strip-label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12.5px; color: var(--p-sub);
+}
+/* The only fixed colour here. A live-state dot has to read on #F4F5F3 and
+   #050505 alike, and #E0245E clears 3:1 against both. */
+.ie-dot {
+  width: 6px; height: 6px; border-radius: 999px;
+  background: #E0245E; flex: none;
+}
+
+/* ---------- the small control used everywhere ---------- */
+
+.ie-mini {
+  min-height: 34px; display: inline-flex; align-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--p-line); border-radius: var(--r-md);
+  background: var(--p-card); color: var(--p-ink);
+  font: inherit; font-size: 12.5px; font-weight: 600;
+  text-decoration: none; cursor: pointer; white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color var(--t-quick) var(--ease-out),
+              transform var(--t-press) var(--ease-out);
+}
+.ie-mini:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) {
+  .ie-mini:hover { border-color: var(--p-accent); }
+}
+
+/* Hidden once JS is live, because then choosing a file uploads it. */
+.ie-js .ie-nojs-submit { display: none; }
+
+/* ---------- photo drop zones ---------- */
+
+/* The photo itself is the positioning context. .pf-banner is already
+   position: relative in profile.css; the avatar needs it adding. */
+.pf-avatar[data-ie-zone] { position: relative; }
+
+.ie-drop {
+  position: absolute; inset: 0; margin: 0;
+  z-index: 3;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.ie-drop-face {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  /* A scrim dark enough for white type over an unknown photograph. It is
+     transparent until hover so a creator sees their own page, not a
+     permanent grey veil over their best picture. */
+  background: rgba(8, 8, 10, 0);
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--t-quick) var(--ease-out);
+}
+
+/* The real input covers the zone invisibly so a click anywhere opens the
+   picker. opacity rather than display:none, which would make it
+   unfocusable. */
+.ie-drop-input {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  opacity: 0; cursor: pointer;
+}
+
+.ie-drop-copy {
+  position: relative; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  text-align: center; padding: 10px;
+  color: #FFFFFF;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity var(--t-quick) var(--ease-out),
+              transform var(--t-quick) var(--ease-out);
+}
+.ie-drop-icon { width: 22px; height: 22px; }
+.ie-drop-icon svg { width: 100%; height: 100%; display: block; }
+.ie-drop-title { font-size: 13.5px; font-weight: 600; }
+.ie-drop-hint { font-size: 12px; opacity: .85; max-width: 24ch; line-height: 1.35; }
+
+/* Reveal on hover, on focus (keyboard), and while a file is over the zone. */
+@media (hover: hover) and (pointer: fine) {
+  [data-ie-zone]:hover .ie-drop-face { background: rgba(8, 8, 10, .54); }
+  [data-ie-zone]:hover .ie-drop-copy { opacity: 1; transform: none; }
+}
+.ie-drop-input:focus-visible ~ .ie-drop-copy { opacity: 1; transform: none; }
+.ie-drop-face:has(.ie-drop-input:focus-visible) { background: rgba(8, 8, 10, .54); }
+.ie-drop-input:focus-visible { outline: 2px solid var(--p-accent); outline-offset: -4px; }
+
+/* The avatar zone is small, so it carries the icon only. */
+.ie-drop--avatar { border-radius: 999px; overflow: hidden; }
+.ie-drop--avatar .ie-drop-hint { display: none; }
+.ie-drop--avatar .ie-drop-title { font-size: 11px; }
+.ie-drop--avatar .ie-drop-icon { width: 17px; height: 17px; }
+
+/* Touch: there is no hover, so show a permanent but quiet handle in the
+   corner rather than veiling the whole photograph. */
+@media (hover: none), (pointer: coarse) {
+  .ie-drop-face {
+    inset: auto 10px 10px auto;
+    width: 40px; height: 40px;
+    border-radius: 999px;
+    background: rgba(8, 8, 10, .62);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .22);
+  }
+  .ie-drop-copy { opacity: 1; transform: none; gap: 0; padding: 0; }
+  .ie-drop-title, .ie-drop-hint { display: none; }
+  .ie-drop--avatar .ie-drop-face {
+    inset: auto -2px -2px auto; width: 28px; height: 28px;
+  }
+  .ie-drop--avatar .ie-drop-icon { width: 14px; height: 14px; }
+}
+
+/* ---------- manage controls on the other regions ---------- */
+
+.ie-manage {
+  display: flex; align-items: center; gap: 7px;
+  flex-wrap: wrap;
+}
+@media (hover: hover) and (pointer: fine) {
+  /* Revealed by hovering the section, so a creator reading their own page
+     is not looking at a row of buttons on every heading. */
+  .ie-manage {
+    opacity: 0;
+    transition: opacity var(--t-quick) var(--ease-out);
+  }
+  [data-ie-zone]:hover .ie-manage,
+  .ie-manage:focus-within { opacity: 1; }
+}
+
+/* ---------- active states ----------
+   These come last on purpose. The touch block above pins the idle overlay to
+   a small corner handle and hides its label; while a file is being dragged,
+   or an upload is in flight, the zone has to expand back to full size and
+   say what is happening, on every input type. */
+
+[data-ie-zone].is-dragging .ie-drop-face,
+.ie-drop.is-busy .ie-drop-face {
+  inset: 0;
+  width: auto; height: auto;
+  border-radius: inherit;
+  box-shadow: none;
+}
+[data-ie-zone].is-dragging .ie-drop-face {
+  background: rgba(8, 8, 10, .62);
+  box-shadow: inset 0 0 0 2px var(--p-accent);
+}
+.ie-drop.is-busy .ie-drop-face { background: rgba(8, 8, 10, .70); }
+
+[data-ie-zone].is-dragging .ie-drop-copy,
+.ie-drop.is-busy .ie-drop-copy {
+  opacity: 1; transform: none; gap: 5px; padding: 10px;
+}
+[data-ie-zone].is-dragging .ie-drop-title,
+.ie-drop.is-busy .ie-drop-title { display: block; }
+/* The avatar zone stays too small for a hint even mid-drag. */
+[data-ie-zone].is-dragging .ie-drop:not(.ie-drop--avatar) .ie-drop-hint,
+[data-ie-zone].is-dragging .ie-drop-face .ie-drop-hint { display: block; }
+.ie-drop--avatar .ie-drop-hint { display: none !important; }
+
+.ie-drop.is-busy .ie-drop-input { pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ie-drop-face, .ie-drop-copy, .ie-manage, .ie-mini { transition: none; }
+  .ie-mini:active { transform: none; }
+  .ie-drop-copy { transform: none; }
+}

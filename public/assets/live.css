@@ -1,0 +1,500 @@
+/* Live rooms, live chat, and direct messages.
+
+   These pages are app surfaces rather than a creator's public page, so they
+   use the global tokens from wishful.css rather than the per-creator theme
+   tokens. The one exception is the live room, which a fan reaches straight
+   from a story and should feel like a room: dark, so video is the brightest
+   thing on it. */
+
+/* ---------- the live room ---------- */
+
+.live-page {
+  --room-bg: #0B0B0D;
+  --room-surface: #141416;
+  --room-line: #24242A;
+  --room-ink: #F5F1EA;
+  --room-sub: #A8A3A0;
+  --room-accent: #E91E63;
+
+  max-width: 1180px;
+  color: var(--room-ink);
+}
+/* The page background has to come from the body, or a short room leaves a
+   light band under it. The value is literal rather than var(--room-bg),
+   because that token is defined ON .live-page and so is out of scope here:
+   body is its parent, not its descendant. */
+body:has(.live-page) { background: #0B0B0D; }
+
+/* The app chrome above the room is a light bar on a black page. Re-ground
+   it so the room does not start with a white band across the top. */
+body:has(.live-page) .appbar-wrap {
+  background: #0B0B0D;
+  border-bottom: 1px solid #24242A;
+}
+body:has(.live-page) .appbar-brand,
+body:has(.live-page) .appbar-link,
+body:has(.live-page) .appbar-signout { color: #F5F1EA; }
+body:has(.live-page) .appbar-handle {
+  background: #141416; color: #F5F1EA; border-color: #24242A;
+}
+
+.live-head {
+  display: flex; gap: 20px; flex-wrap: wrap;
+  align-items: flex-start; justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--room-line);
+}
+.live-head-main { flex: 1 1 320px; min-width: 0; }
+
+.live-status { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.live-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--room-line);
+  background: var(--room-surface); color: var(--room-sub);
+  font-size: 11.5px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+}
+.live-badge--on {
+  border-color: rgba(233, 30, 99, .4);
+  background: rgba(233, 30, 99, .12);
+  color: #FF8AB0;
+}
+.live-badge--members { color: #D4AF37; border-color: rgba(212, 175, 55, .34); }
+
+/* The one animation on the page, and it earns it: a pulsing dot is how
+   every platform says "this is happening now". */
+.live-pulse {
+  width: 7px; height: 7px; border-radius: 999px;
+  background: var(--room-accent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .live-pulse { animation: live-pulse 2s ease-in-out infinite; }
+}
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
+.live-title {
+  margin: 0 0 6px;
+  font-size: clamp(24px, 3.4vw, 36px); line-height: 1.15;
+  letter-spacing: -.02em;
+  color: var(--room-ink);
+}
+.live-by { margin: 0; font-size: 14px; color: var(--room-sub); }
+.live-by-link { color: var(--room-sub); text-decoration: none; }
+.live-by-link:hover { color: var(--room-ink); }
+.live-desc {
+  margin: 12px 0 0; max-width: 62ch;
+  font-size: 15px; line-height: 1.55; color: #CFCBC4;
+  text-wrap: pretty;
+}
+.live-owner { display: flex; gap: 8px; flex-wrap: wrap; }
+.live-owner form { margin: 0; }
+
+/* Stage beside chat on a wide screen, stacked on a narrow one. Chat gets a
+   fixed column rather than a share of the width: a 600px chat column is
+   mostly empty space. */
+.live-body {
+  display: grid; gap: 18px; margin-top: 20px;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+}
+@media (max-width: 920px) {
+  .live-body { grid-template-columns: minmax(0, 1fr); }
+}
+
+.live-stage { min-width: 0; }
+
+/* 16:9 without magic padding numbers. */
+.live-video {
+  position: relative; aspect-ratio: 16 / 9;
+  background: #000; border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--room-line);
+}
+.live-video iframe {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; border: 0; display: block;
+}
+
+/* ---------- the paywall ---------- */
+
+.live-gate {
+  border: 1px solid var(--room-line); border-radius: 12px;
+  background: var(--room-surface);
+  padding: clamp(26px, 5vw, 52px) clamp(20px, 4vw, 40px);
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  min-height: 280px; justify-content: center;
+}
+.live-gate-mark { width: 34px; height: 34px; color: #D4AF37; }
+.live-gate-mark svg { width: 100%; height: 100%; display: block; }
+.live-gate-title {
+  margin: 4px 0 0; font-size: clamp(19px, 2.6vw, 26px);
+  letter-spacing: -.015em; color: var(--room-ink);
+}
+.live-gate-body {
+  margin: 0; max-width: 46ch;
+  font-size: 15px; line-height: 1.55; color: var(--room-sub);
+  text-wrap: pretty;
+}
+.live-gate .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+
+.live-plans {
+  display: grid; gap: 10px; margin-top: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  width: 100%; max-width: 560px;
+}
+.live-plan {
+  border: 1px solid var(--room-line); border-radius: 10px;
+  background: var(--room-bg); padding: 16px;
+  display: grid; gap: 4px;
+}
+.live-plan-name { font-size: 13.5px; font-weight: 600; color: var(--room-ink); }
+.live-plan-price {
+  font-size: 22px; font-weight: 600; color: var(--room-ink);
+  font-variant-numeric: tabular-nums; margin-bottom: 8px;
+}
+
+/* ---------- chat (shared by live chat and DMs) ---------- */
+
+.live-chat {
+  border: 1px solid var(--room-line); border-radius: 12px;
+  background: var(--room-surface);
+  display: flex; flex-direction: column;
+  /* Matches the stage on a wide screen so the two columns end together. */
+  max-height: min(70vh, 620px);
+}
+.live-chat-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 10px; padding: 13px 15px;
+  border-bottom: 1px solid var(--room-line);
+}
+.live-chat-head h2 { margin: 0; font-size: 15px; color: var(--room-ink); }
+.live-chat-count { font-size: 12px; color: var(--room-sub); }
+
+.chat-log {
+  list-style: none; margin: 0; padding: 12px 15px;
+  overflow-y: auto; flex: 1 1 auto;
+  display: flex; flex-direction: column; gap: 9px;
+  overscroll-behavior: contain;
+}
+.chat-line { font-size: 14px; line-height: 1.45; overflow-wrap: anywhere; }
+.chat-who {
+  font-size: 12px; color: var(--room-sub); margin-right: 6px;
+}
+.chat-body { color: #DDD9D2; }
+/* The creator's own lines, so a viewer can find the answer to their
+   question in a fast room. */
+.chat-line.is-creator .chat-who { color: var(--room-accent); font-weight: 600; }
+.chat-line.is-creator .chat-body { color: var(--room-ink); }
+
+.chat-form {
+  display: flex; gap: 8px; margin: 0;
+  padding: 11px 15px;
+  border-top: 1px solid var(--room-line);
+}
+.chat-input {
+  flex: 1 1 auto; min-width: 0; min-height: 42px;
+  padding: 0 12px;
+  border: 1.5px solid var(--room-line); border-radius: 9px;
+  background: var(--room-bg); color: var(--room-ink);
+  font: inherit; font-size: 14.5px; outline: none;
+}
+.chat-input::placeholder { color: var(--room-sub); }
+.chat-input:focus {
+  border-color: var(--room-accent);
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, .22);
+}
+.chat-send { flex: none; }
+.chat-closed {
+  margin: 0; padding: 13px 15px;
+  border-top: 1px solid var(--room-line);
+  font-size: 13px; color: var(--room-sub);
+}
+
+/* ---------- direct messages ---------- */
+
+/* The inbox and a thread are ordinary app pages, so they stay on the light
+   app chrome rather than the room's dark palette. */
+.dm-page { max-width: 760px; }
+
+.dm-head { margin-bottom: 16px; }
+.dm-back {
+  display: inline-block; margin-bottom: 8px;
+  font-size: 13.5px; font-weight: 600; color: var(--muted);
+  text-decoration: none;
+}
+.dm-back:hover { color: var(--ink); }
+.dm-who { margin: 0; font-size: clamp(20px, 3vw, 27px); letter-spacing: -.02em; }
+.dm-who a { color: inherit; text-decoration: none; }
+.dm-handle { font-size: 13px; color: var(--muted); font-weight: 400; }
+
+.dm-thread {
+  border: 1px solid var(--line); border-radius: 14px;
+  background: #FFFFFF;
+  display: flex; flex-direction: column;
+  max-height: min(72vh, 680px);
+}
+.chat-log--dm { gap: 7px; }
+.dm-thread .chat-log { padding: 16px; }
+.dm-thread .chat-form { border-top: 1px solid var(--line); }
+.dm-thread .chat-input {
+  background: #FFFFFF; color: var(--ink); border-color: var(--line);
+}
+.dm-thread .chat-input::placeholder { color: var(--muted); }
+
+.dm-line { display: flex; }
+.dm-line.is-mine { justify-content: flex-end; }
+.dm-bubble {
+  max-width: 76%;
+  padding: 9px 13px; border-radius: 15px;
+  background: #F1F1EE; color: var(--ink);
+  font-size: 14.5px; line-height: 1.45;
+  overflow-wrap: anywhere; text-wrap: pretty;
+}
+/* #FFFFFF on #C2185B is about 5.8:1, which clears AA. */
+.dm-line.is-mine .dm-bubble { background: #C2185B; color: #FFFFFF; }
+
+/* ---------- the inbox ---------- */
+
+.thread-list { list-style: none; margin: 18px 0 0; padding: 0; }
+.thread-row { border-bottom: 1px solid var(--line); }
+.thread-link {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; padding: 15px 4px;
+  color: inherit; text-decoration: none;
+}
+.thread-link:hover { background: #FAFAF8; }
+.thread-who { font-size: 15px; font-weight: 600; min-width: 0; }
+.thread-handle { font-size: 12.5px; color: var(--muted); font-weight: 400; margin-left: 7px; }
+.thread-meta { display: flex; align-items: center; gap: 10px; flex: none; }
+.thread-when { font-size: 12.5px; color: var(--muted); }
+.thread-badge {
+  min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 999px; background: #C2185B; color: #FFFFFF;
+  font-size: 11.5px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.thread-row.is-unread .thread-who { color: var(--ink); }
+
+/* ---------- the schedule calendar ---------- */
+
+.cal-page { max-width: 1060px; }
+
+.cal-head {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  align-items: flex-start; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.cal-head h1 { margin: 0 0 3px; }
+.cal-nav { display: flex; align-items: center; gap: 10px; }
+.cal-step { padding: 0 13px; }
+.cal-month {
+  font-size: 15px; font-weight: 600; min-width: 11ch; text-align: center;
+}
+
+/* ---- coming up ---- */
+
+.cal-next {
+  border: 1px solid var(--line); border-radius: 14px;
+  background: #FFFFFF; padding: 16px 18px; margin-bottom: 20px;
+}
+.cal-next-title {
+  margin: 0 0 10px; font-size: 12px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+.cal-next-list { list-style: none; margin: 0; padding: 0; }
+.cal-next-row + .cal-next-row { border-top: 1px solid var(--line); }
+.cal-next-link {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 9px 2px; color: inherit; text-decoration: none;
+}
+.cal-next-link:hover { background: #FAFAF8; }
+.cal-next-when {
+  font-size: 13px; font-variant-numeric: tabular-nums; color: var(--ink);
+  font-weight: 600; min-width: 15ch;
+}
+.cal-next-what { font-size: 14.5px; flex: 1 1 200px; }
+.cal-next-detail { font-size: 12.5px; color: var(--muted); }
+
+.cal-pill {
+  flex: none; padding: 3px 9px; border-radius: 999px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+/* Two kinds, two colours, used identically in the grid below. A live is the
+   crimson the rest of the app uses for "now"; a meet is calmer, because it
+   is an appointment rather than a broadcast. */
+.cal-pill--live { background: rgba(194, 24, 91, .1); color: #A3144C; }
+.cal-pill--meet { background: rgba(11, 91, 66, .1); color: #0B5B42; }
+
+/* ---- month grid ---- */
+
+.cal-weekdays,
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.cal-weekdays { gap: 6px; margin-bottom: 6px; }
+.cal-weekday {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  letter-spacing: .07em; text-transform: uppercase; padding-left: 2px;
+}
+.cal-grid { gap: 6px; list-style: none; margin: 0; padding: 0; }
+
+.cal-cell {
+  min-height: 94px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: #FFFFFF; padding: 7px;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.cal-cell.is-empty { border: 0; background: none; min-height: 0; }
+.cal-cell.is-today {
+  border-color: #C2185B;
+  box-shadow: 0 0 0 1px #C2185B;
+}
+.cal-date {
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.cal-cell.is-today .cal-date { color: #C2185B; }
+
+.cal-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+.cal-item {
+  display: block; padding: 3px 5px; border-radius: 6px;
+  font-size: 11.5px; line-height: 1.3;
+  text-decoration: none; color: inherit;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cal-item--live { background: rgba(194, 24, 91, .09); color: #8E1243; }
+.cal-item--meet { background: rgba(11, 91, 66, .09); color: #084A36; }
+/* An open slot is availability, not an appointment, so it reads as an
+   outline rather than a solid block. */
+.cal-item--meet.is-open {
+  background: none; border: 1px dashed var(--line); color: var(--muted);
+}
+.cal-item--live.is-live { background: #C2185B; color: #FFFFFF; font-weight: 600; }
+.cal-item--live.is-ended { background: #F1F1EE; color: var(--muted); }
+.cal-item-time {
+  font-variant-numeric: tabular-nums; font-weight: 600; margin-right: 4px;
+}
+.cal-more { font-size: 11px; color: var(--muted); padding-left: 5px; }
+
+/* On a phone a seven-column grid of 94px cells is unreadable, so the month
+   becomes a list of the days that actually have something on them. The grid
+   is decoration; the entries are the content. */
+@media (max-width: 680px) {
+  .cal-weekdays { display: none; }
+  .cal-grid { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  .cal-cell { min-height: 0; flex-direction: row; align-items: flex-start; gap: 11px; }
+  .cal-cell.is-empty { display: none; }
+  /* A day with nothing on it earns one line, not a card. */
+  .cal-cell:not(.has-items) {
+    border: 0; background: none; padding: 0 0 0 7px; min-height: 0;
+  }
+  .cal-cell:not(.has-items) .cal-date { font-size: 11.5px; opacity: .55; }
+  .cal-date { min-width: 2.5ch; padding-top: 2px; }
+  .cal-items { flex: 1 1 auto; }
+  .cal-item { white-space: normal; }
+}
+
+/* ---------- the studio (creator's control room) ---------- */
+
+.studio-primary { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; }
+.studio-primary form { margin: 0; }
+.studio-go, .studio-stop { min-height: 46px; padding: 0 22px; font-size: 15px; }
+
+/* The share link, which is what a creator needs in their hand the moment
+   they go on. Readonly and select-on-click rather than a copy button, which
+   needs a permission prompt in some browsers and fails silently in others. */
+.studio-share {
+  margin-top: 14px; display: grid; gap: 5px;
+  border: 1px solid var(--room-line); border-radius: 10px;
+  background: var(--room-surface); padding: 12px 14px;
+}
+.studio-share-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--room-sub);
+}
+.studio-share-url {
+  width: 100%; box-sizing: border-box; min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid var(--room-line); border-radius: 8px;
+  background: var(--room-bg); color: var(--room-ink);
+  font-family: var(--mono); font-size: 13px;
+}
+
+/* ---- the control switches ---- */
+
+.studio-controls {
+  margin-top: 14px;
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+.studio-group {
+  border: 1px solid var(--room-line); border-radius: 10px;
+  background: var(--room-surface); padding: 14px 16px;
+  display: grid; gap: 12px; align-content: start;
+}
+.studio-group-name {
+  margin: 0; font-size: 11px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--room-sub);
+}
+
+.studio-switch {
+  display: flex; gap: 10px; align-items: flex-start;
+  cursor: pointer; margin: 0;
+}
+.studio-switch input {
+  margin: 2px 0 0; flex: none;
+  width: 17px; height: 17px;
+  accent-color: var(--room-accent);
+}
+.studio-switch-text { display: grid; gap: 2px; min-width: 0; }
+.studio-switch-title { font-size: 14px; font-weight: 600; color: var(--room-ink); }
+.studio-switch-hint {
+  font-size: 12.5px; line-height: 1.4; color: var(--room-sub);
+  text-wrap: pretty;
+}
+
+/* The access select inherits the app's light field styling, which is wrong
+   on this dark page. */
+.studio-group .field { display: grid; gap: 5px; margin: 0; }
+.studio-group .field label { font-size: 13px; font-weight: 600; color: var(--room-ink); }
+.studio-group .field select {
+  width: 100%; box-sizing: border-box; min-height: 42px;
+  padding: 0 10px;
+  border: 1.5px solid var(--room-line); border-radius: 8px;
+  background: var(--room-bg); color: var(--room-ink);
+  font: inherit; font-size: 14px;
+}
+
+.studio-save {
+  grid-column: 1 / -1;
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+/* The app's .button accent is tuned for a light page and all but disappears
+   here. #FFFFFF on #E91E63 is about 4.6:1, which clears AA. */
+.studio .studio-save input[type="submit"],
+.studio .studio-save .button {
+  min-height: 42px; padding: 0 18px;
+  background: var(--room-accent); color: #FFFFFF;
+  border: 1px solid var(--room-accent); border-radius: 9px;
+  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.studio .studio-save input[type="submit"]:hover { background: #F5356F; }
+
+/* The studio's own buttons have to read on the dark page, where the app's
+   light .btn would be a white block. */
+.studio .btn--light {
+  background: var(--room-surface); color: var(--room-ink);
+  border-color: var(--room-line);
+}
+.studio .btn--light:hover { border-color: var(--room-accent); }
+
+/* Grid cells must contain their entries. Without min-width: 0 a grid item
+   takes its max-content width from the longest title, so a long live name
+   pushes the cell past its column and over the next day. */
+.cal-grid > .cal-cell { min-width: 0; }
+.cal-items, .cal-items > li { min-width: 0; max-width: 100%; }

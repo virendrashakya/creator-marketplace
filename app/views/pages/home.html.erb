@@ -5,10 +5,10 @@
     different task. %>
 <% content_for :chrome, "marketing" %>
 <% content_for :head do %>
-  <link rel="stylesheet" href="/assets/home.css">
+  <link rel="stylesheet" href="/assets/home.css" data-turbo-track="reload">
   <%# Deferred: nothing here blocks first paint, and the page is complete
       without it. %>
-  <script src="/assets/js/home.js" defer></script>
+  <script src="/assets/js/home.js" data-turbo-track="reload" defer></script>
 <% end %>
 
 <%#

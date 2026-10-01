@@ -1,0 +1,178 @@
+<% content_for :title, "Studio: #{@live.title} | Wishful" %>
+<% content_for :head do %>
+  <link rel="stylesheet" href="/assets/live.css" data-turbo-track="reload">
+  <script src="/assets/js/actioncable.js" data-turbo-track="reload" defer></script>
+  <script src="/assets/js/chat.js" data-turbo-track="reload" defer></script>
+<% end %>
+
+<div class="page live-page studio">
+
+  <header class="live-head">
+    <div class="live-head-main">
+      <div class="live-status">
+        <% if @live.live? %>
+          <span class="live-badge live-badge--on">
+            <span class="live-pulse" aria-hidden="true"></span>On air
+          </span>
+          <% if @live.started_at %>
+            <span class="live-badge">Started <%= time_ago_in_words(@live.started_at) %> ago</span>
+          <% end %>
+        <% elsif @live.scheduled? %>
+          <span class="live-badge">Scheduled <%= @live.scheduled_for.strftime("%-d %b, %-I:%M %p") %> IST</span>
+        <% elsif @live.ended? %>
+          <span class="live-badge">Ended</span>
+        <% end %>
+        <span class="live-badge live-badge--members">
+          <%= @live.members_only? ? "Members only" : "Open to everyone" %>
+        </span>
+      </div>
+
+      <h1 class="live-title"><%= @live.title %></h1>
+      <p class="live-by">Studio view. Only you can see this page.</p>
+    </div>
+
+    <%# The one control that matters most, biggest, on its own. %>
+    <div class="studio-primary">
+      <% if @live.scheduled? %>
+        <%= button_to "Go live now", start_live_session_path(@live), class: "button accent studio-go" %>
+      <% elsif @live.live? %>
+        <%= button_to "End the live", finish_live_session_path(@live), class: "button light studio-stop",
+              form: { data: { turbo_confirm: "End the live for everyone watching?" } } %>
+      <% end %>
+      <%= link_to "Viewer page", live_session_path(@live), class: "btn btn--light" %>
+    </div>
+  </header>
+
+  <div class="live-body">
+    <section class="live-stage">
+
+      <%# What the creator is pushing out. The same embed a member sees, so
+          they can check the stream is actually up before trusting it. %>
+      <% if @live.playback_url.present? %>
+        <div class="live-video">
+          <iframe src="<%= @live.playback_url %>" title="Your stream"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowfullscreen referrerpolicy="no-referrer"></iframe>
+        </div>
+      <% else %>
+        <div class="live-gate">
+          <h2 class="live-gate-title">No stream link yet</h2>
+          <p class="live-gate-body">
+            Paste the player link from whatever you broadcast with and it will
+            appear here and for your members.
+          </p>
+        </div>
+      <% end %>
+
+      <%# The share link, which is the thing a creator needs in their hand
+          the moment they go on. %>
+      <div class="studio-share">
+        <span class="studio-share-label">Link for your members</span>
+        <input class="studio-share-url" type="text" readonly value="<%= @viewer_url %>"
+               aria-label="Link to this live" onclick="this.select()">
+      </div>
+
+      <%# Interaction and privacy. One form, saved explicitly: flipping a
+          switch that takes effect on a room full of people should be a
+          deliberate act, not a side effect of a stray click. %>
+      <%= form_with model: @live, url: live_session_path(@live), method: :patch,
+            class: "studio-controls" do |f| %>
+        <%= hidden_field_tag :from, "studio" %>
+
+        <div class="studio-group">
+          <h2 class="studio-group-name">Interaction</h2>
+
+          <label class="studio-switch">
+            <%= f.check_box :chat_enabled %>
+            <span class="studio-switch-text">
+              <span class="studio-switch-title">Chat is on</span>
+              <span class="studio-switch-hint">Turn off to make the room listen-only.</span>
+            </span>
+          </label>
+
+          <label class="studio-switch">
+            <%= f.check_box :chat_members_only %>
+            <span class="studio-switch-text">
+              <span class="studio-switch-title">Only members may write</span>
+              <span class="studio-switch-hint">
+                <%= @live.members_only? ? "Everyone here is already a member, so this changes nothing on this live." : "Anyone can watch this public live; only paying members could speak." %>
+              </span>
+            </span>
+          </label>
+        </div>
+
+        <div class="studio-group">
+          <h2 class="studio-group-name">Privacy</h2>
+
+          <label class="studio-switch">
+            <%= f.check_box :unlisted %>
+            <span class="studio-switch-text">
+              <span class="studio-switch-title">Unlisted</span>
+              <span class="studio-switch-hint">
+                Keep it off your public page. The link still works, and who may
+                watch does not change.
+              </span>
+            </span>
+          </label>
+
+          <label class="studio-switch">
+            <%= f.check_box :keep_chat_after %>
+            <span class="studio-switch-text">
+              <span class="studio-switch-title">Keep the chat afterwards</span>
+              <span class="studio-switch-hint">
+                Uncheck and the transcript disappears when the live ends.
+              </span>
+            </span>
+          </label>
+
+          <div class="field">
+            <%= f.label :access, "Who can watch" %>
+            <%= f.select :access, [ [ "Members with an active subscription", "members" ],
+                                    [ "Anyone (a free live)", "public" ] ] %>
+          </div>
+        </div>
+
+        <div class="studio-save">
+          <%= f.submit "Save controls", class: "button accent", data: { disable_with: "Saving…" } %>
+          <%= link_to "Full settings", edit_live_session_path(@live), class: "btn btn--light" %>
+        </div>
+      <% end %>
+    </section>
+
+    <%# The creator's own view of the chat, with the same socket the viewers
+        use. data-me and data-creator-id make their own lines highlight. %>
+    <section class="live-chat"
+             data-chat="live"
+             data-live-id="<%= @live.id %>"
+             data-me="<%= current_user.id %>"
+             data-creator-id="<%= @live.user_id %>">
+      <div class="live-chat-head">
+        <h2>Chat</h2>
+        <span class="live-chat-count"><%= pluralize(@live.live_messages_count, "message") %></span>
+      </div>
+
+      <ol class="chat-log" data-chat-log>
+        <% @messages.each do |m| %>
+          <li class="chat-line<%= " is-creator" if m.user_id == @live.user_id %>" data-id="<%= m.id %>">
+            <span class="chat-who mono" translate="no">@<%= m.user.handle %></span>
+            <span class="chat-body"><%= m.body %></span>
+          </li>
+        <% end %>
+      </ol>
+
+      <% if @live.chattable_by?(current_user) %>
+        <%= form_with url: live_session_live_messages_path(@live), method: :post,
+              class: "chat-form", data: { chat_form: true } do %>
+          <label class="visually-hidden" for="chat_body">Your message</label>
+          <input type="text" name="body" id="chat_body" maxlength="300"
+                 placeholder="Answer someone…" autocomplete="off" class="chat-input">
+          <button type="submit" class="button accent chat-send">Send</button>
+        <% end %>
+      <% elsif !@live.live? %>
+        <p class="chat-closed">Chat opens when you go live.</p>
+      <% elsif !@live.chat_enabled? %>
+        <p class="chat-closed">You turned chat off for this live.</p>
+      <% end %>
+    </section>
+  </div>
+</div>

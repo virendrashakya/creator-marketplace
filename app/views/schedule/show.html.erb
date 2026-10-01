@@ -1,0 +1,93 @@
+<% content_for :title, "Schedule | Wishful" %>
+<% content_for :head do %><link rel="stylesheet" href="/assets/live.css" data-turbo-track="reload"><% end %>
+
+<div class="page cal-page">
+  <header class="cal-head">
+    <div class="min0">
+      <h1>Schedule</h1>
+      <p class="muted">Booked meets and scheduled lives, together.</p>
+    </div>
+    <div class="cal-nav">
+      <%= link_to "←", schedule_path(month: @month.prev_month.strftime("%Y-%m")),
+            class: "btn btn--light cal-step", aria: { label: "Previous month" } %>
+      <span class="cal-month"><%= @month.strftime("%B %Y") %></span>
+      <%= link_to "→", schedule_path(month: @month.next_month.strftime("%Y-%m")),
+            class: "btn btn--light cal-step", aria: { label: "Next month" } %>
+    </div>
+  </header>
+
+  <%# What is next, regardless of the month on screen. A creator opens this
+      to find out where they have to be, and that answer should not move
+      when they page back to look at last month. %>
+  <% if @next_up.any? %>
+    <section class="cal-next">
+      <h2 class="cal-next-title">Coming up</h2>
+      <ul class="cal-next-list">
+        <% @next_up.each do |e| %>
+          <li class="cal-next-row">
+            <%= link_to e.path, class: "cal-next-link" do %>
+              <span class="cal-pill cal-pill--<%= e.kind %>"><%= e.kind == :live ? "Live" : "Meet" %></span>
+              <span class="cal-next-when">
+                <%= e.at.strftime("%-d %b, %-I:%M %p") %>
+              </span>
+              <span class="cal-next-what min0"><%= e.title %></span>
+              <span class="cal-next-detail"><%= e.detail %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
+  <%# A real month grid. Seven columns, starting Monday, with the leading and
+      trailing days of adjacent months rendered as blanks so the weekday
+      columns line up. %>
+  <section class="cal-grid-wrap">
+    <div class="cal-weekdays" aria-hidden="true">
+      <% %w[Mon Tue Wed Thu Fri Sat Sun].each do |d| %>
+        <span class="cal-weekday"><%= d %></span>
+      <% end %>
+    </div>
+
+    <ol class="cal-grid">
+      <%# Monday-first: Date#cwday gives 1 for Monday, so the offset is
+          cwday - 1 blanks before the first. %>
+      <% first = @month.beginning_of_month %>
+      <% (first.cwday - 1).times do %>
+        <li class="cal-cell is-empty" aria-hidden="true"></li>
+      <% end %>
+
+      <% (first..@month.end_of_month).each do |day| %>
+        <% entries = @by_day[day] || [] %>
+        <li class="cal-cell<%= " is-today" if day == Date.current %><%= " has-items" if entries.any? %>">
+          <span class="cal-date"><%= day.day %></span>
+          <% if entries.any? %>
+            <ul class="cal-items">
+              <% entries.first(3).each do |e| %>
+                <li>
+                  <%= link_to e.path, class: "cal-item cal-item--#{e.kind} is-#{e.state}" do %>
+                    <span class="cal-item-time"><%= e.at.strftime("%-I:%M%P") %></span>
+                    <span class="cal-item-title"><%= e.title %></span>
+                  <% end %>
+                </li>
+              <% end %>
+              <% if entries.size > 3 %>
+                <li class="cal-more"><%= entries.size - 3 %> more</li>
+              <% end %>
+            </ul>
+          <% end %>
+        </li>
+      <% end %>
+    </ol>
+  </section>
+
+  <% if @entries.none? %>
+    <div class="empty" style="margin-top: 20px">
+      <div class="empty-title">Nothing in <%= @month.strftime("%B") %></div>
+      <div class="empty-body">
+        <%= link_to "Schedule a live", new_live_session_path %>, or
+        <%= link_to "open slots people can book", new_meet_offer_path %>.
+      </div>
+    </div>
+  <% end %>
+</div>

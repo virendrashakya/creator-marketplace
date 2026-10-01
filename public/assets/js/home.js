@@ -7,21 +7,38 @@
 
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  /* If the person asked for reduced motion, do nothing at all: leave the
-     document unmarked so the CSS never hides anything, and never start the
-     phone loop. Reduced motion is not "the same animation, faster". */
-  if (reduced.matches) return;
+  /* The phone timer is the one piece of state that has to outlive a single
+     setup pass: Turbo keeps the tab alive across visits, so a timer left
+     running would drive a node that is no longer in the document. */
+  var timer = null;
+  function stop() { clearTimeout(timer); timer = null; }
 
-  /* Marking the root is what lets the CSS hide reveal targets. Without JS the
-     class is absent, the hiding rules never match, and the page reads fine. */
-  document.documentElement.classList.add("js-reveal");
-
+  /* Turbo Drive swaps the body without a fresh document, so DOMContentLoaded
+     fires only on the first full load. turbo:load fires on every visit,
+     and setup below is written to be safe on each one. */
   function onReady(fn) {
     if (document.readyState !== "loading") fn();
     else document.addEventListener("DOMContentLoaded", fn);
+    document.addEventListener("turbo:load", fn);
   }
 
+  /* Before Turbo caches this page it will be detached; drop the timer so a
+     return visit starts one loop rather than two. */
+  document.addEventListener("turbo:before-cache", stop);
+
   onReady(function () {
+    /* Re-checked per visit rather than once per tab: the preference can
+       change mid-session, and this is the cheapest place to honour it.
+       Leave the document unmarked so the CSS never hides anything, and
+       never start the phone loop. Reduced motion is not "the same
+       animation, faster". */
+    if (reduced.matches) { stop(); return; }
+
+    /* Marking the root is what lets the CSS hide reveal targets. Without JS
+       the class is absent, the hiding rules never match, and the page reads
+       fine. */
+    document.documentElement.classList.add("js-reveal");
+
     /* ---- scroll reveals ---- */
     var targets = document.querySelectorAll("[data-reveal]");
 
@@ -62,7 +79,6 @@
 
     var states = ["browse", "locked", "unlocked"];
     var at = 0;
-    var timer = null;
 
     function paint() {
       phone.setAttribute("data-phone-state", states[at]);
@@ -82,10 +98,12 @@
     }
 
     function start() { paint(); schedule(2300); }
-    function stop() { clearTimeout(timer); timer = null; }
 
     /* Do not animate a phone nobody is looking at: it burns battery on the
        device this product is designed for. */
+    if (phone.dataset.phoneBound) { start(); return; }
+    phone.dataset.phoneBound = "1";
+
     if ("IntersectionObserver" in window) {
       new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
@@ -97,20 +115,27 @@
       start();
     }
 
-    /* Same reason, for a backgrounded tab. */
-    document.addEventListener("visibilitychange", function () {
-      if (document.hidden) stop();
-      else if (!timer) start();
-    });
+    /* Same reason, for a backgrounded tab. document and the media query both
+       outlive a body swap, so these bind once for the life of the tab. */
+    if (!window.__homeTabHooks) {
+      window.__homeTabHooks = true;
 
-    /* If the person turns on reduced motion mid-visit, stop immediately. */
-    var onPrefChange = function (e) {
-      if (e.matches) {
+      document.addEventListener("visibilitychange", function () {
+        /* Only drive a phone that is actually on the current page. */
+        if (!document.querySelector("[data-phone]")) return;
+        if (document.hidden) stop();
+        else if (!timer) start();
+      });
+
+      /* If the person turns on reduced motion mid-visit, stop immediately. */
+      var onPrefChange = function (e) {
+        if (!e.matches) return;
         stop();
-        phone.setAttribute("data-phone-state", "unlocked");
-      }
-    };
-    if (reduced.addEventListener) reduced.addEventListener("change", onPrefChange);
-    else if (reduced.addListener) reduced.addListener(onPrefChange);
+        var p = document.querySelector("[data-phone]");
+        if (p) p.setAttribute("data-phone-state", "unlocked");
+      };
+      if (reduced.addEventListener) reduced.addEventListener("change", onPrefChange);
+      else if (reduced.addListener) reduced.addListener(onPrefChange);
+    }
   });
 })();

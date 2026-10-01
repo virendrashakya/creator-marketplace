@@ -59,8 +59,21 @@ Rails.application.configure do
   # Annotate rendered view with file names.
   config.action_view.annotate_rendered_view_with_filenames = true
 
-  # Uncomment if you wish to allow Action Cable access from any origin.
-  # config.action_cable.disable_request_forgery_protection = true
+  # Action Cable checks the Origin header and refuses anything it does not
+  # recognise, which in development means a socket only works from the exact
+  # host you typed. Allow the usual local spellings plus any private-network
+  # address, so the app works when opened from a phone on the same wifi or
+  # from Windows against a WSL instance. Production keeps the default, where
+  # the only allowed origin is the real one.
+  config.action_cable.allowed_request_origins = [
+    %r{\Ahttps?://localhost(:\d+)?\z},
+    %r{\Ahttps?://127\.0\.0\.1(:\d+)?\z},
+    %r{\Ahttps?://\[::1\](:\d+)?\z},
+    # 10.x, 172.16-31.x and 192.168.x: LAN and WSL.
+    %r{\Ahttps?://10(\.\d{1,3}){3}(:\d+)?\z},
+    %r{\Ahttps?://172\.(1[6-9]|2\d|3[01])(\.\d{1,3}){2}(:\d+)?\z},
+    %r{\Ahttps?://192\.168(\.\d{1,3}){2}(:\d+)?\z}
+  ]
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true

@@ -1,0 +1,38 @@
+<% content_for :title, "Messages | Wishful" %>
+<% content_for :head do %><link rel="stylesheet" href="/assets/live.css" data-turbo-track="reload"><% end %>
+
+<div class="page">
+  <h1>Messages</h1>
+
+  <% if @conversations.none? %>
+    <div class="empty">
+      <div class="empty-title">No messages yet</div>
+      <div class="empty-body">
+        Threads start when someone presses Message on a creator's page.
+      </div>
+    </div>
+  <% else %>
+    <ol class="thread-list">
+      <% @conversations.each do |c| %>
+        <% other = c.other_party(current_user) %>
+        <% unread = c.unread_for(current_user) %>
+        <li class="thread-row<%= " is-unread" if unread.positive? %>">
+          <%= link_to conversation_path(c), class: "thread-link" do %>
+            <span class="thread-who">
+              <%= other.name %>
+              <span class="mono thread-handle" translate="no">@<%= other.handle %></span>
+            </span>
+            <span class="thread-meta">
+              <% if unread.positive? %>
+                <span class="thread-badge"><%= unread %></span>
+              <% end %>
+              <% if c.last_message_at %>
+                <span class="thread-when"><%= time_ago_in_words(c.last_message_at) %> ago</span>
+              <% end %>
+            </span>
+          <% end %>
+        </li>
+      <% end %>
+    </ol>
+  <% end %>
+</div>

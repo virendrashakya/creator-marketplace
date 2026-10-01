@@ -17,7 +17,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
-    <link rel="stylesheet" href="/assets/wishful.css">
+    <link rel="stylesheet" href="/assets/wishful.css" data-turbo-track="reload">
+    <%#
+      Turbo Drive, vendored rather than pipelined because this app serves
+      everything from public/ and has no bundler. It is an ES module and
+      self-starts on import, so there is nothing to call.
+
+      It loads before :head so a page's own scripts can rely on Turbo's
+      events already being wired. Every custom script in this app listens
+      for turbo:load as well as DOMContentLoaded, because Turbo fires the
+      latter only once per full load.
+    %>
+    <script type="module" src="/assets/js/turbo.min.js" data-turbo-track="reload"></script>
     <%= yield :head %>
   </head>
   <%#
@@ -104,6 +115,5 @@
         <% end %>
       </footer>
     <% end %>
-  </body>
   </body>
 </html>

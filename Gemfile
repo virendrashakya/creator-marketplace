@@ -12,6 +12,9 @@ gem "puma", ">= 5.0"
 # Secure password storage for creator accounts.
 gem "bcrypt", "~> 3.1"
 
+# Turbo Drive for SPA-style navigation without full page reloads.
+gem "turbo-rails", "~> 2.0"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

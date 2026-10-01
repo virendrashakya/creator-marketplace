@@ -10,5 +10,11 @@ class DashboardController < ApplicationController
     @meet_offers = current_user.meet_offers.includes(meet_slots: :meet_booking).order(created_at: :desc)
     @contact_reveals = current_user.contact_reveals.includes(:access_purchases).order(created_at: :desc)
     @pending_claim_count = current_user.received_payment_claims.pending.count
+
+    # The header needs to know whether they are already broadcasting, and
+    # whether anyone is waiting on a reply.
+    @airing_live = current_user.live_sessions.airing.first
+    @upcoming_lives = current_user.live_sessions.upcoming.limit(5)
+    @unread_messages = current_user.total_unread_messages
   end
 end

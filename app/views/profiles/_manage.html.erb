@@ -1,0 +1,22 @@
+<%#
+  The "Manage" affordance for a region that is not a photograph.
+
+  locals:
+    label  what the button says ("Manage", "Add a post", …)
+    path   where it goes
+    extra  a second link, as [label, path] (optional)
+
+  A link, not an overlay: a collection, a paid post or a wishlist item has
+  real fields, validation and pricing, and those belong on their own screen
+  rather than in a hover card. Editing a post lands on the post editor, which
+  is what you would expect from the pencil on a post anywhere else.
+
+  Appears on hover of its section on a pointer device, and is always visible
+  on touch, where there is no hover to reveal it.
+%>
+<div class="ie-manage">
+  <%= link_to label, path, class: "ie-mini" %>
+  <% if defined?(extra) && extra.present? %>
+    <%= link_to extra[0], extra[1], class: "ie-mini" %>
+  <% end %>
+</div>

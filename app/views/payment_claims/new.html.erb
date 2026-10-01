@@ -1,6 +1,6 @@
 <% content_for :title, "Pay #{@creator.name} | Wishful" %>
 <% content_for :head do %>
-  <link rel="stylesheet" href="/assets/dashboard.css">
+  <link rel="stylesheet" href="/assets/dashboard.css" data-turbo-track="reload">
 <% end %>
 
 <% currency = @payment_claim.currency.presence || "INR" %>

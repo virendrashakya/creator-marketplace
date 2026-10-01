@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_09_19_020000) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -66,6 +66,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_19_020000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_contact_reveals_on_user_id"
+  end
+
+  create_table "conversations", force: :cascade do |t|
+    t.bigint "creator_id", null: false
+    t.bigint "fan_id", null: false
+    t.datetime "last_message_at"
+    t.integer "creator_unread_count", default: 0, null: false
+    t.integer "fan_unread_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id", "fan_id"], name: "index_conversations_on_creator_id_and_fan_id", unique: true
+    t.index ["creator_id", "last_message_at"], name: "index_conversations_on_creator_id_and_last_message_at"
+    t.index ["creator_id"], name: "index_conversations_on_creator_id"
+    t.index ["fan_id", "last_message_at"], name: "index_conversations_on_fan_id_and_last_message_at"
+    t.index ["fan_id"], name: "index_conversations_on_fan_id"
   end
 
   create_table "creator_blocks", force: :cascade do |t|
@@ -132,6 +147,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_19_020000) do
     t.index ["subscription_plan_id"], name: "index_creator_subscriptions_on_subscription_plan_id"
   end
 
+  create_table "direct_messages", force: :cascade do |t|
+    t.bigint "conversation_id", null: false
+    t.bigint "sender_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id", "id"], name: "index_direct_messages_on_conversation_id_and_id"
+    t.index ["conversation_id"], name: "index_direct_messages_on_conversation_id"
+    t.index ["sender_id"], name: "index_direct_messages_on_sender_id"
+  end
+
   create_table "gift_contributions", force: :cascade do |t|
     t.bigint "wishlist_item_id", null: false
     t.bigint "giver_id", null: false
@@ -161,6 +187,41 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_19_020000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_link_collections_on_user_id"
+  end
+
+  create_table "live_messages", force: :cascade do |t|
+    t.bigint "live_session_id", null: false
+    t.bigint "user_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["live_session_id", "id"], name: "index_live_messages_on_live_session_id_and_id"
+    t.index ["live_session_id"], name: "index_live_messages_on_live_session_id"
+    t.index ["user_id"], name: "index_live_messages_on_user_id"
+  end
+
+  create_table "live_sessions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.datetime "scheduled_for", null: false
+    t.datetime "started_at"
+    t.datetime "ended_at"
+    t.string "status", default: "scheduled", null: false
+    t.string "access", default: "members", null: false
+    t.bigint "subscription_plan_id"
+    t.string "playback_url"
+    t.integer "live_messages_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "chat_enabled", default: true, null: false
+    t.boolean "chat_members_only", default: false, null: false
+    t.boolean "unlisted", default: false, null: false
+    t.boolean "keep_chat_after", default: true, null: false
+    t.index ["status", "scheduled_for"], name: "index_live_sessions_on_status_and_scheduled_for"
+    t.index ["subscription_plan_id"], name: "index_live_sessions_on_subscription_plan_id"
+    t.index ["user_id", "scheduled_for"], name: "index_live_sessions_on_user_id_and_scheduled_for"
+    t.index ["user_id"], name: "index_live_sessions_on_user_id"
   end
 
   create_table "media_purchases", force: :cascade do |t|
@@ -368,6 +429,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_19_020000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "contact_reveals", "users"
+  add_foreign_key "conversations", "users", column: "creator_id"
+  add_foreign_key "conversations", "users", column: "fan_id"
   add_foreign_key "creator_blocks", "users", column: "creator_id"
   add_foreign_key "creator_follows", "users", column: "creator_id"
   add_foreign_key "creator_follows", "users", column: "follower_id"
@@ -378,10 +441,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_09_19_020000) do
   add_foreign_key "creator_posts", "users"
   add_foreign_key "creator_subscriptions", "subscription_plans"
   add_foreign_key "creator_subscriptions", "users", column: "subscriber_id"
+  add_foreign_key "direct_messages", "conversations"
+  add_foreign_key "direct_messages", "users", column: "sender_id"
   add_foreign_key "gift_contributions", "users", column: "giver_id"
   add_foreign_key "gift_contributions", "wishlist_items"
   add_foreign_key "link_clicks", "product_links"
   add_foreign_key "link_collections", "users"
+  add_foreign_key "live_messages", "live_sessions"
+  add_foreign_key "live_messages", "users"
+  add_foreign_key "live_sessions", "subscription_plans"
+  add_foreign_key "live_sessions", "users"
   add_foreign_key "media_purchases", "paid_media_posts"
   add_foreign_key "media_purchases", "users", column: "buyer_id"
   add_foreign_key "meet_bookings", "meet_slots"

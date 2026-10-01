@@ -1,6 +1,6 @@
 <% content_for :title, "Settings | Wishful" %>
 <% content_for :head do %>
-  <link rel="stylesheet" href="/assets/dashboard.css">
+  <link rel="stylesheet" href="/assets/dashboard.css" data-turbo-track="reload">
 <% end %>
 
 <div class="page page--narrow">
@@ -89,10 +89,11 @@
         <div class="field">
           <span class="field-label">Page theme</span>
           <div class="choice-grid">
-            <% [ [ "minimal", "Minimal", "#F4F5F3", "#C2185B", "#DFE1DC" ],
-                 [ "luxury", "Luxury", "#14142A", "#F0A9C8", "#2E2E4A" ],
-                 [ "adventure", "Adventure", "#EDF1EA", "#0B5B42", "#D2DBD0" ],
-                 [ "after_dark", "After dark", "#0C0D10", "#FF5C8A", "#262A31" ] ].each do |value, label, bg, dot, bar| %>
+            <%# The list lives on the model so this screen and the inline editor
+                on the public page cannot drift apart. The bar is a tint of the
+                swatch background rather than a fourth hand-kept colour. %>
+            <% User::THEME_CHOICES.each do |value, label, bg, dot| %>
+              <% bar = "color-mix(in srgb, #{dot} 22%, #{bg})" %>
               <label class="choice">
                 <%= f.radio_button :theme, value %>
                 <span class="choice-swatch" style="background: <%= bg %>" aria-hidden="true">

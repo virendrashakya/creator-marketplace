@@ -5,26 +5,53 @@
     page does not get our app bar over it. %>
 <% content_for :chrome, "creator" %>
 <% content_for :head do %>
-  <link rel="stylesheet" href="/assets/profile.css">
+  <%# The atelier theme is the only one that needs a serif display face, so
+      its fonts load only on the pages using it rather than for every
+      creator. Playfair for headlines, Inter for UI. %>
+  <% if @user.theme == "atelier" %>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&display=swap">
+  <% end %>
+  <link rel="stylesheet" href="/assets/profile.css" data-turbo-track="reload">
+  <%# The inline editor ships only to the one person who can use it. A fan
+      downloads none of this. %>
+  <% if @own_page %>
+    <link rel="stylesheet" href="/assets/inline-edit.css" data-turbo-track="reload">
+    <script src="/assets/js/inline-edit.js" data-turbo-track="reload" defer></script>
+  <% end %>
 <% end %>
 
-<div class="profile theme-<%= @user.theme %> layout-<%= @user.profile_layout %>">
+<div class="profile theme-<%= @user.theme %> layout-<%= @user.profile_layout %>"
+     <%= 'data-ie-root' if @own_page %>>
   <div class="profile-inner">
 
-    <div class="pf-banner">
+    <% if @own_page %>
+      <%= render "profiles/edit_layer", user: @user, active_tab: @active_tab %>
+    <% end %>
+
+    <div class="pf-banner"<%= ' data-ie-zone' .html_safe if @own_page %>>
       <% if @user.banner.attached? %>
         <%= image_tag @user.banner, alt: "", width: 1600, height: 500 %>
+      <% end %>
+      <% if @own_page %>
+        <%= render "profiles/photo_drop", user: @user, field: :banner,
+              variant: "cover",
+              title: @user.banner.attached? ? "Change cover photo" : "Add a cover photo",
+              hint: "Drop a photo here, or click to choose" %>
       <% end %>
     </div>
 
     <header class="pf-id">
-      <div class="pf-avatar">
+      <div class="pf-avatar"<%= ' data-ie-zone'.html_safe if @own_page %>>
         <% if @user.profile_picture.attached? %>
           <%= image_tag @user.profile_picture, alt: "", width: 208, height: 208 %>
         <% elsif @user.avatar_url.present? %>
           <%= image_tag @user.avatar_url, alt: "", width: 208, height: 208 %>
         <% else %>
           <%= @user.name.to_s.strip.first&.upcase %>
+        <% end %>
+        <% if @own_page %>
+          <%= render "profiles/photo_drop", user: @user, field: :profile_picture,
+                variant: "avatar", title: "Change", hint: nil %>
         <% end %>
       </div>
 
@@ -76,7 +103,8 @@
       </div>
       <div class="pf-stat-action">
         <% if @own_page %>
-          <%= link_to "Edit page", dashboard_path, class: "btn btn--light btn--small" %>
+          <%= link_to "Edit page", profile_path(@user.handle, tab: @active_tab, edit: 1),
+                class: "btn btn--light btn--small", data: { ie_open: true } %>
         <% elsif !signed_in? %>
           <%= link_to "Follow", sign_in_path, class: "btn btn--accent btn--small" %>
         <% elsif @following %>
@@ -121,10 +149,14 @@
         page with 13 recommendations plus media, slots and gifts, shipping
         everything and hiding it still costs the reader the download. %>
     <% if @active_tab == "posts" %>
-      <section class="pf-section" id="posts">
+      <section class="pf-section" id="posts"<%= ' data-ie-zone'.html_safe if @own_page %>>
         <div class="pf-section-head">
           <h2><%= @user.posts_heading_text %></h2>
           <span class="pf-count"><%= pluralize(@creator_posts.size, "post") %></span>
+          <% if @own_page %>
+            <%= render "profiles/manage", label: "Write a post", path: new_creator_post_path,
+                  extra: [ "Manage posts", dashboard_path ] %>
+          <% end %>
         </div>
         <div class="posts"><%= render partial: "creator_posts/post", collection: @creator_posts %></div>
       </section>
@@ -133,10 +165,14 @@
     <%# Paid media before recommendations: this is the creator's own work and
         the only thing here that pays them in full. %>
     <% if @active_tab == "unlock" %>
-      <section class="pf-section" id="unlock">
+      <section class="pf-section" id="unlock"<%= ' data-ie-zone'.html_safe if @own_page %>>
         <div class="pf-section-head">
           <h2><%= @user.media_heading_text %></h2>
           <span class="pf-count"><%= pluralize(@paid_media_posts.size, "item") %></span>
+          <% if @own_page %>
+            <%= render "profiles/manage", label: "Add paid media", path: new_paid_media_post_path,
+                  extra: [ "Manage media", dashboard_path ] %>
+          <% end %>
         </div>
         <p class="rec-note">Pay once and it is yours. The money goes straight to <%= @user.name.to_s.split.first.presence || "the creator" %>.</p>
         <div class="media-grid wf-stagger"><%= render partial: "paid_media_posts/card", collection: @paid_media_posts %></div>
@@ -145,10 +181,14 @@
 
     <% has_links = @all_links.any? %>
     <% if @active_tab == "shop" %>
-      <section class="pf-section" id="shop">
+      <section class="pf-section" id="shop"<%= ' data-ie-zone'.html_safe if @own_page %>>
         <div class="pf-section-head">
           <h2><%= @user.links_heading_text %></h2>
           <span class="pf-count"><%= pluralize(@all_links.size, "item") %></span>
+          <% if @own_page %>
+            <%= render "profiles/manage", label: "Add a recommendation", path: new_product_link_path,
+                  extra: [ "Collections", new_collection_path ] %>
+          <% end %>
         </div>
         <p class="rec-note"><%= @user.links_note_text %></p>
 
@@ -218,15 +258,25 @@
     <% end %>
 
     <% if @active_tab == "time" && @meet_offers.any? %>
-      <section class="pf-section" id="time">
-        <div class="pf-section-head"><h2><%= @user.meet_heading_text %></h2></div>
+      <section class="pf-section" id="time"<%= ' data-ie-zone'.html_safe if @own_page %>>
+        <div class="pf-section-head">
+          <h2><%= @user.meet_heading_text %></h2>
+          <% if @own_page %>
+            <%= render "profiles/manage", label: "Manage slots", path: new_meet_offer_path %>
+          <% end %>
+        </div>
         <div class="stack"><%= render partial: "meet_offers/card", collection: @meet_offers %></div>
       </section>
     <% end %>
 
     <% if @active_tab == "time" && @contact_reveals.any? %>
-      <section class="pf-section"<%= ' id="time"'.html_safe if @meet_offers.empty? %>>
-        <div class="pf-section-head"><h2><%= @user.reveal_heading_text %></h2></div>
+      <section class="pf-section"<%= ' id="time"'.html_safe if @meet_offers.empty? %><%= ' data-ie-zone'.html_safe if @own_page %>>
+        <div class="pf-section-head">
+          <h2><%= @user.reveal_heading_text %></h2>
+          <% if @own_page %>
+            <%= render "profiles/manage", label: "Manage contacts", path: new_contact_reveal_path %>
+          <% end %>
+        </div>
         <div class="stack"><%= render partial: "contact_reveals/card", collection: @contact_reveals %></div>
       </section>
     <% end %>
@@ -238,11 +288,16 @@
     <% gift_anchor_used = false %>
     <% (@active_tab == "gifts" ? @wishlists : []).each do |wishlist| %>
       <% next if wishlist.wishlist_items.empty? %>
-      <section class="pf-section"<%= ' id="gifts"'.html_safe unless gift_anchor_used %>>
+      <section class="pf-section"<%= ' id="gifts"'.html_safe unless gift_anchor_used %><%= ' data-ie-zone'.html_safe if @own_page %>>
       <% gift_anchor_used = true %>
         <div class="pf-section-head">
           <h2><%= wishlist.title %></h2>
           <span class="pf-count"><%= pluralize(wishlist.wishlist_items.size, "gift") %></span>
+          <% if @own_page %>
+            <%= render "profiles/manage", label: "Add a gift",
+                  path: new_wishlist_wishlist_item_path(wishlist),
+                  extra: [ "Edit list", edit_wishlist_path(wishlist) ] %>
+          <% end %>
         </div>
         <p class="rec-note">
           These are gifts, not things to buy for yourself. What you send goes

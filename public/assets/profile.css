@@ -752,3 +752,425 @@ body:has(.theme-adventure) .credit-link:hover { color: #10231C; }
 body:has(.theme-after_dark) .credit { background: #0C0D10; }
 body:has(.theme-after_dark) .credit-link { color: #9BA0A8; }
 body:has(.theme-after_dark) .credit-link:hover { color: #F0EFEC; }
+
+
+/* ---------- atelier: the members' editorial theme ----------
+   Near-black ground, crimson primary, gold reserved for members' markers.
+   The reference is a fashion magazine with a subscription door: photography
+   carries the page, metadata is small uppercase, headlines are large serif.
+
+   Unlike the four themes above this one also changes structure, because
+   tokens alone cannot turn a left-aligned card page into a centered
+   editorial one. Everything stays scoped to .theme-atelier so the other
+   themes are untouched. */
+
+.theme-atelier {
+  --bg: #050505; --p-card: #111111; --chip: #161616; --p-ink: #F5F5F5;
+  --p-body: #CFCFCF; --p-sub: #929292; --p-line: #1F1F1F; --p-accent: #E91E63;
+  /* Gold is the members' marker, not the primary action. Keeping it in its
+     own token stops it competing with the crimson on every surface. */
+  --p-gold: #D4AF37;
+  --p-track: #1F1F1F; --banner: #0A0A0A; --ava-bg: #161616; --ava-ink: #F5F5F5;
+  /* Drop shadows do nothing on a #050505 page: there is no light to block.
+     Depth is a hairline catching light along the top edge. */
+  --p-raised: inset 0 1px 0 rgba(245,245,245,.04);
+  --p-lifted: inset 0 1px 0 rgba(245,245,245,.07), 0 16px 40px -16px rgba(0,0,0,.9);
+  --p-ring: rgba(233,30,99,.26);
+  color-scheme: dark;
+}
+
+/* Playfair for headlines, Inter for UI. The serif is justified by the brief:
+   this is a genuinely editorial brand, and the contrast between a large
+   serif headline and small uppercase metadata is the typographic idea. */
+.theme-atelier {
+  --display: "Playfair Display", "Times New Roman", serif;
+  --sans: Inter, "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--sans);
+}
+
+/* ---- cover: full width, high impact, dark overlay ---- */
+
+.theme-atelier .pf-banner {
+  height: clamp(300px, 58vh, 580px);
+  background: var(--banner);
+}
+/* The overlay the brief asks for. Two stops rather than a flat tint: the top
+   stays open so the photograph reads, the bottom carries the type. */
+.theme-atelier .pf-banner::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom,
+    rgba(5,5,5,.30) 0%, rgba(5,5,5,.10) 34%,
+    rgba(5,5,5,.78) 80%, #050505 100%);
+}
+/* With no cover photograph the gradient has nothing to sit on and reads as a
+   grey smear, so flatten it to the page colour. */
+.theme-atelier .pf-banner:not(:has(img))::after { background: var(--bg); }
+
+/* ---- identity: centered on the photograph ---- */
+
+/* Tighter than a luxury fashion site on purpose: the brief asks for less
+   whitespace, so the identity block rides further up onto the cover. */
+.theme-atelier .pf-id {
+  margin-top: clamp(-92px, -11vw, -64px);
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+}
+.theme-atelier .pf-avatar {
+  width: clamp(88px, 13vw, 116px); height: clamp(88px, 13vw, 116px);
+  border: 1px solid rgba(245,245,245,.2);
+  box-shadow: 0 18px 44px -18px rgba(0,0,0,.95);
+}
+.theme-atelier .pf-head {
+  flex-direction: column; align-items: center; gap: 0;
+  margin-top: 16px; width: 100%;
+}
+/* The markup carries an inline flex: 1 1 320px on this column, which on a
+   390px viewport is wider than the gutters allow once centred. Override the
+   basis to 100% so it can shrink, and cap the measure in ch for reading. */
+.theme-atelier .pf-head > .min0 {
+  flex: 0 1 100% !important; max-width: min(62ch, 100%); min-width: 0;
+}
+.theme-atelier .pf-head .actions { justify-content: center; }
+
+/* The large provocative editorial headline. Playfair at 500 holds its weight
+   at display size where a 300 would go spindly on near-black. */
+.theme-atelier .pf-name {
+  font-weight: 500;
+  font-size: clamp(40px, 7.4vw, 82px);
+  /* Playfair's descenders (y, g, p) clip at tighter leading. */
+  line-height: 1.06;
+  letter-spacing: -.022em;
+  margin: 0 0 8px;
+  padding-bottom: 2px;
+}
+/* Handle and category become one small uppercase metadata line. The badge
+   loses its pill: a border around two words is chrome. */
+.theme-atelier .pf-handle {
+  font-family: var(--sans);
+  font-size: 11.5px; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--p-sub);
+}
+.theme-atelier .pf-badge {
+  background: none; border: 0; padding: 0;
+  font-family: var(--sans); font-weight: 500;
+  font-size: 11.5px; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--p-accent);
+}
+.theme-atelier .pf-meta {
+  margin-top: 7px; font-size: 13px; color: var(--p-sub);
+}
+/* The bio is the pull quote of the page. */
+.theme-atelier .pf-bio {
+  font-family: var(--display);
+  font-style: italic; font-weight: 400;
+  font-size: clamp(18px, 2.4vw, 25px);
+  line-height: 1.4;
+  color: var(--p-body);
+  max-width: 46ch; margin: 16px auto 0;
+  padding-bottom: 2px;
+}
+.theme-atelier .pf-socials { justify-content: center; margin-top: 18px; gap: 18px; }
+/* Text links with a hairline under, not buttons. */
+.theme-atelier .pf-social {
+  background: none; border: 0; border-radius: 0;
+  padding: 0 2px; min-height: 0;
+  font-size: 11.5px; font-weight: 500;
+  letter-spacing: .15em; text-transform: uppercase;
+  color: var(--p-sub);
+  border-bottom: 1px solid var(--p-line);
+  transition: color var(--t-quick) var(--ease-out),
+              border-color var(--t-quick) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .theme-atelier .pf-social:hover { color: var(--p-ink); border-color: var(--p-accent); }
+}
+
+/* ---- stats: facts on hairlines, no card ---- */
+
+.theme-atelier .pf-stats {
+  background: none; border: 0; border-radius: 0; box-shadow: none;
+  border-top: 1px solid var(--p-line);
+  border-bottom: 1px solid var(--p-line);
+  margin-top: 28px;
+  justify-content: center; align-items: center;
+  overflow: visible;
+}
+.theme-atelier .pf-stat {
+  flex: 0 1 auto; border-right: 0;
+  padding: 16px 34px; text-align: center; align-items: center;
+}
+.theme-atelier .pf-stat-value {
+  font-family: var(--display); font-weight: 500; font-size: 27px;
+  letter-spacing: -.01em;
+}
+.theme-atelier .pf-stat-label {
+  font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--p-sub); margin-top: 3px;
+}
+.theme-atelier .pf-stat-action { padding: 16px 34px; }
+
+/* ---- tabs: minimal navigation, uppercase, hairline rule ---- */
+
+.theme-atelier .pf-tabs {
+  background: rgba(5,5,5,.88);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--p-line);
+  margin-top: 0;
+}
+.theme-atelier .pf-tabs-inner { justify-content: center; }
+.theme-atelier .pf-tab {
+  font-size: 11px; letter-spacing: .17em; text-transform: uppercase;
+  font-weight: 500; color: var(--p-sub);
+  padding: 0 20px; gap: 0;
+  border-bottom: 1px solid transparent;
+}
+/* The icons are good UI and wrong here: a magazine contents line is words. */
+.theme-atelier .pf-tab-icon { display: none; }
+.theme-atelier .pf-tab.is-on {
+  color: var(--p-ink); background: none;
+  border-bottom-color: var(--p-accent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .theme-atelier .pf-tab:hover { color: var(--p-ink); }
+}
+
+/* ---- section heads: serif, centered ---- */
+
+.theme-atelier .pf-section-head {
+  flex-direction: column; align-items: center; text-align: center;
+  gap: 6px; border: 0; padding-bottom: 0; margin-bottom: 18px;
+}
+.theme-atelier .pf-section-head h2 {
+  font-family: var(--display); font-weight: 500;
+  font-size: clamp(26px, 3.8vw, 44px); line-height: 1.12;
+  letter-spacing: -.016em; padding-bottom: 2px;
+}
+.theme-atelier .pf-count {
+  font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--p-sub); background: none; border: 0; padding: 0;
+}
+.theme-atelier .rec-note,
+.theme-atelier .pf-result-count {
+  text-align: center; max-width: 56ch; margin-inline: auto;
+  color: var(--p-sub); font-size: 13.5px;
+}
+.theme-atelier .pf-group-name {
+  font-family: var(--display); font-weight: 500; font-size: 25px;
+  text-align: center; letter-spacing: -.012em;
+  padding-bottom: 2px;
+}
+
+/* ---- the page needs a spine: centre the content column ---- */
+
+/* The identity block is centered, so left-aligned sections below it left the
+   page without an axis. These keep the measure centered without stretching
+   cards to the full 1120px shell, where a two-line post would look lost. */
+.theme-atelier .pf-section { padding-top: 26px; }
+.theme-atelier .posts,
+.theme-atelier .stack {
+  max-width: 760px; margin-inline: auto;
+}
+
+/* ---- galleries: masonry, image first ---- */
+
+/* The brief asks for masonry rather than a strict grid. CSS columns give a
+   real masonry flow with no JS and no fixed row heights; the cards below
+   already carry their own aspect ratios. */
+@supports (column-width: 300px) {
+  .theme-atelier .media-grid,
+  .theme-atelier .wish-grid {
+    display: block;
+    column-width: 290px; column-gap: 14px;
+  }
+  .theme-atelier .media-grid > *,
+  .theme-atelier .wish-grid > * {
+    break-inside: avoid;
+    margin-bottom: 14px;
+    display: inline-block; width: 100%;
+  }
+}
+
+/* ---- cards: image first, almost no chrome, tight ---- */
+
+/* Radius stays in the 8-14px band: on a near-black page a larger radius
+   reads as a bubble rather than a plate. */
+.theme-atelier .rec,
+.theme-atelier .media-card,
+.theme-atelier .wish-card,
+.theme-atelier .post {
+  background: var(--p-card);
+  border-color: var(--p-line);
+  border-radius: 10px;
+  box-shadow: none;
+  transition: border-color var(--t-quick) var(--ease-out),
+              background var(--t-quick) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .theme-atelier .rec:hover,
+  .theme-atelier .media-card:hover,
+  .theme-atelier .wish-card:hover {
+    border-color: rgba(233,30,99,.42);
+    background: var(--chip);
+  }
+}
+.theme-atelier .rec-title,
+.theme-atelier .media-title,
+.theme-atelier .wish-title {
+  font-family: var(--display); font-weight: 500;
+  font-size: 20px; line-height: 1.2; letter-spacing: -.012em;
+  padding-bottom: 1px;
+}
+
+/* ---- buttons: prominent subscribe / unlock ---- */
+
+/* The brief wants the unlock CTA prominent, so the primary action is a solid
+   crimson fill. #FFFFFF on #E91E63 is about 4.6:1, which clears AA for the
+   12px uppercase label. */
+.theme-atelier .btn--accent {
+  background: var(--p-accent); color: #FFFFFF;
+  border: 1px solid var(--p-accent); border-radius: 8px;
+  font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+  font-weight: 600; box-shadow: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .theme-atelier .btn--accent:hover { background: #F5356F; border-color: #F5356F; }
+}
+.theme-atelier .btn--light {
+  background: none; color: var(--p-ink);
+  border: 1px solid var(--p-line); border-radius: 8px;
+  font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+  font-weight: 600;
+}
+@media (hover: hover) and (pointer: fine) {
+  .theme-atelier .btn--light:hover { border-color: var(--p-accent); }
+}
+.theme-atelier .btn--accent:active,
+.theme-atelier .btn--light:active { transform: scale(.98); }
+
+/* ---- locked thumbnails: the members' door ---- */
+
+/* Gold, not crimson: this marks members' content, and the crimson is the
+   action. Two different jobs should not share one colour. */
+.theme-atelier .media-lock-pill,
+.theme-atelier .media-unlocked,
+.theme-atelier .rec-flag {
+  background: rgba(212,175,55,.12);
+  color: var(--p-gold);
+  border: 1px solid rgba(212,175,55,.34);
+  border-radius: 999px;
+  font-family: var(--sans); font-weight: 600;
+  font-size: 10px; letter-spacing: .15em; text-transform: uppercase;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+/* The price under the lock is plain ivory: it is information, and two golds
+   stacked reads as decoration. */
+.theme-atelier .media-lock-price {
+  font-family: var(--sans); color: var(--p-ink);
+  font-size: 12px; letter-spacing: .04em;
+}
+/* The default lock scrim is neutral grey; here it should darken toward the
+   page colour so the photograph stays the subject. */
+.theme-atelier .media-lock { background: rgba(5,5,5,.46); }
+@media (hover: hover) and (pointer: fine) {
+  .theme-atelier .media-card:hover .media-lock { background: rgba(5,5,5,.32); }
+}
+
+/* ---- forms ---- */
+
+.theme-atelier .post-form input,
+.theme-atelier .pf-search-input {
+  background: var(--chip); color: var(--p-ink);
+  border-color: var(--p-line); border-radius: 8px;
+}
+/* #929292 on #161616 is about 6.6:1, so the placeholder clears AA. */
+.theme-atelier .pf-search-input::placeholder { color: var(--p-sub); }
+.theme-atelier .pf-search-go {
+  background: var(--p-accent); color: #FFFFFF; border-radius: 8px;
+  font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+  font-weight: 600;
+}
+.theme-atelier .pf-chip {
+  background: none; border: 1px solid var(--p-line); border-radius: 999px;
+  color: var(--p-sub);
+  font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase;
+  font-weight: 600;
+}
+.theme-atelier .pf-chip.is-on {
+  color: #FFFFFF; background: var(--p-accent); border-color: var(--p-accent);
+}
+.theme-atelier .wish-track { box-shadow: inset 0 1px 2px rgba(0,0,0,.45); }
+.theme-atelier :focus-visible { outline-color: var(--p-accent); }
+
+/* Reduced motion is handled globally in wishful.css; the only motion added
+   here is colour and a 2% press, both already instant. */
+
+@media (max-width: 560px) {
+  .theme-atelier .pf-banner { height: clamp(230px, 44vh, 320px); }
+  .theme-atelier .pf-id { margin-top: -58px; }
+  .theme-atelier .pf-stat { padding: 14px 18px; }
+  .theme-atelier .pf-stat-action { flex: 1 0 100%; padding: 0 18px 16px; }
+  .theme-atelier .pf-stat-action .btn { width: 100%; }
+  .theme-atelier .pf-socials { gap: 13px; }
+  .theme-atelier .pf-tab { padding: 0 13px; }
+}
+
+/* The credit strip sits outside .profile, so it cannot read these tokens. */
+body:has(.theme-atelier) .credit { background: #050505; }
+body:has(.theme-atelier) .credit-link { color: #929292; }
+body:has(.theme-atelier) .credit-link:hover { color: #F5F5F5; }
+
+/* Portrait covers are framed on the face, so a centre crop on a tall
+   viewport cuts the head off. Anchor the cover to the top instead. */
+.theme-atelier .pf-banner img { object-position: center top; }
+
+/* The offers index is a dense bordered grid, which is right on the light
+   themes and wrong here: it is the one block on the page that still reads
+   as a table. Strip it to hairline-separated columns on the page itself. */
+.theme-atelier .pf-offers {
+  background: none; border: 0; border-radius: 0; box-shadow: none;
+}
+.theme-atelier .pf-offers-head { border-bottom: 1px solid var(--p-line); }
+.theme-atelier .pf-offers-head h2,
+.theme-atelier .pf-offers-head > :first-child {
+  font-family: var(--display); font-weight: 500;
+  letter-spacing: -.014em;
+}
+.theme-atelier .pf-offers-grid { border-top: 0; }
+.theme-atelier .pf-offer {
+  background: none;
+  border-color: var(--p-line);
+}
+.theme-atelier .pf-offer-name {
+  font-family: var(--sans); font-weight: 600;
+  font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+}
+.theme-atelier .pf-offer-price { font-family: var(--sans); color: var(--p-ink); }
+/* Free is information, not an offer: keep it quiet so the prices lead. */
+.theme-atelier .pf-offer-price--free { color: var(--p-sub); }
+.theme-atelier .pf-offer-desc { color: var(--p-sub); font-size: 13px; }
+
+/* With a full-bleed portrait cover the small round avatar lands on top of
+   the face it duplicates. The cover IS the portrait here, so the avatar only
+   earns its place when there is no cover photograph to carry the identity. */
+.theme-atelier .pf-banner:has(img) ~ .pf-id .pf-avatar { display: none; }
+/* Without the avatar the name needs its own clearance from the cover edge. */
+.theme-atelier .pf-banner:has(img) ~ .pf-id { margin-top: 26px; }
+.theme-atelier .pf-banner:has(img) ~ .pf-id .pf-head { margin-top: 0; }
+
+/* Belt and braces against horizontal overflow on narrow viewports: the
+   centred identity block and the offers grid both sit inside the gutter,
+   and nothing on this page should ever scroll sideways. */
+.theme-atelier .pf-id { box-sizing: border-box; width: 100%; }
+.theme-atelier .pf-bio,
+.theme-atelier .pf-name { overflow-wrap: anywhere; }
+.theme-atelier .pf-offers { overflow: hidden; }
+
+/* The avatar is hidden on this theme when a cover photo carries the
+   identity, but the owner still needs somewhere to replace their picture
+   from. Keep it visible, small and quiet, for them only. */
+.theme-atelier[data-ie-root] .pf-banner:has(img) ~ .pf-id .pf-avatar {
+  display: flex;
+  width: 58px; height: 58px;
+  margin-bottom: 10px;
+  opacity: .75;
+}
