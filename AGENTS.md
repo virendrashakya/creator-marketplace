@@ -18,3 +18,19 @@ Whenever any code, architectural pattern, database schema, route, controller, se
 - **Encodings**: All ERB templates and Ruby files MUST be saved in valid UTF-8. Avoid stray non-UTF-8 characters.
 - **Direct UPI & Zero Rake**: The core monetization engine relies on peer-to-peer UPI with 12-digit UTR claims. Keep this architectural principle intact.
 - **DRM & Anti-Leak**: Any media delivery feature must adhere to server-side blurred teaser previews (`FrostedPreviewService`) and forensic watermarking (`ForensicWatermarkService`) before exposing assets to clients.
+
+---
+
+## 3. Design System Standard: Indian Modern Editorial Chic
+
+- **Brand Token Memory**: Refer to `.agents/rules/design_system.md`.
+- **Typography**: Clean, geometric modernism driven entirely by **Plus Jakarta Sans** across display, headlines, bio, Rupee amounts, micro-metadata, navigation bars, and lock badges.
+- **Colors**:
+  - Primary: `#C2185B` (Sindoor Ruby)
+  - Secondary: `#D4AF37` (Zari Gold)
+  - Tertiary: `#7A1C3C` (Deep Jamun / Velvet Maroon)
+  - Neutral: `#111317` (Kajal Charcoal)
+  - Canvas: `#F6F7F5` / `#F9F9FF` (Raw Alabaster Silk)
+- **Responsive Viewport Standard**:
+  - **Mobile (< 900px)**: 100% full-bleed mobile canvas, top bar with `Wishful` + `CREATOR & FAN` pill, 3-column stats, rich ruby VIP pass, 1-col Vault drops, 2-col Curated Fit Picks, sticky bottom CTA bar.
+  - **Desktop (>= 900px)**: 1200px responsive canvas with full top navbar (`CreatorVault`), wide hero cover with overline and camera tag, 4-column stats row, 2-column split (VIP Pass hero + 100% Direct Settlement Guarantee card), 3-column Vault drop cards with cart triggers, 4-column Curated Fit Picks, wide tip box, and desktop footer.

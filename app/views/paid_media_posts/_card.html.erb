@@ -2,8 +2,28 @@
 <% share_ref = current_user&.handle || "vip" %>
 <% share_url = profile_url(card.user.handle, tab: "vault", drop: card.id, ref: share_ref) %>
 <% share_text = "Check out '#{card.title}' by #{card.user.name} on Wishful (#{card.price_label}): #{share_url}" %>
+<% is_featured = card_counter.zero? if defined?(card_counter) %>
 <article class="media-card media-card--teaser <%= 'is-unlocked' if unlocked %>" id="post-<%= card.id %>">
   <div class="media-preview">
+    <!-- Top Tags Overlay -->
+    <div class="media-preview-tags">
+      <div class="media-preview-tags-left">
+        <% if is_featured %>
+          <span class="preview-badge preview-badge--featured">FEATURED DROP</span>
+        <% elsif card.media_type == "video" %>
+          <span class="preview-badge preview-badge--video">VIDEO DROP</span>
+        <% else %>
+          <span class="preview-badge preview-badge--exclusive">Exclusive Shoot</span>
+        <% end %>
+        <span class="preview-badge preview-badge--dark">
+          <%= card.media_type == "video" ? "4K Video • 6 mins" : "16 Photos • 2 Clips" %>
+        </span>
+      </div>
+      <div class="media-preview-tags-right">
+        <span class="preview-badge preview-badge--dark">SET • RAW • 4K</span>
+      </div>
+    </div>
+
     <% if unlocked && card.media.attached? && card.media_type == "image" %>
       <div class="media-shield" aria-hidden="true" oncontextmenu="return false;"></div>
       <%= image_tag media_paid_media_post_path(card), alt: card.title, width: 480, height: 380, loading: "lazy", draggable: false, oncontextmenu: "return false;", class: "media-protected-img" %>
@@ -13,86 +33,91 @@
     <% end %>
 
     <% if unlocked %>
-      <span class="media-unlocked" style="background: #0B5B42; color: #fff; border: 1px solid #10b981;">
-        <span aria-hidden="true">✨</span> Unlocked & Yours
+      <span class="media-unlocked">
+        <span aria-hidden="true">✨</span> Unlocked &amp; Yours
       </span>
       <% if current_user.present? && current_user != card.user %>
-        <span class="media-license-pill" style="position: absolute; bottom: 8px; right: 8px; font-size: 10px; background: rgba(12,13,16,0.75); color: #e2e8f0; padding: 3px 8px; border-radius: 999px; backdrop-filter: blur(4px);">
+        <span class="media-license-pill">
           🔒 Licensed to @<%= current_user.handle %>
         </span>
       <% end %>
     <% else %>
-      <div class="media-lock media-lock--frosted">
-        <span class="media-lock-pill media-lock-pill--glow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;" aria-hidden="true">
-            <rect x="4.5" y="10" width="15" height="11" rx="2.5"/>
-            <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
-            <circle cx="12" cy="15.5" r="1.5" fill="currentColor"/>
-          </svg>
-          VIP Vault Drop
-        </span>
-        <span class="media-lock-price" style="font-size: 14px; font-weight: 700; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.6);">
-          <%= card.price_label %> to unlock
-        </span>
+      <!-- Center Lock Disc Overlay -->
+      <div class="media-lock-overlay">
+        <div class="media-lock-disc">
+          <% if card.media_type == "video" %>
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; margin-left: 2px;" aria-hidden="true">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+          <% else %>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;" aria-hidden="true">
+              <rect x="4.5" y="10" width="15" height="11" rx="2.5"/>
+              <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+              <circle cx="12" cy="15.5" r="1.5" fill="currentColor"/>
+            </svg>
+          <% end %>
+        </div>
+        <div class="media-lock-title">
+          <%= card.media_type == "video" ? "4K Video Teaser • 6 mins" : "4K UNCENSORED SET LOCKED" %>
+        </div>
+        <div class="media-lock-sub">
+          <%= card.media_type == "video" ? "Behind the scenes try-on & uncut clips" : "High-frequency facial detail & raw camera-roll previews securely sealed" %>
+        </div>
       </div>
     <% end %>
   </div>
+
   <div class="media-body">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-      <div class="media-title" style="font-weight: 700; font-size: 16px; color: var(--p-ink); line-height: 1.3;"><%= card.title %></div>
-      <span class="badge badge--spicy" style="font-size: 11px; flex-shrink: 0;">
-        <%= card.media_type == "video" ? "🎬 4K Video" : "📸 4K Photo Set" %>
-      </span>
+    <div class="media-header-row">
+      <div class="media-title"><%= card.title %></div>
+      <div class="media-price-block">
+        <span class="media-price-num"><%= money(card.price_cents) %></span>
+        <span class="media-price-channel">Direct UPI</span>
+      </div>
     </div>
-    <div class="media-meta" style="margin-top: 6px; font-size: 13.5px; color: var(--p-sub); line-height: 1.5;">
-      <%= card.caption.presence || "Exclusive private drop. Tap below to unlock via UPI." %>
+
+    <div class="media-desc">
+      <%= card.caption.presence || "Exclusive private drop. Tap below to unlock via direct UPI." %>
     </div>
-    <div style="margin-top: 14px">
-      <% if unlocked %>
+
+    <% if unlocked %>
+      <div class="media-actions-row">
         <% if card.media_type == "video" && card.media.attached? %>
           <%= link_to media_paid_media_post_path(card), class: "btn btn--block btn--accent", target: "_blank", rel: "noopener noreferrer" do %>
             Watch 4K Video<span class="visually-hidden"> (opens in a new tab)</span>
           <% end %>
         <% else %>
-          <span class="badge badge--ok" style="display: block; text-align: center; padding: 8px;">Full Set Unlocked</span>
+          <span class="badge badge--ok" style="display: block; text-align: center; padding: 10px; width: 100%;">Full 4K Set Unlocked</span>
         <% end %>
-      <% else %>
-        <%= render "shared/buy_button", purchasable: card, creator: card.user,
-              label: "Unlock Full Set (#{card.price_label})", signed_out_label: "Sign in to unlock",
-              price_label: card.price_label, fallback_path: purchase_paid_media_post_path(card) %>
-        <div style="margin-top: 6px; font-size: 11.5px; color: var(--p-sub); text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px;">
-          <span style="color: #10b981;">⚡</span> Direct UPI &middot; 100% confidential &middot; Watermark protected
-        </div>
-      <% end %>
-    </div>
-    <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-      <div class="media-share-dropdown-wrap" style="width: 100%; position: relative;">
-        <button type="button" class="btn btn--small btn--ghost btn--block btn-share-teaser"
-                data-share-url="<%= share_url %>"
-                data-share-title="<%= card.title %>"
-                data-share-text="<%= share_text %>"
-                onclick="handleShareTeaser(this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 13px; height: 13px; margin-right: 4px; vertical-align: -2px;" aria-hidden="true">
-            <circle cx="18" cy="5" r="3"/>
-            <circle cx="6" cy="12" r="3"/>
-            <circle cx="18" cy="19" r="3"/>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          </svg>
-          Share Teaser Link
-        </button>
-        <div class="share-popover" style="display: none; position: absolute; bottom: calc(100% + 6px); left: 0; right: 0; background: var(--p-card); border: 1px solid var(--p-line); border-radius: var(--r-md); padding: 6px; box-shadow: var(--p-raised); z-index: 25;">
-          <a href="https://api.whatsapp.com/send?text=<%= ERB::Util.url_encode(share_text) %>" target="_blank" rel="noopener noreferrer" class="share-popover-item" style="display: flex; align-items: center; gap: 8px; padding: 7px 10px; color: var(--p-ink); text-decoration: none; border-radius: var(--r-sm); font-size: 12px; font-weight: 600;">
-            <span>💬</span> WhatsApp
-          </a>
-          <a href="https://t.me/share/url?url=<%= ERB::Util.url_encode(share_url) %>&text=<%= ERB::Util.url_encode("Check out #{card.title} by #{card.user.name} on Wishful") %>" target="_blank" rel="noopener noreferrer" class="share-popover-item" style="display: flex; align-items: center; gap: 8px; padding: 7px 10px; color: var(--p-ink); text-decoration: none; border-radius: var(--r-sm); font-size: 12px; font-weight: 600;">
-            <span>✈️</span> Telegram
-          </a>
-          <button type="button" class="share-popover-item btn-copy-link" data-url="<%= share_url %>" onclick="copyShareUrl(this)" style="display: flex; align-items: center; gap: 8px; width: 100%; border: none; background: transparent; padding: 7px 10px; color: var(--p-ink); text-align: left; border-radius: var(--r-sm); font-size: 12px; font-weight: 600; cursor: pointer;">
-            <span>🔗</span> Copy Tracked Link
-          </button>
-        </div>
       </div>
+    <% else %>
+      <div class="media-footer-row">
+        <div class="media-watermark-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px; display: inline-block; vertical-align: -1px;" aria-hidden="true">
+            <rect x="4.5" y="10" width="15" height="11" rx="2.5"/>
+            <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+          </svg>
+          Stamped with your @<%= current_user&.handle || "handle" %>
+        </div>
+        <%= link_to new_payment_claim_path("PaidMediaPost", card.id), class: "btn btn--accent pf-instant-unlock-btn" do %>
+          Instant UPI Unlock ➔
+        <% end %>
+      </div>
+    <% end %>
+
+    <!-- Subtle Share Dropdown -->
+    <div class="media-sub-share">
+      <button type="button" class="btn-share-inline btn-share-teaser"
+              data-share-url="<%= share_url %>"
+              data-share-title="<%= card.title %>"
+              data-share-text="<%= share_text %>"
+              onclick="handleShareTeaser(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px; margin-right: 4px; vertical-align: -1px;" aria-hidden="true">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+        Share preview link
+      </button>
     </div>
   </div>
 </article>

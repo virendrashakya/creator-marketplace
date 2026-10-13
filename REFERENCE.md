@@ -136,21 +136,121 @@
 
 ---
 
-## 4. Theme & Layout Design System
+## 4. Brand & Design System: Indian Modern Editorial Chic
 
-Creators can customize their public presence without breaking the underlying layout:
+The design system blends contemporary high-fashion editorial rigor with subcontinental sartorial luxury. Purpose-built for mobile-first creator monetization within Indian fashion, saree draping, glamour, and style curation. The aesthetic emphasizes quiet opulence, warm alabaster silk surfaces, sharp editorial typography, and jewel-tone accents.
 
-### Themes (`User::THEMES`)
-1. **Minimal (`minimal`)**: Clean alabaster surfaces (`#F4F5F3`), crisp editorial typography, ruby accents (`#C2185B`).
-2. **Luxury (`luxury`)**: Deep midnight violet background (`#14142A`), warm blush highlights (`#F0A9C8`), champagne gold borders.
+### 4.1 Token Specification (YAML)
+```yaml
+name: Indian Modern Editorial Chic
+colors:
+  surface: '#f9f9ff'
+  surface-dim: '#d9d9df'
+  surface-bright: '#f9f9ff'
+  surface-container-lowest: '#ffffff'
+  surface-container-low: '#f3f3f9'
+  surface-container: '#ededf3'
+  surface-container-high: '#e8e8ed'
+  surface-container-highest: '#e2e2e8'
+  on-surface: '#1a1c20'
+  on-surface-variant: '#594045'
+  inverse-surface: '#2f3035'
+  inverse-on-surface: '#f0f0f6'
+  outline: '#8d6f75'
+  outline-variant: '#e1bec4'
+  surface-tint: '#b90c55'
+  primary: '#9b0044'
+  on-primary: '#ffffff'
+  primary-container: '#c2185b'
+  on-primary-container: '#ffd9df'
+  inverse-primary: '#ffb1c2'
+  secondary: '#735c00'
+  on-secondary: '#ffffff'
+  secondary-container: '#fed65b'
+  on-secondary-container: '#745c00'
+  tertiary: '#892847'
+  on-tertiary: '#ffffff'
+  tertiary-container: '#a8405f'
+  on-tertiary-container: '#ffd9df'
+  error: '#ba1a1a'
+  on-error: '#ffffff'
+  error-container: '#ffdad6'
+  on-error-container: '#93000a'
+  background: '#f9f9ff'
+  on-background: '#1a1c20'
+typography:
+  display-lg: { fontFamily: "Plus Jakarta Sans", fontSize: "40px", fontWeight: "600", lineHeight: "48px", letterSpacing: "-0.02em" }
+  display-lg-mobile: { fontFamily: "Plus Jakarta Sans", fontSize: "30px", fontWeight: "600", lineHeight: "38px", letterSpacing: "-0.01em" }
+  headline-lg: { fontFamily: "Plus Jakarta Sans", fontSize: "28px", fontWeight: "600", lineHeight: "36px", letterSpacing: "-0.01em" }
+  headline-md: { fontFamily: "Plus Jakarta Sans", fontSize: "22px", fontWeight: "500", lineHeight: "28px", letterSpacing: "0em" }
+  title-lg: { fontFamily: "Plus Jakarta Sans", fontSize: "18px", fontWeight: "700", lineHeight: "24px", letterSpacing: "-0.01em" }
+  title-md: { fontFamily: "Plus Jakarta Sans", fontSize: "16px", fontWeight: "600", lineHeight: "22px" }
+  body-lg: { fontFamily: "Plus Jakarta Sans", fontSize: "15px", fontWeight: "400", lineHeight: "22px" }
+  body-md: { fontFamily: "Plus Jakarta Sans", fontSize: "14px", fontWeight: "400", lineHeight: "20px" }
+  label-lg: { fontFamily: "Plus Jakarta Sans", fontSize: "13px", fontWeight: "600", lineHeight: "18px", letterSpacing: "0.02em" }
+  label-md: { fontFamily: "Plus Jakarta Sans", fontSize: "12px", fontWeight: "600", lineHeight: "16px", letterSpacing: "0.04em" }
+  price-editorial: { fontFamily: "Plus Jakarta Sans", fontSize: "17px", fontWeight: "800", lineHeight: "22px", letterSpacing: "-0.02em" }
+rounded:
+  sm: 0.25rem
+  DEFAULT: 0.5rem
+  md: 0.75rem
+  lg: 1rem
+  xl: 1.5rem
+  full: 9999px
+spacing:
+  gutter: 1rem
+  margin: 1rem
+  space-xs: 0.25rem
+  space-sm: 0.5rem
+  space-md: 1rem
+  space-lg: 1.5rem
+  space-xl: 2.5rem
+```
+
+### 4.2 Color Palette Principles
+- **Primary (`#C2185B` / `#9B0044` - Sindoor Ruby):** High-fashion crimson rose for primary actions, unlock triggers, active tab indicators, and purchase CTAs.
+- **Secondary (`#D4AF37` / `#735C00` - Zari Gold):** Refined metallic ochre reserved for VIP memberships, close friends tier badges, verified creator checks, and ceremonial markers.
+- **Tertiary (`#7A1C3C` / `#892847` - Deep Jamun / Velvet Maroon):** Grounded wine tone for elevated containers, tags, and gradient borders on exclusive drops.
+- **Neutral (`#111317` / `#1A1C20` - Kajal Charcoal):** Deep carbon black providing contrast against alabaster surfaces without sterile digital harshness.
+- **Canvas Base (`#F6F7F5` / `#F9F9FF` - Raw Alabaster Silk):** Off-white, gallery-grade foundation that flatters South Asian skin tones and vivid textile photography.
+
+### 4.3 Typography Standards
+- **Plus Jakarta Sans:** Drives creator display branding, collection titles, spotlight story intros, bio copy, prices, tabs, metadata, and buttons with friendly, geometric clarity.
+- **Rupee Glyph Standard:** The `₹` symbol matches font weight and baseline height with numerical amounts (`price-editorial`).
+
+### 4.4 Elevation & Depth
+- **Surface Level 0:** Pure `#F6F7F5` base background.
+- **Surface Level 1 (Frosted Cards):** Translucent white (`rgba(255, 255, 255, 0.78)`) with `backdrop-filter: blur(16px)` and a subtle border (`rgba(17, 19, 23, 0.06)`).
+- **Surface Level 2 (Locked Media Veil):** Gradient scrim (`linear-gradient(180deg, rgba(17, 19, 23, 0.1) 0%, rgba(17, 19, 23, 0.85) 100%)`) with `backdrop-filter: blur(10px)`.
+- **Zari Glow (VIP Cards):** Perimeter luminescence (`box-shadow: 0 4px 20px -2px rgba(212, 175, 55, 0.25)`).
+
+### 4.5 Creator Theme Engine (`User::THEMES`)
+1. **Minimal (`minimal`)**: Raw Alabaster Silk (`#F6F7F5`), Bodoni display, Sindoor Ruby accents (`#C2185B`).
+2. **Luxury (`luxury`)**: Deep midnight violet (`#14142A`), warm blush highlights (`#F0A9C8`), champagne gold borders.
 3. **Adventure (`adventure`)**: Soft sage background (`#EDF1EA`), deep forest green accents (`#0B5B42`).
-4. **After Dark (`after_dark`)**: Jet black canvas (`#0C0D10`), neon pink glow (`#FF5C8A`), high-contrast night aesthetics.
+4. **After Dark (`after_dark`)**: Jet black canvas (`#0C0D10`), neon pink glow (`#FF5C8A`), high-contrast night aesthetic.
 5. **Atelier (`atelier`)**: Minimal monochrome obsidian (`#050505`), hot magenta highlight (`#E91E63`).
 
-### Layouts (`User::LAYOUTS`)
+### 4.6 Layouts (`User::LAYOUTS`)
 1. **Classic (`classic`)**: Vertical list flow; optimal for link-in-bio style pages and product-heavy curators.
-2. **Editorial (`editorial`)**: Magazine cover layout with prominent banner, spotlight cards, and tabbed showcase.
+2. **Editorial (`editorial`)**: Magazine cover layout with full-bleed 16:9 banner, spotlight cards, and tabbed segment switcher.
 3. **Gallery (`gallery`)**: Visual-first masonry grid prioritizing photo and video drops over text links.
+
+### 4.7 Mobile-First Fan Storefront Architecture (The 11-Component System)
+The public fan storefront (`/@handle`) implements an 11-component mobile-first layout centered within a 480px responsive canvas (`.profile-inner`) on desktop and 100% on mobile devices:
+1. **Top Bar (`.pf-topbar`)**: Ruby Wishful mark `(W)`, brand wordmark, pulsing green `• Live UPI` badge, `Open App` link, and native/clipboard share trigger.
+2. **Cover Banner (`.pf-banner`)**: Full-bleed cover photography with top-right frosted glass caption tag (`Cover: Banarasi Heritage BTS`).
+3. **Avatar & Verified Badge (`.pf-avatar`, `.pf-verified-badge`)**: 84px circular avatar with 3.5px alabaster ring and Sindoor Ruby checkmark disc (`✓`) at bottom right.
+4. **Creator Identity Header (`.pf-id`)**: Haute-couture `Bodoni Moda` title, inline vibrant ruby `@handle`, category & location pills, and bio with highlighted `100% direct fan UPI.` guarantee.
+5. **Stats Bar Card (`.pf-stats-card`)**: 3-column unified card (`DROPS`, `SUPPORTERS`, `• Direct UPI INSTANT`) followed by `+ Follow Updates` and `Share link (?ref=fan)` action buttons.
+6. **VIP Close Friends Hero Card (`.pf-vip-hero`)**: Prominent obsidian luxury card (`#141419`) with gold hairline border & zari glow (`box-shadow: 0 4px 20px -2px rgba(212, 175, 55, 0.25)`), `★ EXCLUSIVE PASS` pill, price (`₹499/mo`), 3 perks with `▶` gold markers, `🛡️ Zero platform cut`, and `Join VIP Pass ➔` button.
+7. **Tabbed Segment Bar (`.pf-tabs`)**: Sticky navigation switching between `🔒 The Vault`, `👗 Curated Fits`, `🎁 Spoil Me Wishlist`, and `About`.
+8. **Anti-Leak Shield Active Banner (`.pf-anti-leak-banner`)**: Champagne banner detailing forensic buyer watermarking and server-side frosted preview protection.
+9. **Vault Drop Teaser Cards (`.media-card`)**: 4:5 vertical portrait aspect ratio with server-side blurred teaser, featured shoot badges, center golden lock disc, price in `price-editorial` typography, `@handle` watermark notice, and `Instant UPI Unlock >` button.
+10. **Curated Recommendations Showcase (`.pf-fits-showcase`)**: Horizontal lookbook rows showing apparel thumbnails, styling quotes, prices, merchants, and `Shop ↗` buttons.
+11. **Educational UPI Guide Card (`.pf-upi-guide-card`) & Sticky Mobile CTA Bar (`.pf-sticky-footer`)**:
+    - Obsidian 3-step guide detailing direct VPA settlement, 12-digit UTR claims, and forensic DRM watermarks.
+    - Viewport-fixed floating bottom capsule with heart badge, creator patronage text, and direct Ruby `Unlock Vault` button.
 
 ---
 
@@ -178,13 +278,50 @@ User (creators & fans)
 
 ---
 
-## 6. Key Application Routes
+### 4.3 Creator Portal Dashboard Architecture (`/dashboard`)
+The Creator Portal (`/dashboard`) is the central, uncluttered operational command suite for creators:
+- **Chrome Mode**: `:portal` layout with dedicated top navigation bar.
+- **Top Portal Bar**:
+  - Left: `✦ Wishful` with Sindoor Ruby sparkle cluster (`#C2185B`) and serif wordmark.
+  - Center: Clean single-row navigation with vibrant Sindoor Ruby pill for active `Dashboard` (`#C2185B`), followed by plain text links (`The Vault`, `Live Studio`, `Calendar Schedule`, `Messages & DMs`, `Payment Claims`).
+  - Right: Tailored user capsule (`#EDEDF2`) with circular avatar, `@handle`, and gold verified badge (`✔`), accompanied by a clean sign-out door icon.
+- **Pending P2P UPI Claims Alert Banner**: High-priority alert banner (`₹1,797 waiting verification`) with direct `Review 3 Claims ➔` action for 12-digit UTR reconciliation.
+- **Creator Header & Greeting**: `Namaste, [Name] ✪` with `@handle` badge, `Luxury Drape Atelier • Studio Dashboard & P2P Node`, clipboard storefront copy pill (`wishful.app/@handle`), `View Storefront` external trigger, and `● Live Studio` button. On mobile, renders as a tailored creator card.
+- **Real-Time Financial & Engagement Metrics (4-Card Matrix)**:
+  - `APPROVED UPI GROSS`: Large currency display (`₹48,500`), +18% weekly growth badge, 0% fee subtext, and smooth Ruby trend sparkline curve.
+  - `VAULT DROPS`: Drop count (`8 active drops`), digital unlocks (`142 digital unlocks`), lock badge, and Ruby progress bar.
+  - `VIP SUBSCRIBERS`: Member count (`34 members`), projected monthly recurring revenue (`₹16,966 / mo projected`), star badge, and Zari Gold progress bar.
+  - `AFFILIATE TAPS`: Referral clicks (`184 clicks`), active links (`Across 6 referral links`), bag badge, and rose progress bar.
+  - On mobile: Arranged as a 2x2 grid under the `PERFORMANCE SNAPSHOT • Last 30 Days` header.
+- **Streamlined Quick Actions Bar (`CREATOR LAUNCHPAD`)**: Uncluttered horizontal action bar replacing multi-box matrices:
+  - `+ New Vault Drop` (Ruby pill on mobile, outlined on desktop)
+  - `+ Add Curated Fit`
+  - `+ Create VIP Tier`
+  - `🎁 Wishlist Goal`
+  - `📝 Write Update`
+- **Synchronized Storefront Tabs**: Pill segmented control switching between `Manage Drops & Vault (8)`, `Curated Outfits & Links (6)`, `VIP Tiers & Wishlists (2)`, and `Overview & Stats` alongside the `● LIVE STOREFRONT SYNC` status indicator.
+- **Active Vault Drops & Digital Sets Panel**:
+  - Panel header with published count badge, `Filter` pill, and `+ Publish Drop` ruby button.
+  - Horizontal drop rows: 16:9 thumbnail preview with corner tag (`4K Set`, `Video`), drop title with `Active` badge, unlock count & gross earnings, price (`₹499 Instant UPI`), `View Live` button, `Edit` button, and `⋮` actions menu.
+  - On mobile: Formatted as compact cards with portrait thumbnails, top corner tag, subtitle, active badge, and inline price/action pills.
+- **Balanced 2-Column Bottom Suite**:
+  - Left Card: `VIP Pass: Close Friends Tier` (`₹499/mo`, perk description, 34 Patrons / monthly projection, `Edit Tier`, and `Manage Members`).
+  - Right Card: `Wishlist: Diwali Heritage Silk Saree` (`68% funded` badge, heavy Ruby progress bar, `₹10,200 pledged / Goal ₹15,000`, `UPI Direct contributions`, and `Manage Goal`).
+- **Engine Node & Bottom Navigation**:
+  - Settings pills for UPI & Settlement Settings/Nodes, Blocked Accounts (4), and Support Concierge.
+  - Engine status: `● Wishful P2P Settlement Engine v2.4 • Direct VPA Node`.
+  - Mobile bottom fixed navigation bar: 5 icons (`Dashboard`, `The Vault`, `Studio`, `Messages`, `Settings`).
+- **Desktop Luxury Footer**: Minimal compliance and legal links (`Settlements & Payouts`, `Creator Guidelines`, copyright).
+
+---
+
+## 5. Security & Anti-Leak DRM Specifications
 
 | Path | Controller#Action | Purpose |
 |---|---|---|
 | `GET /` | `pages#home` | Platform landing page & creator discovery |
 | `GET /:handle` | `profiles#show` | Public creator storefront (tabbed: Vault, Fits, Wishlist, DMs) |
-| `GET /dashboard` | `dashboard#show` | Creator analytics, link manager, collection manager |
+| `GET /dashboard` | `dashboard#show` | Creator Portal: UPI claims banner, metrics, quick-add, active vault & links |
 | `GET /creator_settings` | `creator_settings#edit` | Theme, layout, UPI ID, bio, and social handles |
 | `GET /pay/:type/:id` | `payment_claims#new` | UPI QR payment & UTR submission screen |
 | `POST /pay/:type/:id` | `payment_claims#create` | Create a new payment claim with 12-digit UTR |

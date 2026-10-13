@@ -9,7 +9,11 @@ class DashboardController < ApplicationController
     @paid_media_revenue = @paid_posts.sum { |post| post.media_purchases.paid.sum(:amount_cents) }
     @meet_offers = current_user.meet_offers.includes(meet_slots: :meet_booking).order(created_at: :desc)
     @contact_reveals = current_user.contact_reveals.includes(:access_purchases).order(created_at: :desc)
-    @pending_claim_count = current_user.received_payment_claims.pending.count
+    @subscription_plans = current_user.subscription_plans.order(created_at: :desc)
+    @wishlists = current_user.wishlists.includes(:wishlist_items).order(created_at: :desc)
+    @pending_claims = current_user.received_payment_claims.pending
+    @pending_claim_count = @pending_claims.count
+    @pending_claim_amount_cents = @pending_claims.sum(:amount_cents)
 
     # The header needs to know whether they are already broadcasting, and
     # whether anyone is waiting on a reply.

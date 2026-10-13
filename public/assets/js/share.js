@@ -41,4 +41,19 @@ document.addEventListener("click", function(e) {
   if (!e.target.closest(".media-share-dropdown-wrap")) {
     document.querySelectorAll(".share-popover").forEach(p => p.style.display = "none");
   }
+
+  const shareBtn = e.target.closest("[data-share-url]");
+  if (!shareBtn || shareBtn.onclick || shareBtn.hasAttribute("onclick")) return;
+  const url = shareBtn.dataset.shareUrl;
+  const title = shareBtn.dataset.shareTitle || document.title;
+
+  if (navigator.share && /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
+    navigator.share({ title: title, url: url }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => {
+      const orig = shareBtn.innerHTML;
+      shareBtn.innerHTML = 'Copied! ✓';
+      setTimeout(() => { shareBtn.innerHTML = orig; }, 1800);
+    }).catch(() => {});
+  }
 });

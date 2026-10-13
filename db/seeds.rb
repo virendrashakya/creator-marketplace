@@ -93,6 +93,16 @@ attach_image(ananya, :banner, "creator-saree.jpg")
 # the reason, so a recommendation without one renders as a bare product name.
 
 collections = {
+  "Ananya's Curated Fit Picks" => [
+    [ "Pre-Stitched Ruffled Saree", "Myntra", "₹2,799", "rec-saree-chiffon",
+      "Deep Burgundy Drape", true ],
+    [ "Handcrafted Kamarbandh", "FabIndia", "₹2,850", "rec-jewelry",
+      "Pure Silver 925", true ],
+    [ "Halter Neck Brocade Blouse", "Nykaa Fashion", "₹1,699", "rec-saree-silk",
+      "Golden Zari Weave", true ],
+    [ "Velvet Drape Corset Top", "Amazon Fashion", "₹1,499", "rec-denim.jpg",
+      "Plum Structure", true ]
+  ],
   "My Saree Wardrobe & Go-To Drapes" => [
     [ "Pure Chiffon Saree with Sequin Border", "Swtantra", "₹3,499", "rec-saree-chiffon",
       "Drapes like liquid glass. The exact piece from my monsoon balcony reel that crossed a million views.", true ],
@@ -108,22 +118,6 @@ collections = {
       "The classic wedding guest red that doesn't bleed onto collarbones or cups." ],
     [ "Setting Spray that Survives Humidity", "Nykaa", "₹550", nil,
       "Tested through 35°C outdoor shoots in Bombay. My base did not budge until midnight." ]
-  ],
-  "Kit I Shoot 4K Reels On" => [
-    [ "The camera I shoot all 4K reels on", "Amazon", "₹64,999", "rec-camera.jpg",
-      "Crisp 4K 60fps slow-mo drape walks. The sensor captures every thread and texture of silk." ],
-    [ "Studio Ring Light with Phone Mount", "Amazon", "₹2,299", nil,
-      "Soft, diffused golden light for GRWM vanity clips. Eliminates harsh overhead apartment shadows." ],
-    [ "Wireless Lapel Mic for Voiceovers", "Amazon", "₹3,899", nil,
-      "Captures the authentic rustle of silk sarees and crisp audio for drape tutorials." ]
-  ],
-  "Statement Jewelry & Accents" => [
-    [ "Handcrafted Silver Kamarbandh", "FabIndia", "₹2,850", "rec-jewelry",
-      "Accentuates the waistline on plain georgette and chiffon drapes instantly." ],
-    [ "Antique Gold Jhumkas with Pearls", "Tribe Amrapali", "₹3,200", nil,
-      "Heavy look without the ear-pulling weight. My most asked-about piece in reel comments." ],
-    [ "Velvet Zardozi Potli Bag", "Nykaa Fashion", "₹1,450", nil,
-      "Fits the phone, lipstick, and keys without bulging. The only wedding clutch you need." ]
   ]
 }
 
@@ -148,13 +142,14 @@ end
 # The differentiator: the creator's own work behind a one-time unlock.
 
 [
-  [ "Monsoon Balcony in Chiffon (4K Saree Lookbook, 42 photos)", "The slow-mo rain and sheer drape series from Mumbai. 4K high-res, raw & unedited.", 49_900, "creator-saree.jpg" ],
-  [ "GRWM: Festive Silk Fitting & Blouse BTS (4K Video, 12 mins)", "Uncut try-on footage, pleated drape tutorial, and blouse fitting room clips. Raw audio, no filters.", 79_900, "creator-portrait.jpg" ]
+  [ "Golden Hour in Goa (Uncensored 4K Set)", "Full sunset sequence, wet silk drape experiment & unreleased BTS clips.", 49_900, "creator-saree.jpg" ],
+  [ "Festive Silk Drapes & Backless Blouse BTS", "Archival Mumbai studio shoot. High dynamic range color grades focusing on handloom Banarasi motifs and uncut fitting room clips.", 29_900, "creator-portrait.jpg" ],
+  [ "Private Reels & Unreleased Outfit Haul", "Candid GRWM commentary, drape hacks & bloopers not on IG.", 19_900, "creator-saree.jpg" ]
 ].each do |title, caption, price_cents, preview|
   post = ananya.paid_media_posts.find_or_initialize_by(title: title)
   post.assign_attributes(
     caption: caption, price_cents: price_cents, currency: "INR",
-    media_type: (title.include?("Video") ? "video" : "image"), published: true
+    media_type: (title.include?("Reels") || title.include?("Video") ? "video" : "image"), published: true
   )
   attach_image(post, :media, preview)
   attach_image(post, :preview, preview)

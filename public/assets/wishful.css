@@ -56,8 +56,8 @@
   --danger-line: #E8B4AE;
   --invalid: #B3261E;
 
-  --display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-  --sans: "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --display: "Bodoni Moda", "Bricolage Grotesque", ui-serif, serif;
+  --sans: "Plus Jakarta Sans", "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   --shell: 1120px;

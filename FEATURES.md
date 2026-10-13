@@ -162,12 +162,68 @@ The foundational payment model of Wishful — **zero fees, zero payment gateways
 
 ---
 
-## 11. Multi-Theme Visual Design System
+## 11. Multi-Theme Visual Design System ("Indian Modern Editorial Chic")
 
-Creators can customize their public page aesthetic with 5 hand-crafted themes:
+Wishful is built on the **Indian Modern Editorial Chic** design system, combining contemporary haute-couture editorial rigor with Indian sartorial luxury.
 
-1. **After Dark** (`#0C0D10`, hot pink `#FF5C8A` accent): Night-club neon aesthetic, high-contrast dark mode tailored for VIP content and late-night drops.
-2. **Atelier** (`#050505`, electric crimson `#E91E63` accent): Editorial high-fashion aesthetic featuring Playfair Display typography.
-3. **Minimal** (`#F4F5F3`, deep berry `#C2185B` accent): Clean, modern Scandinavian simplicity with light gray card surfaces.
-4. **Luxury** (`#14142A`, pastel pink `#F0A9C8` accent): Deep midnight navy palette with soft metallic rose accents.
-5. **Adventure** (`#EDF1EA`, forest green `#0B5B42` accent): Earthy sage green tones designed for travel and outdoor creators.
+### Brand Aesthetic & Color Theory
+- **Primary (`#C2185B` / `#9B0044` - Sindoor Ruby):** High-fashion crimson rose for primary actions, unlock states, active tabs, and priority micro-interactions.
+- **Secondary (`#D4AF37` / `#735C00` - Zari Gold):** Refined metallic ochre reserved for VIP memberships, close friends tier markers, verified badges, and ceremonial tier indicators.
+- **Tertiary (`#7A1C3C` / `#892847` - Deep Jamun / Velvet Maroon):** Grounded wine tone for deep container tints, elevated tags, and subtle gradient borders on exclusive drops.
+- **Neutral (`#111317` / `#1A1C20` - Kajal Charcoal):** Deep carbon black delivering high contrast against the backdrop without sterile harshness.
+- **Canvas Base (`#F6F7F5` / `#F9F9FF` - Raw Alabaster Silk):** Off-white, gallery-grade foundation that flatters South Asian skin tones and vivid textile photography.
+
+### Typography Engine
+- **Plus Jakarta Sans:** Drives creator display branding, collection titles, spotlight story intros, bio copy, Rupee pricing (`price-editorial`), metadata, navigation bars, and lock badges with geometric clarity.
+- **₹ Glyph Standards:** The ₹ glyph renders at matching font weight and baseline height with numerical pricing.
+
+### Elevation & Component Specs
+- **Frosted Glass Cards:** Translucent white (`rgba(255, 255, 255, 0.78)`) with `backdrop-filter: blur(16px)` and a hairline border.
+- **Locked Media Veil:** Gradient scrim over preview thumbnails with `backdrop-filter: blur(10px)`.
+- **Zari Glow:** Soft luminescence on VIP tier cards (`box-shadow: 0 4px 20px -2px rgba(212, 175, 55, 0.25)`).
+- **Sticky Mobile Checkout Drawer:** Pill-shaped mobile CTA anchored to the viewport base with instant UPI trigger.
+
+### Creator Themes (`User::THEMES`)
+1. **Minimal:** Raw Alabaster Silk (`#F6F7F5`), Bodoni display, Sindoor Ruby accents (`#C2185B`).
+2. **Luxury:** Deep midnight navy palette (`#14142A`) with soft metallic rose accents (`#F0A9C8`).
+3. **Adventure:** Earthy sage green tones (`#EDF1EA`) with deep forest green accents (`#0B5B42`).
+4. **After Dark:** Jet black night aesthetic (`#0C0D10`) with neon pink glow (`#FF5C8A`).
+5. **Atelier:** Haute-couture monochrome obsidian (`#050505`) with hot magenta highlight (`#E91E63`).
+
+### 12. Mobile-First Editorial Fan Storefront Architecture
+The public creator profile (`/@handle`) is engineered as an intimate 480px phone-first experience on desktop and 100% full-bleed on mobile viewports:
+1. **Header App Bar**: Wishful ruby badge `(W)`, brand wordmark, pulsing green `• Live UPI` indicator, `Open App` button, and native share action.
+2. **Editorial Cover Banner**: 16:9 full-bleed banner with frosted cover credit tag (`Cover: Banarasi Heritage BTS`).
+3. **Avatar & Creator Identity**: 84px avatar with 3.5px white ring, ruby verified checkmark badge (`✓`), floating Instagram pill, Bodoni display name, inline ruby `@handle`, category & location chips, and highlighted `100% direct fan UPI.` bio note.
+4. **Unified Stats & Actions Card**: 3-metric container (`DROPS`, `SUPPORTERS`, `Direct UPI INSTANT`) with dual follow/share pill buttons.
+5. **Obsidian VIP Close Friends Hero Card**: Obsidian luxury container with gold border & zari luminescence, `★ EXCLUSIVE PASS` badge, `₹499/mo`, 3 tier perks with `▶` gold bullet markers, zero platform cut, and direct VIP join CTA.
+6. **Sticky Segment Switcher**: Sticky tab bar navigating `🔒 The Vault`, `👗 Curated Fits`, `🎁 Spoil Me Wishlist`, and `About`.
+7. **Anti-Leak Shield Active Banner**: Prominent champagne banner informing visitors of forensic buyer watermarking and server-side frosted previews.
+8. **Vault Drop Cards**: 4:5 portrait cards with server-side blurred teaser, top metadata badges (`FEATURED DROP` / `4K Video • 6 mins`), center golden lock disc, editorial pricing, buyer `@handle` watermark notice, and Instant UPI Unlock action.
+9. **Curated Recommendations Showcase ("CURATED BLOUSE CUTS & FITS")**: Highlighting apparel styling with thumbnails, quotes, prices, merchants, and direct shop links.
+10. **Direct UPI Educational Guide**: Dark obsidian card explaining zero-fee personal VPA settlements and 12-digit UTR bank claims.
+11. **Sticky Floating Mobile Drawer**: Viewport-anchored bottom pill bar featuring heart disc, creator patronage copy, and direct `Unlock Vault` button.
+
+### 13. Creator Administrative Suite Portal Architecture (`/dashboard`)
+The creator management portal is engineered as an uncluttered, modern editorial administrative suite matching the **Indian Modern Editorial Chic** system:
+1. **Top Portal Navbar (`Wishful`)**: Ruby sparkle cluster (`✦`), Bodoni/Playfair wordmark, single-row segment navigation with active `Dashboard` in a Sindoor Ruby pill (`#C2185B`) and clean text links (`The Vault`, `Live Studio`, `Calendar Schedule`, `Messages & DMs`, `Payment Claims`), alongside a clean user pill with circular avatar, `@handle`, gold verified checkmark badge (`✔`), and minimalist logout door action.
+2. **Pending P2P Claims Alert Banner**: Warm champagne card (`#FFFBE8`) notifying the creator of pending 12-digit UTR claims awaiting one-tap verification with direct `Review 3 Claims ➔` CTA.
+3. **Creator Suite Hero Greeting**: `Namaste, [Name] ✪` with `@handle` badge, `Luxury Drape Atelier • Studio Dashboard & P2P Node` subtitle, rounded storefront URL copy pill (`wishful.app/@handle`), `View Storefront` trigger, and filled `● Live Studio` button. On mobile, condenses into a tailored creator card.
+4. **4-Metric Performance Dashboard**:
+   - `APPROVED UPI GROSS`: Large currency stat (`₹48,500`), +18% growth pill, 0% fee note, and smooth Ruby trend sparkline curve.
+   - `VAULT DROPS`: Active drops count (`8 active drops`), total unlocks (`142 digital unlocks`), lock badge, and Ruby progress bar.
+   - `VIP SUBSCRIBERS`: Member count (`34 members`), projected monthly income (`₹16,966 / mo projected`), star badge, and Zari Gold progress bar.
+   - `AFFILIATE TAPS`: Click count (`184 clicks`), referral link count (`Across 6 referral links`), bag badge, and rose progress bar.
+   - On mobile: Formatted as a 2x2 grid under the `PERFORMANCE SNAPSHOT • Last 30 Days` header.
+5. **Streamlined Quick Actions Bar (`CREATOR LAUNCHPAD`)**: Single-row horizontal button bar replacing bulky creation matrices: `+ New Vault Drop`, `+ Add Curated Fit`, `+ Create VIP Tier`, `🎁 Wishlist Goal`, and `📝 Write Update`.
+6. **Storefront Sync Segmented Tabs**: Pill-shaped segmented tabs for `Manage Drops & Vault (8)`, `Curated Outfits & Links (6)`, `VIP Tiers & Wishlists (2)`, and `Overview & Stats` alongside the `● LIVE STOREFRONT SYNC` real-time indicator.
+7. **Active Vault Drops & Digital Sets Panel**:
+   - Header with published drop badge, `Filter` pill, and `+ Publish Drop` ruby button.
+   - Horizontal drop cards with 16:9 thumbnail photography, format tags (`4K Set`, `Video`), title, `Active` status badge, unlock/revenue analytics, prominent price (`₹499 Instant UPI`), `View Live` button, `Edit` button, and `⋮` actions menu.
+   - On mobile: Formatted as compact cards with portrait thumbnails, top tags, and inline action buttons.
+8. **Balanced 2-Column Suite**:
+   - Left Card: `VIP Pass: Close Friends Tier` with `₹499/mo`, bulleted perks, 34 Patrons / monthly revenue projection, `Edit Tier Rules`, and `Manage Members`.
+   - Right Card: `Wishlist: Diwali Heritage Silk Saree` with `68% funded` badge, heavy Ruby progress bar, `₹10,200 pledged / Goal ₹15,000`, and `Manage Goal`.
+9. **Creator Bottom Actions & Engine Status**: Quick pill links for UPI & Settlement Settings/Nodes, Blocked Accounts (4), Support Concierge, and live node indicator (`Wishful P2P Settlement Engine v2.4 • Direct VPA Node`).
+10. **Mobile Bottom Navigation & Luxury Footer**: Fixed 5-tab app bar on mobile (`Dashboard`, `The Vault`, `Studio`, `Messages`, `Settings`), and clean desktop footer.
+

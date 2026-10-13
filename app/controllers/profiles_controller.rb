@@ -55,18 +55,18 @@ class ProfilesController < ApplicationController
     # 3. Vault: exclusive paywalled drops, uncut sets, Close Friends / VIP tiers
     # 4. Wishlist: fan gifting lists
     # 5. About: creator bio, reach, booking time slots & direct contact ("Sell your time and reach")
-    vault_count = @paid_media_posts.size + @subscription_plans.size
     @sections = [
-      { id: "posts",           label: "Posts",           icon: "post" },
-      { id: "vault",           label: "Vault",           icon: "vault", badge: (vault_count > 0 ? "VIP" : nil) },
-      { id: "recommendations", label: "Recommendations", icon: "shop" },
-      { id: "wishlist",        label: "Wishlist",        icon: "gift" },
+      { id: "vault",           label: "The Vault",       icon: "vault", badge: (@paid_media_posts.size > 0 ? @paid_media_posts.size : nil) },
+      { id: "recommendations", label: "Curated Fits",    icon: "shop",  badge: (@all_links.size > 0 ? @all_links.size : nil) },
+      { id: "wishlist",        label: "Spoil Me Wishlist", icon: "gift", badge: (@wishlists.sum { |w| w.wishlist_items.size } > 0 ? @wishlists.sum { |w| w.wishlist_items.size } : nil) },
       { id: "about",           label: "About",           icon: "about" }
     ]
+    @sections << { id: "posts", label: "Feed", icon: "post", badge: (@creator_posts.size > 0 ? @creator_posts.size : nil) } if @creator_posts.any?
 
     tab_aliases = {
       "feed"        => "posts",
       "shop"        => "recommendations",
+      "fits"        => "recommendations",
       "collections" => "vault",
       "unlock"      => "vault",
       "media"       => "vault",
@@ -90,16 +90,14 @@ class ProfilesController < ApplicationController
     elsif @query.present?
       @active_tab = "recommendations"
     else
-      # Default to the first tab that has content, so creators with only recommendations
-      # or only posts land immediately on their content
       has_content = {
-        "posts"           => @creator_posts.any?,
-        "recommendations" => @all_links.any?,
         "vault"           => @paid_media_posts.any? || @paid_media_collections.any? || @subscription_plans.any?,
+        "recommendations" => @all_links.any?,
         "wishlist"        => @wishlists.any? { |w| w.wishlist_items.any? },
+        "posts"           => @creator_posts.any?,
         "about"           => true
       }
-      @active_tab = valid_ids.find { |id| has_content[id] } || "recommendations"
+      @active_tab = valid_ids.find { |id| has_content[id] } || "vault"
     end
     @social_links = [
       [ "Instagram", @user.instagram_handle, "https://instagram.com/" ],
