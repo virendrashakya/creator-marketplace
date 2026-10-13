@@ -290,6 +290,34 @@
   border-bottom-color: var(--p-accent);
 }
 
+.pf-tab-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 92, 138, 0.16);
+  color: var(--p-accent);
+  border: 1px solid rgba(255, 92, 138, 0.35);
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+.pf-tab.is-on .pf-tab-badge {
+  background: var(--p-accent);
+  color: #fff;
+  border-color: var(--p-accent);
+  box-shadow: 0 0 8px rgba(255, 92, 138, 0.4);
+}
+
+.badge--spicy {
+  background: linear-gradient(135deg, rgba(233, 30, 99, 0.2) 0%, rgba(255, 92, 138, 0.1) 100%);
+  color: var(--p-accent);
+  border: 1px solid rgba(255, 92, 138, 0.35);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  box-shadow: 0 2px 8px rgba(255, 92, 138, 0.15);
+}
+
 .pf-tab-icon { display: block; width: 18px; height: 18px; flex: none; }
 .pf-tab-icon svg { display: block; width: 100%; height: 100%; }
 
@@ -454,6 +482,16 @@
   background: repeating-linear-gradient(135deg, #EDEEEA 0 10px, #E3E4DF 10px 20px);
 }
 .media-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.media-shield {
+  position: absolute; inset: 0; z-index: 3;
+  background: transparent;
+  pointer-events: auto;
+  user-select: none; -webkit-user-select: none;
+}
+.media-protected-img {
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  pointer-events: none;
+}
 .media-lock {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
@@ -465,7 +503,34 @@
 /* Easing the blur down on hover shows there is a real photo under there,
    without showing enough of it to make paying pointless. */
 @media (hover: hover) and (pointer: fine) {
-  .media-card:hover .media-lock { backdrop-filter: blur(7px); background: rgba(20,22,26,.3); }
+.media-card--teaser {
+  transition: transform var(--t-quick) var(--ease-out), box-shadow var(--t-quick) var(--ease-out);
+}
+.media-card--teaser:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+}
+.media-blur-img {
+  filter: blur(6px);
+  transform: scale(1.05);
+  transition: transform var(--t-panel) var(--ease-out), filter var(--t-panel) var(--ease-out);
+}
+.media-card--teaser:hover .media-blur-img {
+  filter: blur(4px);
+  transform: scale(1.08);
+}
+.media-lock--frosted {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: rgba(12, 13, 16, 0.48);
+}
+.media-lock-pill--glow {
+  background: var(--p-accent, #E91E63);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 16px rgba(233, 30, 99, 0.5);
+  padding: 6px 12px;
 }
 .media-lock-pill {
   display: inline-flex; align-items: center; gap: 6px;
@@ -487,6 +552,33 @@
   font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px;
   box-shadow: 0 2px 8px rgba(20,22,26,.3);
   animation: wf-unlock 420ms var(--ease-out) both;
+}
+.btn-share-teaser {
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--p-line);
+  color: var(--p-sub);
+  background: var(--p-card);
+  cursor: pointer;
+  transition: all var(--t-quick) var(--ease-out);
+}
+.btn-share-teaser:hover {
+  color: var(--p-ink);
+  border-color: var(--p-ink);
+  background: var(--bg);
+}
+.share-popover-item {
+  transition: background var(--t-quick) var(--ease-out), color var(--t-quick) var(--ease-out);
+}
+.share-popover-item:hover {
+  background: rgba(255, 92, 138, 0.1) !important;
+  color: var(--p-accent) !important;
 }
 @keyframes wf-unlock {
   from { opacity: 0; transform: scale(.9) translateY(-4px) }

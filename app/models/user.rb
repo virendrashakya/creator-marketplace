@@ -70,11 +70,11 @@ class User < ApplicationRecord
   # one who wants their own voice can have it. The view asks the model rather
   # than hardcoding, which is what stops these drifting apart.
   SECTION_DEFAULTS = {
-    posts_heading:  "Lately",
-    media_heading:  "Behind the haul",
-    links_heading:  "Things I recommend",
-    meet_heading:   "Book me",
-    reveal_heading: "Reach me directly",
+    posts_heading:  "Feed & Updates",
+    media_heading:  "The Vault: Exclusive Drops",
+    links_heading:  "Curated Favs & Fits",
+    meet_heading:   "1:1 Video Calls & Sessions",
+    reveal_heading: "Private VIP Channels & Direct Access",
     links_note:     "These are referral links. If you buy, the store pays a " \
                     "small cut at no extra cost to you."
   }.freeze
@@ -95,9 +95,19 @@ class User < ApplicationRecord
 
   before_validation :normalize_handle
 
+  RESERVED_HANDLES = %w[
+    admin administrator support official wishful help security api assets
+    dashboard creator_settings schedule lives conversations messages
+    sign_in sign_up sign_out up rails cable pay root terms privacy
+    about contact helpdesk billing checkout verified team
+  ].freeze
+
   validates :name, presence: true
   validates :email, presence: true, uniqueness: { case_sensitive: false }, format: { with: URI::MailTo::EMAIL_REGEXP }
-  validates :handle, presence: true, uniqueness: { case_sensitive: false }, format: { with: /\A[a-z0-9_]+\z/, message: "can use lowercase letters, numbers, and underscores" }, length: { maximum: 30 }
+  validates :handle, presence: true, uniqueness: { case_sensitive: false },
+                     format: { with: /\A[a-z0-9_]+\z/, message: "can use lowercase letters, numbers, and underscores" },
+                     exclusion: { in: RESERVED_HANDLES, message: "is reserved by the platform" },
+                     length: { minimum: 2, maximum: 30 }
   validates :theme, inclusion: { in: THEMES }
   validates :profile_layout, inclusion: { in: LAYOUTS }
   validates :account_type, inclusion: { in: %w[creator personal business] }

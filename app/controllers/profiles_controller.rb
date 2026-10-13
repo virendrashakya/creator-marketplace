@@ -5,7 +5,8 @@ class ProfilesController < ApplicationController
   FILTER_THRESHOLD = 12
 
   def show
-    @user = User.find_by!(handle: params[:handle])
+    handle = params[:handle].to_s.delete_prefix("@")
+    @user = User.find_by!(handle: handle)
     return head :not_found if @user.blocks?(current_user)
 
     @collections = @user.link_collections.includes(:product_links)
@@ -45,29 +46,61 @@ class ProfilesController < ApplicationController
     # Tab labels stay short and generic even when a creator renames a section:
     # "Behind the haul" is a good heading and a terrible tab. The heading is
     # theirs, the tab label is ours, and they are allowed to differ.
+    @paid_media_collections = @user.paid_media_collections.published.order(created_at: :desc)
+    @subscription_plans = @user.subscription_plans.where(active: true).order(:price_cents)
+
+    # Five dedicated tabs on the creator/fan page:
+    # 1. Posts: all updates and feed
+    # 2. Recommendations: recommended products and referral links
+    # 3. Vault: exclusive paywalled drops, uncut sets, Close Friends / VIP tiers
+    # 4. Wishlist: fan gifting lists
+    # 5. About: creator bio, reach, booking time slots & direct contact ("Sell your time and reach")
+    vault_count = @paid_media_posts.size + @subscription_plans.size
     @sections = [
-      ({ id: "posts",   label: "Posts",   icon: "post"   } if @creator_posts.any?),
-      ({ id: "unlock",  label: "Unlock",  icon: "lock"   } if @paid_media_posts.any?),
-      ({ id: "shop",    label: "Shop",    icon: "shop"   } if @all_links.any?),
-      ({ id: "time",    label: "Book",    icon: "clock"  } if @meet_offers.any? || @contact_reveals.any?),
-      ({ id: "gifts",   label: "Gifts",   icon: "gift"   } if @wishlists.any? { |w| w.wishlist_items.any? })
-    ].compact
+      { id: "posts",           label: "Posts",           icon: "post" },
+      { id: "vault",           label: "Vault",           icon: "vault", badge: (vault_count > 0 ? "VIP" : nil) },
+      { id: "recommendations", label: "Recommendations", icon: "shop" },
+      { id: "wishlist",        label: "Wishlist",        icon: "gift" },
+      { id: "about",           label: "About",           icon: "about" }
+    ]
 
-    # One section at a time. Anchor links only moved the reader around a page
-    # that was already too long; with 13 recommendations plus posts, media,
-    # slots and gifts the scroll was the problem, not the navigation.
-    #
-    # ?tab= is a real URL so a creator can put /@handle?tab=shop straight in a
-    # story, and back/forward and refresh all behave. An unknown or missing
-    # value falls back to the first section that has content rather than
-    # 404ing: a stale shared link should still land somewhere useful.
-    ids = @sections.map { |s| s[:id] }
-    requested = params[:tab].to_s
-    @active_tab = ids.include?(requested) ? requested : ids.first
+    tab_aliases = {
+      "feed"        => "posts",
+      "shop"        => "recommendations",
+      "collections" => "vault",
+      "unlock"      => "vault",
+      "media"       => "vault",
+      "exclusives"  => "vault",
+      "gifts"       => "wishlist",
+      "time"        => "about"
+    }
 
-    # A search only makes sense inside the shop, and arriving with ?q= should
-    # take you there rather than showing a result count on the posts tab.
-    @active_tab = "shop" if @query.present? && ids.include?("shop")
+    requested = params[:tab].to_s.downcase
+    requested = tab_aliases[requested] || requested
+
+    valid_ids = @sections.map { |s| s[:id] }
+
+    @shared_drop = @paid_media_posts.find_by(id: params[:drop]) if params[:drop].present?
+    @referring_user = User.find_by(handle: params[:ref].to_s.downcase.strip) if params[:ref].present?
+
+    if @shared_drop.present?
+      @active_tab = "vault"
+    elsif valid_ids.include?(requested)
+      @active_tab = requested
+    elsif @query.present?
+      @active_tab = "recommendations"
+    else
+      # Default to the first tab that has content, so creators with only recommendations
+      # or only posts land immediately on their content
+      has_content = {
+        "posts"           => @creator_posts.any?,
+        "recommendations" => @all_links.any?,
+        "vault"           => @paid_media_posts.any? || @paid_media_collections.any? || @subscription_plans.any?,
+        "wishlist"        => @wishlists.any? { |w| w.wishlist_items.any? },
+        "about"           => true
+      }
+      @active_tab = valid_ids.find { |id| has_content[id] } || "recommendations"
+    end
     @social_links = [
       [ "Instagram", @user.instagram_handle, "https://instagram.com/" ],
       [ "YouTube", @user.youtube_handle, "https://youtube.com/@" ],

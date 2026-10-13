@@ -24,15 +24,16 @@
 <section class="hero">
   <div class="hero-copy">
     <p class="hero-kicker">For Indian creators</p>
-    <h1>Your links earn clicks.<br><span class="hero-em">Your photos earn money.</span></h1>
+    <h1>Your posts earn likes.<br><span class="hero-em">Your Vault earns money.</span></h1>
     <p class="hero-lede">
-      Put your recommendations and the things only you can sell on one page.
-      Fans pay over UPI, into your own bank account, and you keep every rupee.
+      Lock exclusive drops, private sets, Close Friends VIP passes, and direct channels behind manual UPI verification.
+      Fans pay straight into your bank account. You keep 100% of every rupee.
     </p>
     <div class="hero-actions">
       <%= link_to "Claim your handle", sign_up_path, class: "btn btn--accent btn--big" %>
-      <% if (sample = @creators.find { |c| c.product_links.any? } || @creators.first) %>
-        <%= link_to "See a real page", profile_path(sample.handle), class: "btn btn--ghost btn--big" %>
+      <% sample = @creators.find { |c| c.handle == "ananyarao" } || @creators.find { |c| c.paid_media_posts.any? } || @creators.first %>
+      <% if sample.present? %>
+        <%= link_to "See demo page (@#{sample.handle})", profile_path(sample.handle), class: "btn btn--ghost btn--big" %>
       <% end %>
     </div>
     <div class="hero-upi">
@@ -70,7 +71,7 @@
               <span class="phone-chip phone-chip--open">Unlocked</span>
             </div>
             <div class="min0">
-              <div class="phone-sell-title">The full Goa set, 48 photos</div>
+              <div class="phone-sell-title">Golden Hour in Goa (Uncensored 4K Set)</div>
               <div class="phone-sell-price">
                 <span class="phone-price-ask">&#8377;499 to unlock</span>
                 <span class="phone-price-paid">Paid &middot; yours now</span>
@@ -78,27 +79,27 @@
             </div>
           </div>
 
-          <div class="phone-divider"><span>and things I actually use</span></div>
+          <div class="phone-divider"><span>Exclusive drops &amp; VIP passes</span></div>
 
           <div class="phone-link">
-            <span class="phone-thumb"><%= marketing_image :rec_denim %></span>
+            <span class="phone-thumb" style="display: flex; align-items: center; justify-content: center; font-size: 16px; background: rgba(233,30,99,0.12); border-radius: 8px;">⭐</span>
             <span class="min0">
-              <span class="phone-link-title truncate">Levi's 501, thrifted</span>
-              <span class="phone-link-meta" translate="no">&#8377;2,499 &middot; Myntra</span>
+              <span class="phone-link-title truncate">Close Friends VIP Pass</span>
+              <span class="phone-link-meta" translate="no">&#8377;499/mo &middot; All drops</span>
             </span>
           </div>
           <div class="phone-link">
-            <span class="phone-thumb"><%= marketing_image :rec_serum %></span>
+            <span class="phone-thumb" style="display: flex; align-items: center; justify-content: center; font-size: 16px; background: rgba(16,185,129,0.12); border-radius: 8px;">💬</span>
             <span class="min0">
-              <span class="phone-link-title truncate">The sunscreen, finally</span>
-              <span class="phone-link-meta" translate="no">&#8377;649 &middot; Nykaa</span>
+              <span class="phone-link-title truncate">Private Close Friends WhatsApp</span>
+              <span class="phone-link-meta" translate="no">&#8377;999 &middot; Direct DMs</span>
             </span>
           </div>
           <div class="phone-link">
-            <span class="phone-thumb"><%= marketing_image :rec_camera %></span>
+            <span class="phone-thumb" style="display: flex; align-items: center; justify-content: center; font-size: 16px; background: rgba(255,180,0,0.12); border-radius: 8px;">✨</span>
             <span class="min0">
-              <span class="phone-link-title truncate">The camera I actually use</span>
-              <span class="phone-link-meta" translate="no">&#8377;41,999 &middot; Amazon</span>
+              <span class="phone-link-title truncate">Spoil Me: Agent Provocateur Silk Robe</span>
+              <span class="phone-link-meta" translate="no">&#8377;18,500 &middot; Wishlist</span>
             </span>
           </div>
         </div>
@@ -134,32 +135,89 @@
     <div class="paths-grid">
       <article class="path" data-reveal>
         <p class="path-step">Start here</p>
-        <h3 class="path-name">Link what you already post about</h3>
+        <h3 class="path-name">Curate your shoot looks & styles</h3>
         <p class="path-body">
-          Every haul, every "where is it from", every reply in your DMs becomes
-          a card on your page with your reason attached. You see which ones
-          your audience actually taps.
+          Your favorite swimwear, lingerie, outfits, and glam routines. When fans ask
+          "where did you get that?", send them to your page with verified store links.
         </p>
         <ul class="path-list">
-          <li>Group links into collections</li>
-          <li>Click counts on every item</li>
-          <li>Your reason, not a product description</li>
+          <li>Group looks into themed collections</li>
+          <li>Click counts on every piece</li>
+          <li>Your personal styling note, not generic product ads</li>
         </ul>
       </article>
 
       <article class="path path--lead" data-reveal data-reveal-delay="90">
         <p class="path-step">Then get paid</p>
-        <h3 class="path-name">Sell the thing nobody else has</h3>
+        <h3 class="path-name">Sell what your audience actually wants</h3>
         <p class="path-body">
-          The outtakes, the full set, the preset, forty minutes of your time,
-          your number. Put it behind a price. A fan pays you on UPI and you
-          approve it yourself.
+          The Vault drops, the full uncensored set, Close Friends passes, your
+          private Telegram channel, and direct 1:1 calls. Put it behind a price.
+          A fan pays you on UPI and you approve it yourself.
         </p>
         <ul class="path-list">
-          <li>Photos and video behind a one time unlock</li>
-          <li>Paid meetups with real time slots</li>
-          <li>Gift wishlists your audience funds</li>
-          <li>Pay to reach you directly</li>
+          <li>The Vault: Exclusive photo & 4K video sets</li>
+          <li>Close Friends / VIP monthly subscription pass</li>
+          <li>Private Telegram & WhatsApp VIP channel reveals</li>
+          <li>Spoil Me wishlists & 1:1 video call slots</li>
+          <li>PPV pay-to-unlock media inside 1:1 Direct Messages</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="security-features" style="padding: 70px 24px; background: rgba(255,92,138,0.03); border-top: 1px solid var(--p-line); border-bottom: 1px solid var(--p-line);">
+  <div style="max-width: 1040px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 44px;" data-reveal>
+      <span class="badge" style="background: rgba(255,92,138,0.12); color: var(--p-accent); border: 1px solid rgba(255,92,138,0.3); padding: 4px 12px; font-weight: 700; text-transform: uppercase; font-size: 11px;">
+        🛡️ Built-in Content Shield & Viral Sharing
+      </span>
+      <h2 style="font-family: var(--display); font-size: clamp(26px, 3.5vw, 36px); margin: 12px 0 8px; color: var(--p-ink); letter-spacing: -0.02em;">
+        Turn group-chat sharing into viral sales, not leaks.
+      </h2>
+      <p style="color: var(--p-sub); max-width: 660px; margin: 0 auto; font-size: 15px; line-height: 1.5;">
+        People love sharing spicy drops on WhatsApp, Telegram, and Instagram. Wishful gives your fans official tracked teaser cards that lead their friends straight back to your UPI checkout.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+      <article class="path" data-reveal style="background: var(--p-card); border: 1px solid var(--p-line); border-radius: var(--r-xl); padding: 24px; box-shadow: var(--p-raised);">
+        <div style="font-size: 26px; margin-bottom: 12px;">💬</div>
+        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--p-ink);">Controlled Viral Sharing</h3>
+        <p style="font-size: 13px; color: var(--p-sub); line-height: 1.5; margin-bottom: 14px;">
+          One-click sharing to WhatsApp and Telegram with rich OpenGraph unfurling. Friends see your frosted teaser and a direct link to unlock.
+        </p>
+        <ul class="path-list" style="font-size: 12px;">
+          <li>Automated WhatsApp & Telegram link previews</li>
+          <li>Ref-tracked links to reward loyal fans</li>
+          <li>Never leaks the raw unblurred file</li>
+        </ul>
+      </article>
+
+      <article class="path" data-reveal data-reveal-delay="70" style="background: var(--p-card); border: 1px solid var(--p-line); border-radius: var(--r-xl); padding: 24px; box-shadow: var(--p-raised);">
+        <div style="font-size: 26px; margin-bottom: 12px;">🔒</div>
+        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--p-ink);">Server-Side Frosted Previews</h3>
+        <p style="font-size: 13px; color: var(--p-sub); line-height: 1.5; margin-bottom: 14px;">
+          We never deliver raw unblurred images over the wire. The backend physically strips high-frequency facial details and blurs pixels before serving.
+        </p>
+        <ul class="path-list" style="font-size: 12px;">
+          <li>Zero theft via browser DevTools or inspect element</li>
+          <li>Transparent shield overlays block right-click saves</li>
+          <li>Genuinely frosted, high-speed cached previews</li>
+        </ul>
+      </article>
+
+      <article class="path" data-reveal data-reveal-delay="140" style="background: var(--p-card); border: 1px solid var(--p-line); border-radius: var(--r-xl); padding: 24px; box-shadow: var(--p-raised);">
+        <div style="font-size: 26px; margin-bottom: 12px;">🎯</div>
+        <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--p-ink);">Forensic Buyer Watermarking</h3>
+        <p style="font-size: 13px; color: var(--p-sub); line-height: 1.5; margin-bottom: 14px;">
+          When an approved fan unlocks your set, their unique @handle and ID are dynamically stamped into the image pixels and EXIF metadata.
+        </p>
+        <ul class="path-list" style="font-size: 12px;">
+          <li>Dual-layer visible & forensic attribution</li>
+          <li>Leakers lose all deniability on Reddit or Telegram</li>
+          <li>Creators always retain pristine originals</li>
         </ul>
       </article>
     </div>

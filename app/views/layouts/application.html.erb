@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title><%= content_for(:title).presence || "Wishful: things worth vouching for" %></title>
+    <title><%= content_for(:title).presence || "Wishful: Exclusive Vault Drops & Direct UPI Creator Monetization" %></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-    <meta name="description" content="<%= content_for(:description).presence || "Wishful gives Indian creators one page for everything they recommend, and a direct UPI way to be paid for it." %>">
+    <meta name="description" content="<%= content_for(:description).presence || "Wishful gives Indian glamour and lifestyle creators direct UPI monetization for exclusive photo & 4K video sets, Close Friends VIP passes, and private contact channels with forensic leak protection." %>">
     <meta name="theme-color" content="#E9EAE5">
     <%= csrf_meta_tags %>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/favicon.svg">
     <meta property="og:site_name" content="Wishful">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="<%= content_for(:title).presence || "Wishful: things worth vouching for" %>">
-    <meta property="og:description" content="<%= content_for(:description).presence || "Wishful gives Indian creators one page for everything they recommend, and a direct UPI way to be paid for it." %>">
+    <meta property="og:title" content="<%= content_for(:title).presence || "Wishful: Exclusive Vault Drops & Direct UPI Creator Monetization" %>">
+    <meta property="og:description" content="<%= content_for(:description).presence || "Wishful gives Indian glamour and lifestyle creators direct UPI monetization for exclusive photo & 4K video sets, Close Friends VIP passes, and private contact channels with forensic leak protection." %>">
+    <% if content_for?(:og_image) %>
+      <meta property="og:image" content="<%= content_for(:og_image) %>">
+      <meta name="twitter:image" content="<%= content_for(:og_image) %>">
+      <meta property="og:image:width" content="480">
+      <meta property="og:image:height" content="380">
+    <% end %>
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,6 +35,7 @@
       latter only once per full load.
     %>
     <script type="module" src="/assets/js/turbo.min.js" data-turbo-track="reload"></script>
+    <script src="/assets/js/share.js" data-turbo-track="reload" defer></script>
     <%= yield :head %>
   </head>
   <%#

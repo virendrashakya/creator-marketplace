@@ -34,6 +34,9 @@ class ContactRevealsController < ApplicationController
   # production; access must be granted by the webhook, not here.
   def purchase
     reveal = ContactReveal.published.find(params[:id])
+    unless Rails.env.development? || Rails.env.test?
+      return redirect_to new_payment_claim_path("ContactReveal", reveal.id), alert: "Please submit UPI payment claim to reveal contact info."
+    end
     return redirect_to(profile_path(reveal.user.handle), alert: "You cannot purchase your own contact.") if reveal.user == current_user
     return if deny_if_blocked_by(reveal.user)
 

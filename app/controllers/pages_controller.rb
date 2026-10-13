@@ -1,5 +1,7 @@
 class PagesController < ApplicationController
   def home
-    @creators = User.includes(:product_links).order(created_at: :desc).limit(3)
+    flagship = User.find_by(handle: "ananyarao")
+    others = User.where(account_type: "creator").where.not(handle: "ananyarao").includes(:product_links, :paid_media_posts).limit(5)
+    @creators = [flagship, *others].compact
   end
 end

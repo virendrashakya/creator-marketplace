@@ -21,9 +21,12 @@ IMG = Rails.root.join("public/assets/img")
 # same pictures the marketing page does. Swap for your own CDN when you have
 # one.
 REMOTE_IMAGES = {
-  "rec-denim.jpg"  => "https://images.unsplash.com/photo-1542272604-787c3835535d?w=240&q=72&auto=format&fit=crop",
-  "rec-serum.jpg"  => "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=240&q=72&auto=format&fit=crop",
-  "rec-camera.jpg" => "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&q=72&auto=format&fit=crop"
+  "rec-denim.jpg"       => "https://images.unsplash.com/photo-1542272604-787c3835535d?w=240&q=72&auto=format&fit=crop",
+  "rec-serum.jpg"       => "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=240&q=72&auto=format&fit=crop",
+  "rec-camera.jpg"      => "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&q=72&auto=format&fit=crop",
+  "rec-saree-chiffon"   => "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=75&auto=format&fit=crop",
+  "rec-saree-silk"      => "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400&q=75&auto=format&fit=crop",
+  "rec-jewelry"         => "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&q=75&auto=format&fit=crop"
 }.freeze
 
 def attach_image(record, attachment, filename)
@@ -56,12 +59,13 @@ ananya = upsert_user!(
   "ananya@example.com",
   name: "Ananya Rao",
   handle: "ananyarao",
-  bio: "Thrift finds, the three products I actually repurchase, and whatever " \
-       "I am wearing to the airport. Mumbai. Replies to everyone eventually.",
+  bio: "32 | Mumbai. Saree draper, editorial model & GRWM reels creator. " \
+       "Celebrating heritage handloom silks, bold modern cuts & effortless drapes. " \
+       "Exclusive 4K lookbooks, blouse design guides & uncut fitting BTS in the Vault. ✨",
   pronouns: "she/her",
   location: "Mumbai, India",
   creator_category: "Fashion",
-  creator_subcategory: "Thrift and second-hand",
+  creator_subcategory: "Saree Drapes & GRWM",
   theme: "minimal",
   profile_layout: "editorial",
   account_type: "creator",
@@ -75,7 +79,11 @@ ananya = upsert_user!(
   upi_id: "ananyarao@okaxis",
   upi_payee_name: "Ananya Rao",
   accepts_upi_manual: true,
-  date_of_birth: Date.new(1998, 4, 12)
+  date_of_birth: Date.new(1994, 7, 18),
+  links_heading: "My Saree Wardrobe & Go-To Fits",
+  media_heading: "The Vault: 4K Saree Lookbooks & BTS",
+  meet_heading: "1:1 Drape Masterclass & Styling",
+  reveal_heading: "VIP Close Friends (Direct Access)"
 )
 attach_image(ananya, :profile_picture, "creator-portrait.jpg")
 attach_image(ananya, :banner, "creator-saree.jpg")
@@ -85,39 +93,37 @@ attach_image(ananya, :banner, "creator-saree.jpg")
 # the reason, so a recommendation without one renders as a bare product name.
 
 collections = {
-  "The thrift haul" => [
-    [ "Levi's 501, 1990s", "Myntra", "₹2,499", "rec-denim.jpg",
-      "Found these in a Bandra bin for less than a cab fare. The fade is real, not sanded on at a factory.", true ],
-    [ "Oversized denim jacket", "Myntra", "₹1,899", nil,
-      "Men's large, worn as a dress in October. It is the only jacket that survives Bombay weather." ],
-    [ "Silk scarf, unbranded", "Myntra", "₹450", nil,
-      "Four rupees short of nothing and I have used it as a bag strap, a hairband and a belt." ]
+  "My Saree Wardrobe & Go-To Drapes" => [
+    [ "Pure Chiffon Saree with Sequin Border", "Swtantra", "₹3,499", "rec-saree-chiffon",
+      "Drapes like liquid glass. The exact piece from my monsoon balcony reel that crossed a million views.", true ],
+    [ "Raw Silk Backless Blouse", "Nykaa Fashion", "₹1,899", nil,
+      "Structured fit, deep cut, and padded so you never have to wrestle with tape or visible straps." ],
+    [ "Saree Shapewear Mermaid Skirt", "Zivame", "₹1,299", nil,
+      "The secret to clean pleats and a structured fall. I will never go back to drawstring cotton petticoats." ]
   ],
-  "Three things I repurchase" => [
-    [ "The sunscreen, finally", "Nykaa", "₹649", "rec-serum.jpg",
-      "Eighth tube. No white cast, does not sting, and it does not slide off by 2pm in this humidity." ],
-    [ "Cleanser that does not strip", "Nykaa", "₹390", nil,
-      "My skin stopped feeling tight after a week. That is the whole review." ],
-    [ "Lip balm, the boring one", "Nykaa", "₹220", nil,
-      "No tint, no shimmer, no scent. Works." ]
+  "GRWM Essentials & Skin Prep" => [
+    [ "Hydrating Dewy Primer Serum", "Nykaa", "₹649", "rec-serum.jpg",
+      "Skin prep before six hours under studio lights. Keeps heavy ethnic makeup from creasing." ],
+    [ "Matte Velvet Lip Stain, Brick Red", "Nykaa", "₹450", nil,
+      "The classic wedding guest red that doesn't bleed onto collarbones or cups." ],
+    [ "Setting Spray that Survives Humidity", "Nykaa", "₹550", nil,
+      "Tested through 35°C outdoor shoots in Bombay. My base did not budge until midnight." ]
   ],
-  "Kit I shoot on" => [
-    [ "The camera I actually use", "Amazon", "₹41,999", "rec-camera.jpg",
-      "Everything on this page was shot on this body. I am not upgrading until it dies." ],
-    [ "Ring light, the small one", "Amazon", "₹1,299", nil,
-      "Fits in a tote. I have shot a whole reel in an auto with this." ],
-    [ "Tripod that folds flat", "Amazon", "₹899", nil,
-      "Cheap, plastic, been dropped four times, still holds." ]
+  "Kit I Shoot 4K Reels On" => [
+    [ "The camera I shoot all 4K reels on", "Amazon", "₹64,999", "rec-camera.jpg",
+      "Crisp 4K 60fps slow-mo drape walks. The sensor captures every thread and texture of silk." ],
+    [ "Studio Ring Light with Phone Mount", "Amazon", "₹2,299", nil,
+      "Soft, diffused golden light for GRWM vanity clips. Eliminates harsh overhead apartment shadows." ],
+    [ "Wireless Lapel Mic for Voiceovers", "Amazon", "₹3,899", nil,
+      "Captures the authentic rustle of silk sarees and crisp audio for drape tutorials." ]
   ],
-  "Home, slowly" => [
-    [ "The softest throw", "Sunday Home", "₹2,499", nil,
-      "Bought it for the sofa, ended up taking it on every flight since." ],
-    [ "Brass diya set", "Sunday Home", "₹1,150", nil,
-      "My mother's approval, which is the only review that matters at Diwali." ],
-    [ "Storage baskets, set of three", "Sunday Home", "₹780", nil,
-      "The reason my desk is visible in any of my videos." ],
-    [ "Cotton bedsheets", "Sunday Home", "₹1,890", nil,
-      "Third summer on these and they have gone softer, not thinner." ]
+  "Statement Jewelry & Accents" => [
+    [ "Handcrafted Silver Kamarbandh", "FabIndia", "₹2,850", "rec-jewelry",
+      "Accentuates the waistline on plain georgette and chiffon drapes instantly." ],
+    [ "Antique Gold Jhumkas with Pearls", "Tribe Amrapali", "₹3,200", nil,
+      "Heavy look without the ear-pulling weight. My most asked-about piece in reel comments." ],
+    [ "Velvet Zardozi Potli Bag", "Nykaa Fashion", "₹1,450", nil,
+      "Fits the phone, lipstick, and keys without bulging. The only wedding clutch you need." ]
   ]
 }
 
@@ -142,13 +148,13 @@ end
 # The differentiator: the creator's own work behind a one-time unlock.
 
 [
-  [ "The full Goa set, 48 photos", "Everything from the December trip, unedited and edited.", 49_900, "creator-saree.jpg" ],
-  [ "How I actually edit a reel", "Screen recording, 14 minutes, no cuts.", 29_900, "creator-portrait.jpg" ]
+  [ "Monsoon Balcony in Chiffon (4K Saree Lookbook, 42 photos)", "The slow-mo rain and sheer drape series from Mumbai. 4K high-res, raw & unedited.", 49_900, "creator-saree.jpg" ],
+  [ "GRWM: Festive Silk Fitting & Blouse BTS (4K Video, 12 mins)", "Uncut try-on footage, pleated drape tutorial, and blouse fitting room clips. Raw audio, no filters.", 79_900, "creator-portrait.jpg" ]
 ].each do |title, caption, price_cents, preview|
   post = ananya.paid_media_posts.find_or_initialize_by(title: title)
   post.assign_attributes(
     caption: caption, price_cents: price_cents, currency: "INR",
-    media_type: "image", published: true
+    media_type: (title.include?("Video") ? "video" : "image"), published: true
   )
   attach_image(post, :media, preview)
   attach_image(post, :preview, preview)
@@ -157,13 +163,12 @@ end
 
 # --- a meetup with real, future slots --------------------------------------
 
-meet = ananya.meet_offers.find_or_initialize_by(title: "Closet audit, in person")
+meet = ananya.meet_offers.find_or_initialize_by(title: "1:1 Saree Drape & Styling Masterclass (30 mins)")
 meet.assign_attributes(
-  description: "Bring everything you do not wear. We go through it together and " \
-               "you leave with a list of what actually works on you.",
-  location: "Bandra West, Mumbai",
-  duration_minutes: 40,
-  price_cents: 120_000,
+  description: "Face-to-face private video call. Master flawless pleating, blouse neckline selection, saree shapewear, or creator posing for 4K reels.",
+  location: "Private Video Call (1:1)",
+  duration_minutes: 30,
+  price_cents: 149_900,
   currency: "INR",
   published: true
 )
@@ -178,9 +183,9 @@ end
 
 # --- contact reveal --------------------------------------------------------
 
-reveal = ananya.contact_reveals.find_or_initialize_by(label: "My WhatsApp, for brand enquiries only")
+reveal = ananya.contact_reveals.find_or_initialize_by(label: "Private Close Friends VIP WhatsApp (Direct DMs & Daily Stories)")
 reveal.assign_attributes(
-  secret_value: "+91 98200 00000", price_cents: 19_900, currency: "INR", published: true
+  secret_value: "+91 98200 44921", price_cents: 99_900, currency: "INR", published: true
 )
 reveal.save!
 
@@ -188,17 +193,17 @@ reveal.save!
 # Deliberately spread across funding states so the progress meter shows
 # empty, partial and funded on one page.
 
-studio = ananya.wishlists.find_or_initialize_by(title: "Studio fund")
+studio = ananya.wishlists.find_or_initialize_by(title: "Spoil Me & Shoot Wardrobe ✨")
 studio.assign_attributes(
-  description: "Saving towards a room I can actually shoot in, instead of my bedroom floor.",
+  description: "Help fund pieces for upcoming festive lookbooks, bespoke blouses and 4K Vault reel productions.",
   published: true
 )
 studio.save!
 
 [
-  [ "35mm lens", 45_000_00, "The one lens I keep borrowing and giving back." ],
-  [ "Proper softbox", 12_000_00, "So I stop shooting everything at 4pm by the window." ],
-  [ "Backdrop stand", 4_500_00, "Cheap, and it would change every flatlay on this page." ]
+  [ "Banarasi Katan Silk Saree in Emerald", 24_500_00, "For the upcoming royal heritage lookbook in Jaipur." ],
+  [ "Dyson Airwrap Multi-Styler", 45_900_00, "For quick voluminous waves between GRWM changes." ],
+  [ "Heritage Temple Jewelry Choker Set", 16_000_00, "Handcrafted antique gold finish for bridal drape shoots." ]
 ].each do |title, target_cents, note|
   item = studio.wishlist_items.find_or_initialize_by(title: title)
   item.assign_attributes(target_cents: target_cents, currency: "INR", note: note)
@@ -207,19 +212,19 @@ end
 
 # --- subscription plan -----------------------------------------------------
 
-plan = ananya.subscription_plans.find_or_initialize_by(name: "The monthly")
+plan = ananya.subscription_plans.find_or_initialize_by(name: "Close Friends All-Access VIP")
 plan.assign_attributes(
-  description: "Everything I post behind a price, plus the edits I do not publish.",
-  price_cents: 29_900, currency: "INR", active: true
+  description: "Automatic unlock for all current & future Vault drops, daily private stories, and priority replies in 1:1 chat.",
+  price_cents: 49_900, currency: "INR", active: true
 )
 plan.save!
 
 # --- posts -----------------------------------------------------------------
 
 [
-  "Shot the whole summer set today and I am never shooting in May again. Editing tonight, up tomorrow.",
-  "Someone asked for the sunscreen link for the ninth time this week so it is pinned at the top now.",
-  "Thrift run on Sunday. If you want me to look for something specific, reply here and I will keep an eye out."
+  "Just wrapped the golden hour chiffon saree shoot on the terrace! Editing the 4K slow-mo reel set now — drops in the Vault tonight! 🔥",
+  "GRWM poll: Pairing this royal blue organza saree with a halter blouse or high-neck brocade for tonight's event? Let me know in comments! 💫",
+  "Uploaded the uncut 12-minute drape & blouse fitting video for Close Friends VIP members. Check your Vault access! 💖"
 ].each_with_index do |body, i|
   post = ananya.creator_posts.find_or_initialize_by(body: body)
   post.published = true
@@ -365,8 +370,8 @@ contribute!(softbox, fans[2], 12_000_00, "Go shoot something good")
 # the amount due, and that state is invisible without a mismatched claim.
 # ---------------------------------------------------------------------------
 
-goa   = ananya.paid_media_posts.find_by(title: "The full Goa set, 48 photos")
-edit  = ananya.paid_media_posts.find_by(title: "How I actually edit a reel")
+goa   = ananya.paid_media_posts.find_by(title: "Monsoon Balcony in Chiffon (4K Saree Lookbook, 42 photos)") || ananya.paid_media_posts.first
+edit  = ananya.paid_media_posts.find_by(title: "GRWM: Festive Silk Fitting & Blouse BTS (4K Video, 12 mins)") || ananya.paid_media_posts.last
 slot  = meet.meet_slots.order(:starts_at).first
 
 def claim!(creator:, claimant:, purchasable:, amount_cents:, utr:, status: "pending",
@@ -455,160 +460,144 @@ puts "Done. Sign in as ananya@example.com / #{PASSWORD}"
 # Everything a creator sees on their page comes from these records, including
 # the section headings, which used to be hardcoded in the view. A few below
 # set their own so the editable-heading path is exercised by real data rather
-# than only by an empty settings form.
 # ---------------------------------------------------------------------------
 CREATOR_ROSTER = [
-  { name: "Aanya Agarwal", handle: "aanyaagarwal", email: "aanyaagarwal@example.com", city: "Mumbai", category: "Fashion", subcategory: "Thrift and second-hand",
-    theme: "minimal", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "Thrift finds, what actually fits, and the tailor who saves everything.", image: "c1.jpg" },
-  { name: "Aditi Bhat", handle: "aditibhat", email: "aditibhat@example.com", city: "Delhi", category: "Beauty", subcategory: "Makeup",
-    theme: "luxury", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "Only the products I finished the bottle of. Oily skin, Indian weather.", image: "c2.jpg" },
-  { name: "Ahana Chandra", handle: "ahanachandra", email: "ahanachandra@example.com", city: "Bengaluru", category: "Fitness", subcategory: "Running",
-    theme: "adventure", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "Strength training in a 1BHK. Form over weight, always.", image: "c3.jpg" },
-  { name: "Amrita Desai", handle: "amritadesai", email: "amritadesai@example.com", city: "Chennai", category: "Travel", subcategory: "Food trails",
-    theme: "after_dark", layout: "classic", pronouns: "she/they", bank: "okicici", bio: "Cheap routes, real budgets, and where to eat near the bus stand.", image: "c4.jpg" },
-  { name: "Ananya Fernandes", handle: "ananyafernandes", email: "ananyafernandes@example.com", city: "Hyderabad", category: "Food", subcategory: "Home cooking",
-    theme: "minimal", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "Recipes from my grandmother, written down before I forget them.", image: "c5.jpg" },
-  { name: "Anika Gupta", handle: "anikagupta", email: "anikagupta@example.com", city: "Pune", category: "Lifestyle", subcategory: "Organisation",
-    theme: "luxury", layout: "gallery", pronouns: "she/her", bank: "paytm", bio: "Small flat, fewer things, better mornings.", image: "c6.jpg" },
-  { name: "Anjali Hegde", handle: "anjalihegde", email: "anjalihegde@example.com", city: "Kolkata", category: "Art & design", subcategory: "Textile",
-    theme: "adventure", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "Everything here is made by hand. Slowly.", image: "c7.jpg" },
-  { name: "Avni Iyer", handle: "avniiyer", email: "avniiyer@example.com", city: "Ahmedabad", category: "Music", subcategory: "Indie",
-    theme: "after_dark", layout: "editorial", pronouns: "she/they", bank: "oksbi", bio: "Covers, riyaaz notes, and the mic I finally saved up for.", image: "c8.jpg" },
-  { name: "Bhavya Joshi", handle: "bhavyajoshi", email: "bhavyajoshi@example.com", city: "Jaipur", category: "Gaming", subcategory: "Reviews",
-    theme: "minimal", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "Mobile first, because that is what most of us actually own.", image: "c9.jpg" },
-  { name: "Charvi Kapoor", handle: "charvikapoor", email: "charvikapoor@example.com", city: "Kochi", category: "Fashion", subcategory: "Ethnic wear",
-    theme: "luxury", layout: "classic", pronouns: "she/her", bank: "okicici", bio: "Thrift finds, what actually fits, and the tailor who saves everything.", image: "c10.jpg" },
-  { name: "Deepika Kulkarni", handle: "deepikakulkarni", email: "deepikakulkarni@example.com", city: "Chandigarh", category: "Beauty", subcategory: "Haircare",
-    theme: "adventure", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "Only the products I finished the bottle of. Oily skin, Indian weather.", image: "c11.jpg" },
-  { name: "Divya Lal", handle: "divyalal", email: "divyalal@example.com", city: "Indore", category: "Fitness", subcategory: "Home workouts",
-    theme: "after_dark", layout: "gallery", pronouns: "she/they", bank: "paytm", bio: "Strength training in a 1BHK. Form over weight, always.", image: "c12.jpg" },
-  { name: "Esha Mehta", handle: "eshamehta", email: "eshamehta@example.com", city: "Lucknow", category: "Travel", subcategory: "Budget travel",
-    theme: "minimal", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "Cheap routes, real budgets, and where to eat near the bus stand.", image: "c13.jpg" },
-  { name: "Gauri Nair", handle: "gaurinair", email: "gaurinair@example.com", city: "Goa", category: "Food", subcategory: "Baking",
-    theme: "luxury", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "Recipes from my grandmother, written down before I forget them.", image: "c14.jpg" },
-  { name: "Hansika Oberoi", handle: "hansikaoberoi", email: "hansikaoberoi@example.com", city: "Surat", category: "Lifestyle", subcategory: "Journaling",
-    theme: "adventure", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "Small flat, fewer things, better mornings.", image: "c15.jpg" },
-  { name: "Ira Pillai", handle: "irapillai", email: "irapillai@example.com", city: "Bhopal", category: "Art & design", subcategory: "Photography",
-    theme: "after_dark", layout: "classic", pronouns: "she/they", bank: "okicici", bio: "Everything here is made by hand. Slowly.", image: "c16.jpg" },
-  { name: "Ishita Qureshi", handle: "ishitaqureshi", email: "ishitaqureshi@example.com", city: "Nagpur", category: "Music", subcategory: "Singing",
-    theme: "minimal", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "Covers, riyaaz notes, and the mic I finally saved up for.", image: "c17.jpg" },
-  { name: "Janvi Rao", handle: "janvirao", email: "janvirao@example.com", city: "Coimbatore", category: "Gaming", subcategory: "Reviews",
-    theme: "luxury", layout: "gallery", pronouns: "she/her", bank: "paytm", bio: "Mobile first, because that is what most of us actually own.", image: "c18.jpg" },
-  { name: "Kavya Reddy", handle: "kavyareddy", email: "kavyareddy@example.com", city: "Guwahati", category: "Fashion", subcategory: "Streetwear",
-    theme: "adventure", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "Thrift finds, what actually fits, and the tailor who saves everything.", image: "c19.jpg" },
-  { name: "Keerthi Sharma", handle: "keerthisharma", email: "keerthisharma@example.com", city: "Dehradun", category: "Beauty", subcategory: "Fragrance",
-    theme: "after_dark", layout: "editorial", pronouns: "she/they", bank: "oksbi", bio: "Only the products I finished the bottle of. Oily skin, Indian weather.", image: "c20.jpg" },
-  { name: "Lavanya Shetty", handle: "lavanyashetty", email: "lavanyashetty@example.com", city: "Mumbai", category: "Fitness", subcategory: "Strength",
-    theme: "minimal", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "Strength training in a 1BHK. Form over weight, always.", image: "c21.jpg" },
-  { name: "Maithili Singh", handle: "maithilisingh", email: "maithilisingh@example.com", city: "Delhi", category: "Travel", subcategory: "Solo travel",
-    theme: "luxury", layout: "classic", pronouns: "she/her", bank: "okicici", bio: "Cheap routes, real budgets, and where to eat near the bus stand.", image: "c22.jpg" },
-  { name: "Meera Tandon", handle: "meeratandon", email: "meeratandon@example.com", city: "Bengaluru", category: "Food", subcategory: "Regional food",
-    theme: "adventure", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "Recipes from my grandmother, written down before I forget them.", image: "c23.jpg" },
-  { name: "Mitali Verma", handle: "mitaliverma", email: "mitaliverma@example.com", city: "Chennai", category: "Lifestyle", subcategory: "Plants",
-    theme: "after_dark", layout: "gallery", pronouns: "she/they", bank: "paytm", bio: "Small flat, fewer things, better mornings.", image: "c24.jpg" },
-  { name: "Naina Wadhwa", handle: "nainawadhwa", email: "nainawadhwa@example.com", city: "Hyderabad", category: "Art & design", subcategory: "Illustration",
-    theme: "minimal", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "Everything here is made by hand. Slowly.", image: "c25.jpg" },
-  { name: "Navya Bose", handle: "navyabose", email: "navyabose@example.com", city: "Pune", category: "Music", subcategory: "Production",
-    theme: "luxury", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "Covers, riyaaz notes, and the mic I finally saved up for.", image: "c26.jpg" },
-  { name: "Neha Chopra", handle: "nehachopra", email: "nehachopra@example.com", city: "Kolkata", category: "Gaming", subcategory: "Reviews",
-    theme: "adventure", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "Mobile first, because that is what most of us actually own.", image: "c27.jpg" },
-  { name: "Nikita Dutta", handle: "nikitadutta", email: "nikitadutta@example.com", city: "Ahmedabad", category: "Fashion", subcategory: "Sustainable",
-    theme: "after_dark", layout: "classic", pronouns: "she/they", bank: "okicici", bio: "Thrift finds, what actually fits, and the tailor who saves everything.", image: "c28.jpg" },
-  { name: "Oviya Ghosh", handle: "oviyaghosh", email: "oviyaghosh@example.com", city: "Jaipur", category: "Beauty", subcategory: "Skincare",
-    theme: "minimal", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "Only the products I finished the bottle of. Oily skin, Indian weather.", image: "c29.jpg" },
-  { name: "Pallavi Krishnan", handle: "pallavikrishnan", email: "pallavikrishnan@example.com", city: "Kochi", category: "Fitness", subcategory: "Yoga",
-    theme: "luxury", layout: "gallery", pronouns: "she/her", bank: "paytm", bio: "Strength training in a 1BHK. Form over weight, always.", image: "c30.jpg" },
-  { name: "Prisha Menon", handle: "prishamenon", email: "prishamenon@example.com", city: "Chandigarh", category: "Travel", subcategory: "Hill stations",
-    theme: "adventure", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "Cheap routes, real budgets, and where to eat near the bus stand.", image: "c31.jpg" },
-  { name: "Radhika Nayar", handle: "radhikanayar", email: "radhikanayar@example.com", city: "Indore", category: "Food", subcategory: "Street food",
-    theme: "after_dark", layout: "editorial", pronouns: "she/they", bank: "oksbi", bio: "Recipes from my grandmother, written down before I forget them.", image: "c32.jpg" },
-  { name: "Riya Pandit", handle: "riyapandit", email: "riyapandit@example.com", city: "Lucknow", category: "Lifestyle", subcategory: "Slow living",
-    theme: "minimal", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "Small flat, fewer things, better mornings.", image: "c33.jpg" },
-  { name: "Saanvi Raman", handle: "saanviraman", email: "saanviraman@example.com", city: "Goa", category: "Art & design", subcategory: "Ceramics",
-    theme: "luxury", layout: "classic", pronouns: "she/her", bank: "okicici", bio: "Everything here is made by hand. Slowly.", image: "c34.jpg" },
-  { name: "Sanjana Saxena", handle: "sanjanasaxena", email: "sanjanasaxena@example.com", city: "Surat", category: "Music", subcategory: "Classical",
-    theme: "adventure", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "Covers, riyaaz notes, and the mic I finally saved up for.", image: "c35.jpg" },
-  { name: "Sara Thakur", handle: "sarathakur", email: "sarathakur@example.com", city: "Bhopal", category: "Gaming", subcategory: "Reviews",
-    theme: "after_dark", layout: "gallery", pronouns: "she/they", bank: "paytm", bio: "Mobile first, because that is what most of us actually own.", image: "c36.jpg" },
-  { name: "Shreya Varma", handle: "shreyavarma", email: "shreyavarma@example.com", city: "Nagpur", category: "Fashion", subcategory: "Thrift and second-hand",
-    theme: "minimal", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "Thrift finds, what actually fits, and the tailor who saves everything.", image: "c37.jpg" },
-  { name: "Simran Banerjee", handle: "simranbanerjee", email: "simranbanerjee@example.com", city: "Coimbatore", category: "Beauty", subcategory: "Makeup",
-    theme: "luxury", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "Only the products I finished the bottle of. Oily skin, Indian weather.", image: "c38.jpg" },
-  { name: "Sneha Chatterjee", handle: "snehachatterjee", email: "snehachatterjee@example.com", city: "Guwahati", category: "Fitness", subcategory: "Running",
-    theme: "adventure", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "Strength training in a 1BHK. Form over weight, always.", image: "c39.jpg" },
-  { name: "Tanvi Dixit", handle: "tanvidixit", email: "tanvidixit@example.com", city: "Dehradun", category: "Travel", subcategory: "Food trails",
-    theme: "after_dark", layout: "classic", pronouns: "she/they", bank: "okicici", bio: "Cheap routes, real budgets, and where to eat near the bus stand.", image: "c40.jpg" },
-  { name: "Tara Kaur", handle: "tarakaur", email: "tarakaur@example.com", city: "Mumbai", category: "Food", subcategory: "Home cooking",
-    theme: "minimal", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "Recipes from my grandmother, written down before I forget them.", image: "c41.jpg" },
-  { name: "Trisha Malhotra", handle: "trishamalhotra", email: "trishamalhotra@example.com", city: "Delhi", category: "Lifestyle", subcategory: "Organisation",
-    theme: "luxury", layout: "gallery", pronouns: "she/her", bank: "paytm", bio: "Small flat, fewer things, better mornings.", image: "c42.jpg" },
-  { name: "Vaishnavi Narayan", handle: "vaishnavinarayan", email: "vaishnavinarayan@example.com", city: "Bengaluru", category: "Art & design", subcategory: "Textile",
-    theme: "adventure", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "Everything here is made by hand. Slowly.", image: "c43.jpg" },
-  { name: "Vanya Patel", handle: "vanyapatel", email: "vanyapatel@example.com", city: "Chennai", category: "Music", subcategory: "Indie",
-    theme: "after_dark", layout: "editorial", pronouns: "she/they", bank: "oksbi", bio: "Covers, riyaaz notes, and the mic I finally saved up for.", image: "c44.jpg" },
-  { name: "Vedika Rathore", handle: "vedikarathore", email: "vedikarathore@example.com", city: "Hyderabad", category: "Gaming", subcategory: "Reviews",
-    theme: "minimal", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "Mobile first, because that is what most of us actually own.", image: "c45.jpg" },
-  { name: "Yamini Sen", handle: "yaminisen", email: "yaminisen@example.com", city: "Pune", category: "Fashion", subcategory: "Ethnic wear",
-    theme: "luxury", layout: "classic", pronouns: "she/her", bank: "okicici", bio: "Thrift finds, what actually fits, and the tailor who saves everything.", image: "c46.jpg" },
-  { name: "Zara Trivedi", handle: "zaratrivedi", email: "zaratrivedi@example.com", city: "Kolkata", category: "Beauty", subcategory: "Haircare",
-    theme: "adventure", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "Only the products I finished the bottle of. Oily skin, Indian weather.", image: "c47.jpg" },
-  { name: "Ritika Upadhyay", handle: "ritikaupadhyay", email: "ritikaupadhyay@example.com", city: "Ahmedabad", category: "Fitness", subcategory: "Home workouts",
-    theme: "after_dark", layout: "gallery", pronouns: "she/they", bank: "paytm", bio: "Strength training in a 1BHK. Form over weight, always.", image: "c48.jpg" },
-  { name: "Nandini Vora", handle: "nandinivora", email: "nandinivora@example.com", city: "Jaipur", category: "Travel", subcategory: "Budget travel",
-    theme: "minimal", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "Cheap routes, real budgets, and where to eat near the bus stand.", image: "c49.jpg" },
-  { name: "Diya Yadav", handle: "diyayadav", email: "diyayadav@example.com", city: "Kochi", category: "Food", subcategory: "Baking",
-    theme: "luxury", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "Recipes from my grandmother, written down before I forget them.", image: "c50.jpg" },
+  { name: "Aanya Agarwal", handle: "aanyaagarwal", email: "aanyaagarwal@example.com", city: "Mumbai", category: "Saree Styling", subcategory: "Chiffon & Organza Drapes",
+    theme: "minimal", layout: "editorial", pronouns: "she/her", bank: "okaxis", bio: "31 | Mumbai. Saree draper & reels creator. Celebrating fluid chiffons, clean pleats & modern drape silhouettes. Lookbooks in the Vault.", image: "c1.jpg" },
+  { name: "Aditi Bhat", handle: "aditibhat", email: "aditibhat@example.com", city: "Delhi", category: "Ethnic GRWM", subcategory: "Wedding Guest Styling",
+    theme: "luxury", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "33 | South Delhi. Handloom silk enthusiast & wedding GRWM creator. Elegant drapes, backless cuts & heritage aesthetics.", image: "c2.jpg" },
+  { name: "Ahana Chandra", handle: "ahanachandra", email: "ahanachandra@example.com", city: "Bengaluru", category: "Reels & Glamour", subcategory: "Cinematic Saree Reels",
+    theme: "adventure", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "30 | Bangalore. Cinematic reels creator & modern saree stylist. Slow-mo transitions and Indo-western drape aesthetics in 4K.", image: "c3.jpg" },
+  { name: "Amrita Desai", handle: "amritadesai", email: "amritadesai@example.com", city: "Chennai", category: "Saree Styling", subcategory: "Handloom & Silk",
+    theme: "after_dark", layout: "classic", pronouns: "she/her", bank: "okicici", bio: "34 | Chennai. Kanjeevarams with modern twists. Exploring bold contrast blouses, temple jewelry & GRWM wedding series.", image: "c4.jpg" },
+  { name: "Ananya Fernandes", handle: "ananyafernandes", email: "ananyafernandes@example.com", city: "Hyderabad", category: "Ethnic GRWM", subcategory: "Cocktail Saree Glam",
+    theme: "minimal", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "32 | Hyderabad. Festive lookbooks, organza drapes & effortless GRWM transitions for evening cocktails and receptions.", image: "c5.jpg" },
+  { name: "Anika Gupta", handle: "anikagupta", email: "anikagupta@example.com", city: "Pune", category: "Saree Styling", subcategory: "Pre-Stitched Drapes",
+    theme: "luxury", layout: "gallery", pronouns: "she/her", bank: "paytm", bio: "30 | Pune. Chiffon saree fanatic & lifestyle reels creator. Sharing the secret to slip-free pleats and flattering silhouettes.", image: "c6.jpg" },
+  { name: "Anjali Hegde", handle: "anjalihegde", email: "anjalihegde@example.com", city: "Kolkata", category: "Fashion & Fusion", subcategory: "Modern Blouse Cuts",
+    theme: "adventure", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "35 | Kolkata. Vintage handlooms, cotton silks & artistic saree styling. Uncut drape tutorials & fitting room BTS in the Vault.", image: "c7.jpg" },
+  { name: "Avni Iyer", handle: "avniiyer", email: "avniiyer@example.com", city: "Ahmedabad", category: "Reels & Glamour", subcategory: "Viral Drape Transitions",
+    theme: "after_dark", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "32 | Ahmedabad. Pre-stitched and modern drape innovator. Fast GRWM reels, partywear sarees & statement waist accessories.", image: "c8.jpg" },
+  { name: "Bhavya Joshi", handle: "bhavyajoshi", email: "bhavyajoshi@example.com", city: "Jaipur", category: "Saree Styling", subcategory: "Festive Silk Curations",
+    theme: "minimal", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "33 | Jaipur. Royal heritage drapes, gota patti work & dramatic slow-mo reel walks across Jaipur palatial courtyards.", image: "c9.jpg" },
+  { name: "Charvi Kapoor", handle: "charvikapoor", email: "charvikapoor@example.com", city: "Kochi", category: "Beauty & Adornment", subcategory: "Temple & Silver Jewelry",
+    theme: "luxury", layout: "classic", pronouns: "she/her", bank: "okicici", bio: "31 | Kochi. Coastal glam, tissue sarees & minimalist back designs. Daily GRWM & styling secrets in the Vault.", image: "c10.jpg" },
+  { name: "Deepika Kulkarni", handle: "deepikakulkarni", email: "deepikakulkarni@example.com", city: "Chandigarh", category: "Ethnic GRWM", subcategory: "Festive GRWM",
+    theme: "adventure", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "34 | Chandigarh. Pastel organza drapes, halter neck blouses & evening soiree GRWM styling.", image: "c11.jpg" },
+  { name: "Divya Lal", handle: "divyalal", email: "divyalal@example.com", city: "Indore", category: "Reels & Glamour", subcategory: "Slow-Mo Aesthetic Walks",
+    theme: "after_dark", layout: "gallery", pronouns: "she/her", bank: "paytm", bio: "30 | Indore. Reels creator specializing in aesthetic drape transitions, monsoon saree walks & cinematic camera tricks.", image: "c12.jpg" },
+  { name: "Esha Mehta", handle: "eshamehta", email: "eshamehta@example.com", city: "Lucknow", category: "Saree Styling", subcategory: "Chiffon & Organza Drapes",
+    theme: "minimal", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "32 | Lucknow. Chikankari sarees, sheer georgettes & delicate pearl jewelry. Graceful, feminine & modern ethnic looks.", image: "c13.jpg" },
+  { name: "Gauri Nair", handle: "gaurinair", email: "gaurinair@example.com", city: "Goa", category: "Fashion & Fusion", subcategory: "Contemporary Ethnic",
+    theme: "luxury", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "33 | Goa. Resort saree fashion, lightweight chiffons & beach sunset drape reels. Casual elegance redefined.", image: "c14.jpg" },
+  { name: "Hansika Oberoi", handle: "hansikaoberoi", email: "hansikaoberoi@example.com", city: "Surat", category: "Fashion & Fusion", subcategory: "Statement Saree Styling",
+    theme: "adventure", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "31 | Surat. High-glam partywear sarees, sequin drapes & corset blouse fits for red carpet & cocktail nights.", image: "c15.jpg" },
+  { name: "Ira Pillai", handle: "irapillai", email: "irapillai@example.com", city: "Bhopal", category: "Saree Styling", subcategory: "Handloom & Silk",
+    theme: "after_dark", layout: "classic", pronouns: "she/her", bank: "okicici", bio: "35 | Bhopal. Classic Chanderi silks, monochrome drapes & high-res analog photo archives. Timeless South Asian elegance.", image: "c16.jpg" },
+  { name: "Ishita Qureshi", handle: "ishitaqureshi", email: "ishitaqureshi@example.com", city: "Nagpur", category: "Ethnic GRWM", subcategory: "Blouse Styling & Fits",
+    theme: "minimal", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "30 | Nagpur. Festive saree styling, bold cut blouses & rapid GRWM reels for bridesmaids and wedding guests.", image: "c17.jpg" },
+  { name: "Janvi Rao", handle: "janvirao", email: "janvirao@example.com", city: "Coimbatore", category: "Saree Styling", subcategory: "Festive Silk Curations",
+    theme: "luxury", layout: "gallery", pronouns: "she/her", bank: "paytm", bio: "33 | Coimbatore. Temple borders, pure silks & structured drapes. Helping women embrace heritage weaves with confidence.", image: "c18.jpg" },
+  { name: "Kavya Reddy", handle: "kavyareddy", email: "kavyareddy@example.com", city: "Guwahati", category: "Fashion & Fusion", subcategory: "Indo-Western Drapes",
+    theme: "adventure", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "32 | Guwahati. Assam silk and Mekhela Sador styling with modern cuts. Unique drape reels & close-up textures.", image: "c19.jpg" },
+  { name: "Keerthi Sharma", handle: "keerthisharma", email: "keerthisharma@example.com", city: "Dehradun", category: "Reels & Glamour", subcategory: "Cinematic Saree Reels",
+    theme: "after_dark", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "31 | Dehradun. Hillside golden hour reels, velvet shawls with chiffon sarees & aesthetic winter drape looks.", image: "c20.jpg" },
+  { name: "Lavanya Shetty", handle: "lavanyashetty", email: "lavanyashetty@example.com", city: "Mumbai", category: "Saree Styling", subcategory: "Editorial Saree Modeling",
+    theme: "minimal", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "34 | Bandra, Mumbai. Editorial saree model & fitness enthusiast. Drapes that flatter curves, mermaid shapewear secrets.", image: "c21.jpg" },
+  { name: "Maithili Singh", handle: "maithilisingh", email: "maithilisingh@example.com", city: "Delhi", category: "Fashion & Fusion", subcategory: "Cocktail Couture",
+    theme: "luxury", layout: "classic", pronouns: "she/her", bank: "okicici", bio: "32 | Delhi. Saree styling for corporate events by day, cocktail glamour by night. Chic, sharp & polished.", image: "c22.jpg" },
+  { name: "Meera Tandon", handle: "meeratandon", email: "meeratandon@example.com", city: "Bengaluru", category: "Ethnic GRWM", subcategory: "Wedding Guest Styling",
+    theme: "adventure", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "33 | Bengaluru. South silk styling, contrast blouse curation & festive GRWM reels for modern working women.", image: "c23.jpg" },
+  { name: "Mitali Verma", handle: "mitaliverma", email: "mitaliverma@example.com", city: "Chennai", category: "Fashion & Fusion", subcategory: "Indo-Western Drapes",
+    theme: "after_dark", layout: "gallery", pronouns: "she/her", bank: "paytm", bio: "30 | Chennai. Modern fusion drapes, saree over trousers, belt styling & viral transition reels.", image: "c24.jpg" },
+  { name: "Naina Wadhwa", handle: "nainawadhwa", email: "nainawadhwa@example.com", city: "Hyderabad", category: "Beauty & Adornment", subcategory: "Traditional Adornments",
+    theme: "minimal", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "35 | Hyderabad. Royal Nizam-inspired heritage drapes, velvet blouses & high-jewelry pairing masterclasses.", image: "c25.jpg" },
+  { name: "Navya Bose", handle: "navyabose", email: "navyabose@example.com", city: "Pune", category: "Reels & Glamour", subcategory: "Slow-Mo Aesthetic Walks",
+    theme: "luxury", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "31 | Pune. Slow-mo reels creator, aesthetic sound design & flowy chiffon drapes in the monsoon.", image: "c26.jpg" },
+  { name: "Neha Chopra", handle: "nehachopra", email: "nehachopra@example.com", city: "Kolkata", category: "Fashion & Fusion", subcategory: "Modern Blouse Cuts",
+    theme: "adventure", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "33 | Kolkata. Taant & Tussar silk reimagined. Modern halter necklines, dramatic pallu falls & creative photography.", image: "c27.jpg" },
+  { name: "Nikita Dutta", handle: "nikitadutta", email: "nikitadutta@example.com", city: "Ahmedabad", category: "Ethnic GRWM", subcategory: "Festive GRWM",
+    theme: "after_dark", layout: "classic", pronouns: "she/her", bank: "okicici", bio: "32 | Ahmedabad. Mirror-work sarees, festive Navratri drapes & backless choli inspirations.", image: "c28.jpg" },
+  { name: "Oviya Ghosh", handle: "oviyaghosh", email: "oviyaghosh@example.com", city: "Jaipur", category: "Saree Styling", subcategory: "Chiffon & Organza Drapes",
+    theme: "minimal", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "34 | Jaipur. Bandhani & Leheriya styling, vibrant color blocking & desert sunset lookbooks in 4K.", image: "c29.jpg" },
+  { name: "Pallavi Krishnan", handle: "pallavikrishnan", email: "pallavikrishnan@example.com", city: "Kochi", category: "Beauty & Adornment", subcategory: "Classic Hair & Gajra",
+    theme: "luxury", layout: "gallery", pronouns: "she/her", bank: "paytm", bio: "32 | Kochi. Kasavu saree reinvention, temple gold jewelry & peaceful aesthetic morning GRWM routines.", image: "c30.jpg" },
+  { name: "Prisha Menon", handle: "prishamenon", email: "prishamenon@example.com", city: "Chandigarh", category: "Ethnic GRWM", subcategory: "Wedding Guest Styling",
+    theme: "adventure", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "30 | Chandigarh. Big fat wedding GRWM series, heavy bridal sarees & designer blouse back cutouts.", image: "c31.jpg" },
+  { name: "Radhika Nayar", handle: "radhikanayar", email: "radhikanayar@example.com", city: "Indore", category: "Fashion & Fusion", subcategory: "Contemporary Ethnic",
+    theme: "after_dark", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "33 | Indore. Traditional Maheshwari weaves paired with contemporary crop tops and modern waist belts.", image: "c32.jpg" },
+  { name: "Riya Pandit", handle: "riyapandit", email: "riyapandit@example.com", city: "Lucknow", category: "Saree Styling", subcategory: "Chiffon & Organza Drapes",
+    theme: "minimal", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "31 | Lucknow. Soft georgette drapes, romantic pastels & slow-living ethnic lifestyle reels.", image: "c33.jpg" },
+  { name: "Saanvi Raman", handle: "saanviraman", email: "saanviraman@example.com", city: "Goa", category: "Reels & Glamour", subcategory: "Cinematic Saree Reels",
+    theme: "luxury", layout: "classic", pronouns: "she/her", bank: "okicici", bio: "34 | Goa. Bohemian ethnic wear, modern drapes & sunset rooftop cocktail saree sessions in 4K.", image: "c34.jpg" },
+  { name: "Sanjana Saxena", handle: "sanjanasaxena", email: "sanjanasaxena@example.com", city: "Surat", category: "Ethnic GRWM", subcategory: "Blouse Styling & Fits",
+    theme: "adventure", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "32 | Surat. Textile insider sharing pure vs synthetic drape tests, blouse fitting guides & GRWM try-ons.", image: "c35.jpg" },
+  { name: "Sara Thakur", handle: "sarathakur", email: "sarathakur@example.com", city: "Bhopal", category: "Reels & Glamour", subcategory: "Viral Drape Transitions",
+    theme: "after_dark", layout: "gallery", pronouns: "she/her", bank: "paytm", bio: "30 | Bhopal. Saree reels creator with 1M+ views on pleat hacks and walking transitions. Daily tutorials.", image: "c36.jpg" },
+  { name: "Shreya Varma", handle: "shreyavarma", email: "shreyavarma@example.com", city: "Nagpur", category: "Saree Styling", subcategory: "Handloom & Silk",
+    theme: "minimal", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "33 | Nagpur. Paithani silks, rich borders & modern sweetheart neckline blouses. Graceful Maharashtrian glam.", image: "c37.jpg" },
+  { name: "Simran Banerjee", handle: "simranbanerjee", email: "simranbanerjee@example.com", city: "Coimbatore", category: "Ethnic GRWM", subcategory: "Festive GRWM",
+    theme: "luxury", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "31 | Coimbatore. Draping made effortless. Quick 60-second GRWM reels for busy festival mornings.", image: "c38.jpg" },
+  { name: "Sneha Chatterjee", handle: "snehachatterjee", email: "snehachatterjee@example.com", city: "Guwahati", category: "Saree Styling", subcategory: "Handloom & Silk",
+    theme: "adventure", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "35 | Guwahati. Muga silk collections, festive handlooms & authentic behind-the-scenes draping stories.", image: "c39.jpg" },
+  { name: "Tanvi Dixit", handle: "tanvidixit", email: "tanvidixit@example.com", city: "Dehradun", category: "Fashion & Fusion", subcategory: "Contemporary Ethnic",
+    theme: "after_dark", layout: "classic", pronouns: "she/her", bank: "okicici", bio: "32 | Dehradun. Cozy ethnic winter styling, pashmina pairings & soft chiffon evening looks.", image: "c40.jpg" },
+  { name: "Tara Kaur", handle: "tarakaur", email: "tarakaur@example.com", city: "Mumbai", category: "Ethnic GRWM", subcategory: "Cocktail Saree Glam",
+    theme: "minimal", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "33 | Mumbai. Modern festive guest lookbooks, metallic sarees & backless blouse draping.", image: "c41.jpg" },
+  { name: "Trisha Malhotra", handle: "trishamalhotra", email: "trishamalhotra@example.com", city: "Delhi", category: "Fashion & Fusion", subcategory: "Statement Saree Styling",
+    theme: "luxury", layout: "gallery", pronouns: "she/her", bank: "paytm", bio: "34 | Delhi. High-fashion ethnic lookbooks, designer sarees, bespoke tailoring & wardrobe organization.", image: "c42.jpg" },
+  { name: "Vaishnavi Narayan", handle: "vaishnavinarayan", email: "vaishnavinarayan@example.com", city: "Bengaluru", category: "Saree Styling", subcategory: "Festive Silk Curations",
+    theme: "adventure", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "31 | Bengaluru. Mysore silks, traditional elegance & step-by-step drape reels for beginners.", image: "c43.jpg" },
+  { name: "Vanya Patel", handle: "vanyapatel", email: "vanyapatel@example.com", city: "Chennai", category: "Fashion & Fusion", subcategory: "Indo-Western Drapes",
+    theme: "after_dark", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "30 | Chennai. Contemporary fusion drapes, jacket blouses & architectural saree silhouettes.", image: "c44.jpg" },
+  { name: "Vedika Rathore", handle: "vedikarathore", email: "vedikarathore@example.com", city: "Hyderabad", category: "Beauty & Adornment", subcategory: "Traditional Adornments",
+    theme: "minimal", layout: "gallery", pronouns: "she/her", bank: "okhdfcbank", bio: "35 | Hyderabad. Regal heritage drapes, heirloom jewelry stories & 4K cinematic lookbooks.", image: "c45.jpg" },
+  { name: "Yamini Sen", handle: "yaminisen", email: "yaminisen@example.com", city: "Pune", category: "Saree Styling", subcategory: "Chiffon & Organza Drapes",
+    theme: "luxury", layout: "classic", pronouns: "she/her", bank: "okicici", bio: "32 | Pune. Saree model & content creator. Pure chiffons, organzas & sensual, elegant drape transitions.", image: "c46.jpg" },
+  { name: "Zara Trivedi", handle: "zaratrivedi", email: "zaratrivedi@example.com", city: "Kolkata", category: "Ethnic GRWM", subcategory: "Cocktail Saree Glam",
+    theme: "adventure", layout: "editorial", pronouns: "she/her", bank: "ybl", bio: "31 | Kolkata. Modern glam, red-carpet ethnic silhouettes & uncut dressing room BTS footage in the Vault.", image: "c47.jpg" },
+  { name: "Ritika Upadhyay", handle: "ritikaupadhyay", email: "ritikaupadhyay@example.com", city: "Ahmedabad", category: "Ethnic GRWM", subcategory: "Festive GRWM",
+    theme: "after_dark", layout: "gallery", pronouns: "she/her", bank: "paytm", bio: "33 | Ahmedabad. Festive Gujarati drapes, Patola silks & vibrant wedding guest inspirations.", image: "c48.jpg" },
+  { name: "Nandini Vora", handle: "nandinivora", email: "nandinivora@example.com", city: "Jaipur", category: "Reels & Glamour", subcategory: "Cinematic Saree Reels",
+    theme: "minimal", layout: "classic", pronouns: "she/her", bank: "okaxis", bio: "34 | Jaipur. Royal heritage couture, palace photoshoot lookbooks & 4K cinematic slow-motion reels.", image: "c49.jpg" },
+  { name: "Diya Yadav", handle: "diyayadav", email: "diyayadav@example.com", city: "Kochi", category: "Beauty & Adornment", subcategory: "Classic Hair & Gajra",
+    theme: "luxury", layout: "editorial", pronouns: "she/her", bank: "oksbi", bio: "30 | Kochi. Minimalist Kerala drapes, contemporary blouses & clean, aesthetic GRWM videos.", image: "c50.jpg" }
 ].freeze
 
-# Per-category content, so a Fitness page does not recommend the same three
-# things as a Baking page. [ collection name, [ [title, merchant, price, why] ] ]
 CATEGORY_CONTENT = {
-  "Fashion" => [ "What I am wearing", [
-    [ "The white kurta that survives", "Myntra", "₹1,299", "Fourth summer in this one. Washes without going see-through, which is the whole ask." ],
-    [ "Jeans that fit Indian hips", "Myntra", "₹2,199", "Stopped tailoring the waist on every pair I buy. That is the review." ],
-    [ "Kolhapuris, resoled twice", "Myntra", "₹899", "Cheaper than the chappals I keep losing, and they get better with wear." ] ] ],
-  "Beauty" => [ "Finished the bottle", [
-    [ "The sunscreen that does not pill", "Nykaa", "₹649", "No white cast under a camera, no stinging, and it survives a Mumbai afternoon." ],
-    [ "Cleanser for oily skin", "Nykaa", "₹390", "My skin stopped feeling tight after a week. Nothing else changed." ],
-    [ "The lip balm, unscented", "Nykaa", "₹220", "Boring on purpose. Works." ] ] ],
-  "Fitness" => [ "Kit that lasted", [
-    [ "Resistance bands, set of five", "Decathlon", "₹799", "Replaced a gym membership for four months and I still use the heaviest one." ],
-    [ "Yoga mat, 6mm", "Decathlon", "₹1,199", "Thick enough for a tiled floor, which is what most of us are actually on." ],
-    [ "Adjustable dumbbells", "Decathlon", "₹4,499", "The only equipment that fits under a bed in a 1BHK." ] ] ],
-  "Travel" => [ "What is in my bag", [
-    [ "The 30L backpack", "Decathlon", "₹2,799", "Three days of clothes, a camera, and it still goes in the overhead." ],
-    [ "Quick-dry towel", "Decathlon", "₹499", "Dries overnight in a humid room. Worth it for hostels." ],
-    [ "Universal adapter", "Amazon", "₹749", "Used it in six countries and every Indian hotel with one working socket." ] ] ],
-  "Food" => [ "My kitchen", [
-    [ "The kadai I use daily", "Amazon", "₹1,450", "Cast iron, seasoned over two years, and it has replaced three other pans." ],
-    [ "Weighing scale", "Amazon", "₹599", "Baking stopped being luck the day I got this." ],
-    [ "Masala dabba, steel", "Amazon", "₹890", "Seven compartments, no plastic, and it does not hold smell." ] ] ],
-  "Lifestyle" => [ "Small flat, fewer things", [
-    [ "Storage baskets, set of three", "Sunday Home", "₹780", "The reason my desk is visible in any of my videos." ],
-    [ "The softest throw", "Sunday Home", "₹2,499", "Bought it for the sofa, take it on every flight now." ],
-    [ "Bedside lamp, warm", "Sunday Home", "₹1,150", "Stopped using the tube light at night and started sleeping properly." ] ] ],
-  "Art & design" => [ "Tools I use", [
-    [ "The sketchbook I finish", "Amazon", "₹450", "Paper takes a wash without buckling, which is rare at this price." ],
-    [ "Trimming tools, cheap set", "Amazon", "₹640", "You do not need the expensive ones until you know what you are doing." ],
-    [ "Brush set, synthetic", "Amazon", "₹380", "Six brushes, four of which I actually reach for." ] ] ],
-  "Music" => [ "My setup", [
-    [ "The mic I saved for", "Amazon", "₹6,999", "Recorded everything on this page with it, in a room with no treatment." ],
-    [ "Closed-back headphones", "Amazon", "₹2,499", "No bleed into the mic, which is the only reason I own them." ],
-    [ "Pop filter", "Amazon", "₹299", "Three hundred rupees between me and unusable takes." ] ] ],
-  "Gaming" => [ "What I play on", [
-    [ "The phone cooler", "Amazon", "₹1,299", "Two hours without thermal throttling. It genuinely works." ],
-    [ "Trigger buttons", "Amazon", "₹249", "Cheap, plastic, and they changed my aim more than any setting." ],
-    [ "Power bank, 20000mAh", "Amazon", "₹1,899", "Streams a full session and charges my phone twice." ] ] ]
+  "Saree Styling" => [ "My Saree Wardrobe & Go-To Drapes", [
+    [ "Pure Chiffon Saree with Sequin Border", "Swtantra", "₹3,499", "Drapes like liquid glass. The exact piece from my monsoon balcony reel that crossed a million views." ],
+    [ "Raw Silk Backless Blouse", "Nykaa Fashion", "₹1,899", "Structured fit, deep cut, and padded so you never have to wrestle with tape or visible straps." ],
+    [ "Saree Shapewear Mermaid Skirt", "Zivame", "₹1,299", "The secret to clean pleats and a structured fall. I will never go back to drawstring cotton petticoats." ]
+  ] ],
+  "Ethnic GRWM" => [ "GRWM Essentials & Skin Prep", [
+    [ "Hydrating Dewy Primer Serum", "Nykaa", "₹649", "Skin prep before six hours under studio lights. Keeps heavy ethnic makeup from creasing." ],
+    [ "Matte Velvet Lip Stain, Brick Red", "Nykaa", "₹450", "The classic wedding guest red that doesn't bleed onto collarbones or cups." ],
+    [ "Setting Spray that Survives Humidity", "Nykaa", "₹550", "Tested through 35°C outdoor shoots in Bombay. My base did not budge until midnight." ]
+  ] ],
+  "Reels & Glamour" => [ "Kit I Shoot 4K Reels On", [
+    [ "The camera I shoot all 4K reels on", "Amazon", "₹64,999", "Crisp 4K 60fps slow-mo drape walks. The sensor captures every thread and texture of silk." ],
+    [ "Studio Ring Light with Phone Mount", "Amazon", "₹2,299", "Soft, diffused golden light for GRWM vanity clips. Eliminates harsh overhead apartment shadows." ],
+    [ "Wireless Lapel Mic for Voiceovers", "Amazon", "₹3,899", "Captures the authentic rustle of silk sarees and crisp audio for drape tutorials." ]
+  ] ],
+  "Fashion & Fusion" => [ "Modern Blouses & Fusion Fits", [
+    [ "Halter Neck Brocade Blouse", "Nykaa Fashion", "₹1,699", "Pair it with plain chiffon or georgette to instantly elevate a minimalist drape." ],
+    [ "Handcrafted Silver Kamarbandh", "FabIndia", "₹2,850", "Accentuates the waistline on plain georgette and chiffon drapes instantly." ],
+    [ "Pre-Stitched Ruffled Saree", "Myntra", "₹2,799", "Ready in two minutes. Perfect for cocktail evenings when you have zero time to pleat." ]
+  ] ],
+  "Beauty & Adornment" => [ "Jewelry & Statement Accents", [
+    [ "Antique Gold Jhumkas with Pearls", "Tribe Amrapali", "₹3,200", "Heavy look without the ear-pulling weight. My most asked-about piece in reel comments." ],
+    [ "Velvet Zardozi Potli Bag", "Nykaa Fashion", "₹1,450", "Fits the phone, lipstick, and keys without bulging. The only wedding clutch you need." ],
+    [ "Handmade Jasmine Gajra Hair Pin", "Amazon", "₹399", "Realistic, fragrant finish that stays firmly pinned into a sleek low bun all evening." ]
+  ] ]
 }.freeze
 
-# A handful rename their sections, so the editable-heading path is covered by
-# real data rather than only by an empty settings form.
 CUSTOM_HEADINGS = {
-  "Fashion"      => { links_heading: "What I am actually wearing", media_heading: "The outtakes" },
-  "Food"         => { links_heading: "In my kitchen", posts_heading: "Cooking notes" },
-  "Art & design" => { links_heading: "Tools I reach for", media_heading: "Work in progress" },
-  "Music"        => { media_heading: "Unreleased", posts_heading: "Riyaaz notes" },
-  "Fitness"      => { links_heading: "Kit that lasted", meet_heading: "Train with me" }
+  "Saree Styling"      => { links_heading: "My Wardrobe & Favorite Drapes", media_heading: "The Vault: 4K Saree Lookbooks", meet_heading: "1:1 Drape Masterclass & Posing" },
+  "Ethnic GRWM"        => { links_heading: "GRWM Essentials & Blouse Fits", media_heading: "The Vault: Uncut Fitting BTS", meet_heading: "1:1 Wedding Guest Styling Call" },
+  "Reels & Glamour"    => { links_heading: "Camera Kit & Shoot Gear", media_heading: "The Vault: 4K Cinematic Reel Sets", meet_heading: "1:1 Reel Transition & Coaching" },
+  "Fashion & Fusion"   => { links_heading: "Curated Blouse Cuts & Fits", media_heading: "The Vault: Exclusive Lookbooks", meet_heading: "1:1 Personal Styling Session" },
+  "Beauty & Adornment" => { links_heading: "Jewelry, Potlis & Skin Prep", media_heading: "The Vault: High-Res Glamour Sets", meet_heading: "1:1 Ethnic Makeup & Hair Consult" }
 }.freeze
 
 roster_users = CREATOR_ROSTER.each_with_index.map do |row, i|
@@ -627,6 +616,7 @@ roster_users = CREATOR_ROSTER.each_with_index.map do |row, i|
   )
 
   attach_image(creator, :profile_picture, "creators/#{row[:image]}")
+  attach_image(creator, :banner, "creator-saree.jpg")
 
   coll_name, items = CATEGORY_CONTENT.fetch(row[:category])
   collection = creator.link_collections.find_or_create_by!(name: coll_name)
@@ -641,34 +631,62 @@ roster_users = CREATOR_ROSTER.each_with_index.map do |row, i|
   # Not everyone sells everything: spreading this out shows pages at different
   # stages of setup rather than fifty identical ones.
   if (i % 3).zero?
-    post = creator.paid_media_posts.find_or_initialize_by(title: "The full set, unedited")
-    post.assign_attributes(caption: "Everything from the last shoot.",
-      price_cents: [ 19_900, 29_900, 49_900 ][i % 3], currency: "INR",
-      media_type: "image", published: true)
+    titles = [
+      [ "Monsoon Chiffon Balcony Walk (4K Reel Set, 36 photos)", "Slow-motion rain and sheer chiffon drape series. 4K high-resolution, unedited frames.", 49_900 ],
+      [ "GRWM: Wedding Guest Fitting & Blouse BTS (4K Video, 11 mins)", "Uncut try-on footage, pleated pallu tutorial, and blouse fitting room clips. Raw audio.", 79_900 ],
+      [ "Golden Hour Organza Drape in 4K (Vault Lookbook, 30 photos)", "Sun-drenched terrace session in pastel organza with pearl accents. Crisp 4K captures.", 59_900 ],
+      [ "Backless Velvet Blouse & Heritage Silk Set (4K Stills)", "Deep-cut bespoke velvet blouse paired with handwoven Katan silk. High-res archive set.", 44_900 ],
+      [ "Cocktail Georgette Drape & Transition Pack (4K 60fps Reels)", "6 cinematic slow-mo walking clips and seamless reel transitions. Ready-to-watch 4K cuts.", 89_900 ],
+      [ "Midnight Silk Bedroom Archive (35mm Film, 26 frames)", "Late night session in raw silk and antique jewelry. 26 analog scans.", 39_900 ]
+    ]
+    title, caption, price = titles[i % titles.size]
+    post = creator.paid_media_posts.find_or_initialize_by(title: title)
+    post.assign_attributes(caption: caption, price_cents: price, currency: "INR",
+      media_type: (title.include?("Video") || title.include?("Reels") ? "video" : "image"), published: true)
     attach_image(post, :media, "creators/#{row[:image]}")
     attach_image(post, :preview, "creators/#{row[:image]}")
     post.save!
   end
 
   if (i % 4).zero?
-    reveal = creator.contact_reveals.find_or_initialize_by(label: "My WhatsApp, brand enquiries only")
+    labels = [
+      "Private Close Friends VIP WhatsApp (Direct DMs & Daily Stories)",
+      "Personal Telegram VIP Channel (Voice Notes & Uncut Reels)",
+      "VIP Close Friends Pass (Direct Access & Unfiltered Snaps)"
+    ]
+    label = labels[i % labels.size]
+    reveal = creator.contact_reveals.find_or_initialize_by(label: label)
     reveal.assign_attributes(secret_value: "+91 9#{(800_000_000 + i * 7919)}"[0, 15],
-      price_cents: 19_900, currency: "INR", published: true)
+      price_cents: [ 49_900, 99_900, 149_900 ][i % 3], currency: "INR", published: true)
     reveal.save!
   end
 
   if (i % 5).zero?
-    wl = creator.wishlists.find_or_initialize_by(title: "Setup fund")
-    wl.assign_attributes(description: "Saving towards gear that would change what I can make.", published: true)
+    wl = creator.wishlists.find_or_initialize_by(title: "Spoil Me & Shoot Wardrobe ✨")
+    wl.assign_attributes(description: "Help fund pieces for upcoming festive lookbooks, bespoke blouses and 4K Vault reel productions.", published: true)
     wl.save!
-    it = wl.wishlist_items.find_or_initialize_by(title: "The upgrade I keep putting off")
-    it.assign_attributes(target_cents: (15 + i) * 100_000, currency: "INR",
-      note: "Been borrowing one for a year.")
+    wish_items = [
+      [ "Bespoke Raw Silk Backless Blouse Set", 12_500_00, "For upcoming festive lookbook shoots." ],
+      [ "Raw Mango Handwoven Silk Saree", 28_000_00, "Heritage drape piece for the royal palace series." ],
+      [ "Dyson Airwrap Multi-Styler Complete", 45_900_00, "For quick voluminous curls during GRWM shoot changes." ],
+      [ "Handcrafted Silver Kamarbandh with Pearls", 9_500_00, "Statement waist adornment for chiffon drape reels." ],
+      [ "Sony 50mm f/1.4 GM Prime Lens", 74_000_00, "For creamy bokeh in 4K slow-mo saree walks." ],
+      [ "Luxury Day Spa at Taj Lands End", 14_000_00, "Relaxation day after a 3-day festive shooting marathon." ]
+    ]
+    item_title, target, note = wish_items[i % wish_items.size]
+    it = wl.wishlist_items.find_or_initialize_by(title: item_title)
+    it.assign_attributes(target_cents: target, currency: "INR", note: note)
     it.save!
   end
 
   if (i % 2).zero?
-    body = "#{[ "Shot something new today.", "Two questions in my DMs all week, so answering here.", "Restocked the thing everyone asked about." ][i % 3]} More soon."
+    body = [
+      "Just wrapped the golden hour chiffon saree shoot! Editing the 4K slow-mo reel set now — drops in the Vault tonight! 🔥",
+      "GRWM poll: Deep V-cut velvet blouse or high-neck halter for tomorrow's cocktail reel? Let me know in comments! 💫",
+      "Uncut 12-minute drape & blouse fitting video is live for VIP Close Friends. Check your Vault access! 💖",
+      "Behind the scenes of that viral saree transition reel is up on Telegram VIP. Link in bio! ✨",
+      "Answering all drape styling questions in DMs tonight. VIP members get first priority replies! 💌"
+    ][i % 5]
     p = creator.creator_posts.find_or_initialize_by(body: body)
     p.published = true
     p.save!

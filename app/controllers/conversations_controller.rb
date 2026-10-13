@@ -15,6 +15,7 @@ class ConversationsController < ApplicationController
     @conversation = find_participating_conversation
     @other = @conversation.other_party(current_user)
     @messages = @conversation.direct_messages.includes(:sender).chronological.last(200)
+    @vault_drops = current_user.paid_media_posts.published if current_user == @conversation.creator
     # Opening the thread is reading it.
     @conversation.mark_read_for!(current_user)
   end
@@ -22,7 +23,8 @@ class ConversationsController < ApplicationController
   # Started from a creator's public page. find_or_create, so pressing
   # "Message" twice lands in the same thread rather than splitting history.
   def create
-    creator = User.find_by!(handle: params[:handle])
+    handle = params[:handle].to_s.downcase.delete_prefix("@")
+    creator = User.find_by!(handle: handle)
     return head :not_found if creator.blocks?(current_user)
     if creator == current_user
       redirect_to conversations_path, alert: "You cannot message yourself." and return

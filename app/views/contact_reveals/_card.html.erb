@@ -1,20 +1,36 @@
 <% revealed = card.revealed_for?(current_user) %>
-<article class="reveal">
-  <div class="min0" style="flex: 1 1 240px">
-    <div class="reveal-label break"><%= card.label %></div>
-    <div class="reveal-value ref" translate="no">
-      <%= revealed ? card.secret_value : "+91 98••• •••••" %>
-    </div>
-    <div class="reveal-note">
-      <%= revealed ? "Revealed to you" : "Unlocks after #{card.user.name.split.first} approves your payment" %>
+<% icon = if card.label.downcase.include?("telegram") then "✈️"
+          elsif card.label.downcase.include?("snap") then "👻"
+          elsif card.label.downcase.include?("whatsapp") then "💬"
+          elsif card.label.downcase.include?("phone") || card.label.downcase.include?("call") then "📞"
+          else "🔐"
+          end %>
+<article class="reveal" style="border: 1px solid var(--p-line); border-radius: var(--r-xl); padding: 18px 20px; background: var(--p-card); box-shadow: var(--p-raised); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+  <div class="min0" style="flex: 1 1 240px; display: flex; gap: 14px; align-items: flex-start;">
+    <span style="font-size: 24px; flex-shrink: 0; line-height: 1.2;" aria-hidden="true"><%= icon %></span>
+    <div class="min0" style="flex: 1;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+        <span class="badge badge--spicy" style="font-size: 11px; text-transform: uppercase;">Private VIP Channel</span>
+        <div class="reveal-label break" style="font-weight: 700; font-size: 16px; color: var(--p-ink);"><%= card.label %></div>
+      </div>
+      <div class="reveal-value ref" translate="no" style="font-family: var(--mono); font-size: 15px; letter-spacing: 0.05em; color: var(--p-ink); margin: 6px 0;">
+        <% if revealed %>
+          <strong style="color: #10b981;"><%= card.secret_value %></strong>
+        <% else %>
+          <%= card.label.downcase.include?("telegram") ? "t.me/vip_••••••••" : (card.label.downcase.include?("snap") ? "snapchat.com/add/••••••" : "+91 98••• •••••") %>
+        <% end %>
+      </div>
+      <div class="reveal-note" style="font-size: 13px; color: var(--p-sub);">
+        <%= revealed ? "✨ Unlocked and revealed to you" : "Personal access. Unlocks instantly once #{card.user.name.split.first} verifies your UPI payment." %>
+      </div>
     </div>
   </div>
   <div style="flex: none">
     <% if revealed %>
-      <span class="badge badge--ok">Revealed</span>
+      <span class="badge badge--ok" style="padding: 8px 14px; font-weight: 700;">Unlocked</span>
     <% else %>
       <%= render "shared/buy_button", purchasable: card, creator: card.user,
-            label: "Unlock for #{card.price_label}", signed_out_label: "Sign in to unlock",
+            label: "Unlock VIP Access (#{card.price_label})", signed_out_label: "Sign in to unlock",
             price_label: card.price_label, fallback_path: purchase_contact_reveal_path(card) %>
     <% end %>
   </div>

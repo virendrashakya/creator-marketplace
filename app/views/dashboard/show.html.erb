@@ -58,19 +58,19 @@
 
   <section class="stats wf-stagger">
     <div class="stat">
-      <div class="stat-label">Recommendations</div>
-      <strong class="stat-value"><%= number_with_delimiter(@links.count) %></strong>
-      <div class="stat-sub">across <%= pluralize(@collections.size, "collection") %></div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Referral clicks</div>
-      <strong class="stat-value"><%= number_with_delimiter(@total_clicks) %></strong>
-      <div class="stat-sub">all time</div>
-    </div>
-    <div class="stat">
       <div class="stat-label">Approved on UPI</div>
-      <strong class="stat-value"><%= money(@paid_media_revenue) %></strong>
-      <div class="stat-sub">test mode</div>
+      <strong class="stat-value" style="color: var(--p-accent);"><%= money(@paid_media_revenue) %></strong>
+      <div class="stat-sub">100% direct settlement</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">The Vault &amp; VIP Drops</div>
+      <strong class="stat-value"><%= pluralize(@paid_posts.size, "drop") %></strong>
+      <div class="stat-sub"><%= pluralize(current_user.subscription_plans.size, "VIP tier") %> live</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Curated Outfits &amp; Fits</div>
+      <strong class="stat-value"><%= number_with_delimiter(@links.count) %></strong>
+      <div class="stat-sub"><%= number_with_delimiter(@total_clicks) %> referral taps</div>
     </div>
   </section>
 
@@ -81,22 +81,15 @@
       <span class="muted" style="font-size: 13.5px">Pick what you are adding, not which form to open</span>
     </div>
     <div class="create-groups wf-stagger">
-      <%#
-        Grouped by where the money goes, because that is the only distinction
-        that matters and the one creators were getting wrong. A recommendation
-        sends a fan to a shop and you may earn a commission later; a wishlist
-        item asks the fan to pay you. Same-shaped form, opposite direction of
-        money, so the group heading says so out loud.
-      %>
       <% [
-        [ "Send people to a shop", "They pay the store. You may earn a commission.",
-          [ [ "Recommendation", new_product_link_path ], [ "Collection", new_collection_path ] ] ],
-        [ "Sell something of yours", "They pay you. Unlocked after you approve.",
-          [ [ "Paid photo or video", new_paid_media_post_path ], [ "Media collection", new_paid_media_collection_path ], [ "Subscription plan", new_subscription_plan_path ] ] ],
-        [ "Sell your time and reach", "They pay you for a slot or your contact.",
-          [ [ "Meetup with slots", new_meet_offer_path ], [ "Contact reveal", new_contact_reveal_path ] ] ],
-        [ "Ask to be gifted", "They pay you, and get nothing back but your thanks.",
-          [ [ "Gift wishlist", new_wishlist_path ] ] ]
+        [ "The Vault & VIP Drops", "They pay you over UPI. Unlocked after you approve.",
+          [ [ "Locked photo or video", new_paid_media_post_path ], [ "Exclusive bundle / set", new_paid_media_collection_path ], [ "Close Friends / VIP Pass", new_subscription_plan_path ] ] ],
+        [ "VIP Channels & 1:1 Access", "They pay for private Telegram / WhatsApp access or your time.",
+          [ [ "Private channel reveal", new_contact_reveal_path ], [ "1:1 Call or meetup", new_meet_offer_path ] ] ],
+        [ "Spoil Me Wishlists", "Fans chip in for shoot outfits, travel, or gear over UPI.",
+          [ [ "Gift wishlist", new_wishlist_path ] ] ],
+        [ "Recommendations & Outfits", "Your favorite looks, beauty, or gear with referral links.",
+          [ [ "Product link", new_product_link_path ], [ "Curated collection", new_collection_path ] ] ]
       ].each do |name, desc, actions| %>
         <div class="create-group">
           <div>
@@ -115,12 +108,11 @@
       <% end %>
     </div>
 
-    <%# Posting is the one create action with no money attached. Keeping it in
-        the money grid implied it was a fifth way to earn. %>
+    <%# Posting is the one create action with no money attached. %>
     <div class="create-aside">
       <div class="min0">
-        <div class="create-aside-name">Just posting something?</div>
-        <div class="create-aside-desc">An update for your page. Nothing to pay, nothing to approve.</div>
+        <div class="create-aside-name">Just posting an update?</div>
+        <div class="create-aside-desc">A free update for your community feed. Nothing to pay, nothing to approve.</div>
       </div>
       <%= link_to new_creator_post_path, class: "create-action create-action--wide" do %>
         <span class="min0 break">Write a post</span>
@@ -134,39 +126,41 @@
   </div>
 
   <section class="managed wf-stagger">
-    <%= render "dashboard/managed", name: "Recommendations", count: pluralize(@links.size, "live"),
-          empty_title: "Nothing recommended yet",
-          empty_body: "The thing you keep getting asked about. Start there.",
-          empty_cta: "Add a recommendation", empty_path: new_product_link_path,
-          rows: @links.map { |l| { title: l.title, badge: l.merchant.presence, badge_kind: "merchant",
-                                   meta: pluralize(l.clicks_count, "click"), image: l.image_url,
-                                   edit: edit_product_link_path(l), delete: product_link_path(l),
-                                   confirm: "Delete “#{l.title}” from your page?" } } %>
-
-    <%= render "dashboard/managed", name: "Collections", count: @collections.size.to_s,
-          empty_title: "No collections yet",
-          empty_body: "Group your links by theme so the page is easier to scan.",
-          empty_cta: "Create a collection", empty_path: new_collection_path,
-          rows: @collections.map { |c| { title: c.name, badge: "Live", badge_kind: "plain",
-                                         meta: pluralize(c.product_links.size, "item"),
-                                         edit: edit_collection_path(c), delete: collection_path(c),
-                                         confirm: "Delete the collection “#{c.name}”? The links inside it stay." } } %>
-
-    <%= render "dashboard/managed", name: "Paid media", count: @paid_posts.size.to_s,
-          empty_title: "No paid media yet",
-          empty_body: "Put a photo or video behind a one time unlock.",
-          empty_cta: "Add paid media", empty_path: new_paid_media_post_path,
+    <%= render "dashboard/managed", name: "The Vault & Drops", count: @paid_posts.size.to_s,
+          empty_title: "The Vault is empty",
+          empty_body: "Put an exclusive 4K photo set or video behind a one-time UPI unlock.",
+          empty_cta: "Add Vault drop", empty_path: new_paid_media_post_path,
           rows: @paid_posts.map { |p| { title: p.title, badge: p.published? ? "Live" : "Hidden",
                                         badge_kind: p.published? ? "plain" : "hidden",
                                         meta: p.price_label,
                                         edit: edit_paid_media_post_path(p), delete: paid_media_post_path(p),
                                         confirm: "Delete “#{p.title}”?" } } %>
 
-    <%= render "dashboard/managed", name: "Meetups and reveals",
+    <%= render "dashboard/managed", name: "Close Friends & VIP Passes", count: current_user.subscription_plans.size.to_s,
+          empty_title: "No VIP tiers yet",
+          empty_body: "Fans who unlock every drop want an all-access monthly pass. Start with one tier.",
+          empty_cta: "Create VIP plan", empty_path: new_subscription_plan_path,
+          rows: current_user.subscription_plans.map { |p| { title: p.name, badge: p.active? ? "Open" : "Paused",
+                                         badge_kind: p.active? ? "plain" : "hidden",
+                                         meta: "#{money(p.price_cents, p.currency)} a month",
+                                         edit: edit_subscription_plan_path(p), delete: subscription_plan_path(p),
+                                         confirm: "Delete the plan “#{p.name}”?" } } %>
+
+    <%= render "dashboard/managed", name: "Spoil Me Wishlists", count: current_user.wishlists.size.to_s,
+          empty_title: "No wishlists active",
+          empty_body: "Let fans spoil you with shoot looks, gifts, or luxury treats over UPI.",
+          empty_cta: "Start a wishlist", empty_path: new_wishlist_path,
+          rows: current_user.wishlists.map { |w| { title: w.title, badge: w.published? ? "Live" : "Hidden",
+                                         badge_kind: w.published? ? "plain" : "hidden",
+                                         meta: pluralize(w.wishlist_items.size, "gift"),
+                                         edit: edit_wishlist_path(w), delete: nil,
+                                         extra_label: "Add item", extra_path: new_wishlist_wishlist_item_path(w) } } %>
+
+    <%= render "dashboard/managed", name: "VIP Channels & 1:1 Calls",
           count: (@meet_offers.size + @contact_reveals.size).to_s,
-          empty_title: "Nothing offered yet",
-          empty_body: "Sell a meetup, or let people pay to reach you directly.",
-          empty_cta: "Offer a meetup", empty_path: new_meet_offer_path,
+          empty_title: "No direct access offered",
+          empty_body: "Offer 1:1 video calls or let fans pay to unlock your private VIP Telegram/WhatsApp.",
+          empty_cta: "Offer a video call", empty_path: new_meet_offer_path,
           rows: @meet_offers.map { |o| { title: o.title, badge: o.published? ? "Live" : "Hidden",
                                          badge_kind: o.published? ? "plain" : "hidden",
                                          meta: pluralize(o.meet_slots.count { |s| !s.booked? && s.starts_at > Time.current }, "slot open"),
@@ -178,25 +172,23 @@
                                          edit: edit_contact_reveal_path(rv), delete: contact_reveal_path(rv),
                                          confirm: "Delete the contact reveal “#{rv.label}”?" } } %>
 
-    <%= render "dashboard/managed", name: "Gift wishlists", count: current_user.wishlists.size.to_s,
-          empty_title: "No wishlists yet",
-          empty_body: "Let your audience fund something you are saving for.",
-          empty_cta: "Start a wishlist", empty_path: new_wishlist_path,
-          rows: current_user.wishlists.map { |w| { title: w.title, badge: w.published? ? "Live" : "Hidden",
-                                         badge_kind: w.published? ? "plain" : "hidden",
-                                         meta: pluralize(w.wishlist_items.size, "item"),
-                                         edit: edit_wishlist_path(w), delete: nil,
-                                         extra_label: "Add item", extra_path: new_wishlist_wishlist_item_path(w) } } %>
+    <%= render "dashboard/managed", name: "Curated Fits & Recommendations", count: pluralize(@links.size, "live"),
+          empty_title: "No fits curated yet",
+          empty_body: "Add your favorite outfits, lingerie, or beauty essentials with affiliate links.",
+          empty_cta: "Add a recommendation", empty_path: new_product_link_path,
+          rows: @links.map { |l| { title: l.title, badge: l.merchant.presence, badge_kind: "merchant",
+                                   meta: pluralize(l.clicks_count, "click"), image: l.image_url,
+                                   edit: edit_product_link_path(l), delete: product_link_path(l),
+                                   confirm: "Delete “#{l.title}” from your page?" } } %>
 
-    <%= render "dashboard/managed", name: "Subscription plans", count: current_user.subscription_plans.size.to_s,
-          empty_title: "No monthly plan yet",
-          empty_body: "The people who buy every drop would rather pay you once a month. Start with one tier.",
-          empty_cta: "Create a plan", empty_path: new_subscription_plan_path,
-          rows: current_user.subscription_plans.map { |p| { title: p.name, badge: p.active? ? "Open" : "Paused",
-                                         badge_kind: p.active? ? "plain" : "hidden",
-                                         meta: "#{money(p.price_cents, p.currency)} a month",
-                                         edit: edit_subscription_plan_path(p), delete: subscription_plan_path(p),
-                                         confirm: "Delete the plan “#{p.name}”?" } } %>
+    <%= render "dashboard/managed", name: "Look Collections", count: @collections.size.to_s,
+          empty_title: "No collections yet",
+          empty_body: "Group your looks by shoot or vibe so the page is easy to browse.",
+          empty_cta: "Create a collection", empty_path: new_collection_path,
+          rows: @collections.map { |c| { title: c.name, badge: "Live", badge_kind: "plain",
+                                         meta: pluralize(c.product_links.size, "look"),
+                                         edit: edit_collection_path(c), delete: collection_path(c),
+                                         confirm: "Delete the collection “#{c.name}”? The links inside it stay." } } %>
   </section>
 
   <div class="actions">

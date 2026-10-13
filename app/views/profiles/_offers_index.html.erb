@@ -7,13 +7,13 @@
 
 <% link_count = collections.sum { |c| c.product_links.size } + uncategorized.size %>
 <% if link_count.positive? %>
-  <% offers << { name: "Recommendations", price: "Free", free: true,
-                 desc: "#{pluralize(link_count, 'thing')} I actually use, with the reason why.", anchor: nil } %>
+  <% offers << { name: "Curated Fits & Favs", price: "Free", free: true,
+                 desc: "#{pluralize(link_count, 'outfit & look')} from my shoots & daily style.", anchor: nil } %>
 <% end %>
 
 <% media.each do |m| %>
   <% offers << { name: m.title, price: m.price_label, free: false,
-                 desc: m.caption.presence || "An exclusive #{m.media_type}.", anchor: nil } %>
+                 desc: m.caption.presence || "Exclusive #{m.media_type == 'video' ? '4K video' : '4K photo set'} drop in the Vault.", anchor: nil } %>
 <% end %>
 
 <% meet_offers.each do |o| %>
@@ -23,21 +23,21 @@
 
 <% reveals.each do |rv| %>
   <% offers << { name: rv.label, price: rv.price_label, free: false,
-                 desc: "Unlocked once #{user.name} confirms your payment.", anchor: nil } %>
+                 desc: "Direct VIP access. Unlocks once #{user.name.split.first} confirms your UPI transfer.", anchor: nil } %>
 <% end %>
 
 <% gift_items = wishlists.sum { |w| w.wishlist_items.size } %>
 <% if gift_items.positive? %>
-  <% offers << { name: "Gift the gear", price: "Any amount", free: true,
-                 desc: "#{pluralize(gift_items, 'thing')} I am saving for. Chip in whatever.", anchor: nil } %>
+  <% offers << { name: "Spoil Me ✨", price: "Any amount", free: true,
+                 desc: "#{pluralize(gift_items, 'treat & gift')} on my wishlist. Spoil me or chip in via UPI.", anchor: nil } %>
 <% end %>
 
 <% if offers.any? %>
   <section class="pf-section" style="padding-top: 30px">
     <div class="pf-offers">
       <div class="pf-offers-head">
-        <h2>What you can get from me</h2>
-        <p>Free to browse. The paid things unlock once <%= user.name.split.first %> checks your payment.</p>
+        <h2>Everything On Offer</h2>
+        <p>Free to browse. Exclusive drops and VIP passes unlock directly over UPI.</p>
       </div>
       <div class="pf-offers-grid">
         <% offers.first(6).each do |o| %>

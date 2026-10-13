@@ -19,7 +19,8 @@ class CreatorFollowsController < ApplicationController
   private
 
   def load_creator
-    @creator = User.find_by!(handle: params[:handle].to_s.downcase)
+    handle = params[:handle].to_s.downcase.delete_prefix("@")
+    @creator = User.find_by!(handle: handle)
   rescue ActiveRecord::RecordNotFound
     redirect_to root_path, alert: "That page does not exist."
   end

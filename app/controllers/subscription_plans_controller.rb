@@ -8,6 +8,9 @@ class SubscriptionPlansController < ApplicationController
   def destroy; @subscription_plan.destroy; redirect_to dashboard_path, notice: "Plan removed."; end
   def subscribe
     plan = SubscriptionPlan.where(active: true).find(params[:id])
+    unless Rails.env.development? || Rails.env.test?
+      return redirect_to new_payment_claim_path("SubscriptionPlan", plan.id), alert: "Please submit UPI payment claim to subscribe."
+    end
     return redirect_to(profile_path(plan.user.handle), alert: "You cannot subscribe to yourself.") if plan.user == current_user
     return if deny_if_blocked_by(plan.user)
     subscription = current_user.creator_subscriptions.find_or_initialize_by(subscription_plan: plan)

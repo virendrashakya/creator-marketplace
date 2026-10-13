@@ -62,9 +62,8 @@
         io.unobserve(el);
       });
     }, {
-      /* Fire slightly before the element reaches the fold, so the motion has
-         finished by the time it is properly in view. */
-      rootMargin: "0px 0px -12% 0px",
+      /* Fire as element enters the viewport so it never sits blank */
+      rootMargin: "0px 0px 0px 0px",
       threshold: 0.01
     });
 

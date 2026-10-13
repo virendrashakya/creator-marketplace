@@ -31,7 +31,7 @@
 
   <% if item.open_for_gifts? %>
     <% if signed_in? && item.wishlist.user.accepts_upi_manual? %>
-      <%= link_to "Gift towards this", new_payment_claim_path(purchasable_type: "WishlistItem", purchasable_id: item.id),
+      <%= link_to "Spoil #{item.wishlist.user.name.split.first} with this ✨", new_payment_claim_path(purchasable_type: "WishlistItem", purchasable_id: item.id),
             class: "btn btn--accent btn--block" %>
     <% elsif signed_in? %>
       <%= form_with url: contribute_wishlist_item_path(item), method: :post do %>
@@ -44,12 +44,12 @@
         </div>
         <div class="field">
           <%= label_tag "gift_message_#{item.id}", "Note (optional)", class: "field-label" %>
-          <%= text_field_tag :message, nil, id: "gift_message_#{item.id}", maxlength: 200, placeholder: "Say something kind" %>
+          <%= text_field_tag :message, nil, id: "gift_message_#{item.id}", maxlength: 200, placeholder: "Say something nice..." %>
         </div>
-        <%= submit_tag "Gift towards this", class: "btn btn--accent btn--block", data: { disable_with: "Gifting…" } %>
+        <%= submit_tag "Spoil #{item.wishlist.user.name.split.first} with this ✨", class: "btn btn--accent btn--block", data: { disable_with: "Gifting…" } %>
       <% end %>
     <% else %>
-      <%= link_to "Sign in to gift", sign_in_path, class: "btn btn--accent btn--block" %>
+      <%= link_to "Sign in to spoil with a gift", sign_in_path, class: "btn btn--accent btn--block" %>
     <% end %>
   <% else %>
     <span class="badge badge--ok">Fully funded</span>
