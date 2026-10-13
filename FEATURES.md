@@ -227,3 +227,22 @@ The creator management portal is engineered as an uncluttered, modern editorial 
 9. **Creator Bottom Actions & Engine Status**: Quick pill links for UPI & Settlement Settings/Nodes, Blocked Accounts (4), Support Concierge, and live node indicator (`Wishful P2P Settlement Engine v2.4 • Direct VPA Node`).
 10. **Mobile Bottom Navigation & Luxury Footer**: Fixed 5-tab app bar on mobile (`Dashboard`, `The Vault`, `Studio`, `Messages`, `Settings`), and clean desktop footer.
 
+---
+
+### 14. Design Documentation & Visual Reference
+
+All design specifications and current-state screenshots are maintained in the repository:
+
+- **`DESIGN.md`**: Comprehensive design system specification including brand identity, color tokens, typography scale, spacing, elevation, shape system, component library, responsive viewport standards, and CSS architecture.
+- **`docs/screenshots/`**: 10 full-page desktop screenshots (1280×683) covering every user-facing page:
+  1. `01_landing_home.png` — Landing / Home Page (`/`)
+  2. `02_sign_up.png` — Sign Up (`/sign_up`)
+  3. `03_sign_in.png` — Sign In / Login (`/sign_in`)
+  4. `04_dashboard.png` — Creator Portal Dashboard (`/dashboard`)
+  5. `05_fan_profile.png` — Fan-Facing Profile / Storefront (`/@handle`)
+  6. `06_schedule.png` — Calendar Schedule (`/schedule`)
+  7. `07_live_studio.png` — Live Studio (`/lives/new`)
+  8. `08_payment_claims.png` — Payment Claims (`/payment_claims`)
+  9. `09_messages.png` — Messages & DMs (`/conversations`)
+  10. `10_creator_settings.png` — Creator Settings (`/creator_settings`)
+- **`.agents/rules/design_system.md`**: Machine-readable YAML design tokens for AI agent consumption.

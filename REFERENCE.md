@@ -129,6 +129,7 @@
 | **Database** | PostgreSQL / SQLite | Solid Cable, Solid Queue, Solid Cache |
 | **Frontend UI** | Hotwire (Turbo + Stimulus) | Zero SPA overhead, reactive DOM replacement |
 | **Styling** | Vanilla CSS Design System | Custom tokens in `public/assets/profile.css`, `dashboard.css`, etc. |
+| **Design Reference** | `DESIGN.md` + `docs/screenshots/` | Full design system spec, color tokens, typography, component library, and 10 page screenshots |
 | **Real-Time** | ActionCable WebSockets | Mounted at `/cable` for DMs and live broadcast chat |
 | **File Storage** | ActiveStorage | Backed by local disk in dev, S3/GCS compatible in prod |
 | **Image Processing** | ImageMagick (`convert`) | Used by `FrostedPreviewService` and `ForensicWatermarkService` |

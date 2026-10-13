@@ -48,6 +48,10 @@ This document tracks implemented security safeguards and upcoming improvements f
   - Built horizontal drop rows in `Active Vault Drops & Digital Sets` with 16:9 thumbnails, tags, unlock metrics, prominent `₹499 Instant UPI`, `View Live`, `Edit`, and `⋮` actions menu.
   - Built balanced 2-column bottom suite: VIP Close Friends pass card and Diwali Silk Saree Wishlist progress card.
   - Built full mobile adaptation with `Wishful STUDIO`, `CREATOR LAUNCHPAD`, stacked cards, and fixed 5-tab bottom navigation (`Dashboard`, `The Vault`, `Studio`, `Messages`, `Settings`).
+- [x] **Comprehensive Design Reference & Page Screenshots (`DESIGN.md` + `docs/screenshots/`)**
+  - Created `DESIGN.md` at repo root with full design system spec: brand identity, color tokens, typography scale, spacing, elevation, shape system, component library, responsive viewport standards, and CSS architecture.
+  - Captured and saved 10 full-page desktop screenshots (1280×683) into `docs/screenshots/`: Landing, Sign Up, Sign In, Dashboard, Fan Profile, Schedule, Live Studio, Payment Claims, Messages, and Creator Settings.
+  - Screenshots embedded in `DESIGN.md` with relative paths for portable viewing.
 
 ---
 
