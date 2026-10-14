@@ -1,0 +1,15 @@
+<% content_for :title, "New list | Wishful Studio" %>
+
+<div class="w-crumbs"><%= link_to "Link lists", link_lists_path %><span>/</span><strong>New list</strong></div>
+
+<div class="w-card" style="max-width:560px;padding:22px">
+  <h1 class="w-page-title" style="font-size:22px">Name your list</h1>
+  <p class="w-page-lede">You'll add links next. The name becomes the link: <span translate="no"><%= request.host %>/<%= current_user.handle %>/<strong>your-list</strong></span></p>
+  <%= form_with model: @list, url: link_lists_path, local: true, html: { class: "w-stack", style: "margin-top:16px;gap:14px" } do |f| %>
+    <%= render "paid_media_collections/errors", record: @list %>
+    <label class="w-field"><span class="w-label">Title</span><%= f.text_field :title, class: "w-input", required: true, placeholder: "My Diwali edit", autofocus: true, maxlength: 80 %></label>
+    <label class="w-field"><span class="w-label">Description</span><%= f.text_field :description, class: "w-input", placeholder: "Everything I wore and used for the festive shoot", maxlength: 160 %></label>
+    <% (@list.socials || []).each do |key| %><%= hidden_field_tag "link_list[socials][]", key, id: nil %><% end %>
+    <div class="w-row"><%= f.submit "Create list", class: "w-btn w-btn--pink" %><%= link_to "Cancel", link_lists_path, class: "w-btn w-btn--ghost" %></div>
+  <% end %>
+</div>

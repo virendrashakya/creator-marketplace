@@ -1,894 +1,125 @@
-<% if @shared_drop.present? %>
-  <% content_for :title, "#{@shared_drop.title} — VIP Drop by #{@user.name} | Wishful" %>
-  <% content_for :description, "Exclusive Vault drop (#{@shared_drop.price_label}) by #{@user.name}. Unlock via direct UPI on Wishful." %>
-  <% content_for :og_image, preview_paid_media_post_url(@shared_drop) %>
-<% else %>
-  <% content_for :title, "#{@user.name} (@#{@user.handle}) | Wishful" %>
-  <% content_for :description, @user.bio.presence || "Exclusive vault drops, recommendations, and direct channels by #{@user.name} on Wishful." %>
-  <% if @user.profile_picture.attached? %>
-    <% content_for :og_image, url_for(@user.profile_picture) %>
-  <% end %>
+<% content_for :title, "#{@user.name} (@#{@user.handle}) | Wishful" %>
+<% content_for :description, @user.bio.presence || "#{@user.name}'s collections, looks and Close Friends on Wishful. Pay directly over UPI." %>
+<% content_for :chrome, "fan" %>
+<% content_for :body_class, "is-profile" %>
+<% if (og = wf_banner_src(@user)) %>
+  <% content_for :og_image, og.start_with?("http") ? og : "#{request.base_url}#{og}" %>
 <% end %>
 
-<% content_for :chrome, "creator" %>
-<% content_for :head do %>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap">
-  <link rel="stylesheet" href="/assets/profile.css" data-turbo-track="reload">
-  <% if @own_page %>
-    <link rel="stylesheet" href="/assets/inline-edit.css" data-turbo-track="reload">
-    <script src="/assets/js/inline-edit.js" data-turbo-track="reload" defer></script>
-  <% end %>
-<% end %>
-
-<div class="profile theme-<%= @user.theme %> layout-<%= @user.profile_layout %>"
-     <%= 'data-ie-root' if @own_page %>>
-  <div class="profile-inner">
-
-    <% if @own_page %>
-      <%= render "profiles/edit_layer", user: @user, active_tab: @active_tab %>
-    <% end %>
-
-    <!-- ============================================================== -->
-    <!-- DESKTOP TOP NAVBAR (>= 900px)                                  -->
-    <!-- ============================================================== -->
-    <header class="cv-desktop-navbar show-desktop">
-      <div class="cv-nav-left">
-        <a href="/" class="cv-brand">
-          <span class="cv-brand-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-            </svg>
-          </span>
-          <span class="cv-brand-text">CreatorVault</span>
-        </a>
-        <div class="cv-nav-search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" class="cv-search-icon">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" placeholder="Search creator drops, styling tags..." aria-label="Search">
-        </div>
-      </div>
-      <nav class="cv-nav-links">
-        <a href="/" class="cv-nav-link">Discover</a>
-        <a href="/trending" class="cv-nav-link">
-          Trending Drops
-          <span class="cv-flame-tag">🔥</span>
-        </a>
-        <a href="/creators" class="cv-nav-link">VIP Creators</a>
-        <a href="/my-purchases" class="cv-nav-link">My Purchases</a>
-      </nav>
-      <div class="cv-nav-right">
-        <%= link_to new_payment_claim_path("User", @user.id), class: "cv-direct-upi-btn" do %>
-          <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-          </svg>
-          Direct UPI Pay
-        <% end %>
-        <% if signed_in? %>
-          <%= link_to "Dashboard", dashboard_path, class: "cv-login-btn" %>
-          <% if current_user.profile_picture.attached? %>
-            <%= image_tag current_user.profile_picture, class: "cv-user-avatar", alt: current_user.name %>
-          <% else %>
-            <div class="cv-user-avatar cv-user-avatar--fallback"><%= current_user.name.first&.upcase %></div>
-          <% end %>
-        <% else %>
-          <%= link_to "Login", sign_in_path, class: "cv-login-btn" %>
-          <div class="cv-user-avatar cv-user-avatar--guest">👤</div>
-        <% end %>
-      </div>
-    </header>
-
-    <!-- ============================================================== -->
-    <!-- MOBILE TOP BAR (< 900px)                                       -->
-    <!-- ============================================================== -->
-    <header class="cv-mobile-navbar show-mobile">
-      <div class="cv-mob-brand">
-        <span class="cv-mob-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
-          </svg>
-        </span>
-        <span class="cv-mob-title">Wishful</span>
-        <span class="cv-mob-creator-pill">CREATOR &amp; FAN</span>
-      </div>
-      <div class="cv-mob-actions">
-        <button type="button" class="cv-mob-share-btn" data-share-url="<%= profile_url(@user.handle) %>" data-share-title="<%= @user.name %> on Wishful" aria-label="Share">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
-            <polyline points="16 6 12 2 8 6"></polyline>
-            <line x1="12" y1="2" x2="12" y2="15"></line>
-          </svg>
-        </button>
-        <% if signed_in? %>
-          <%= link_to "Dashboard", dashboard_path, class: "cv-mob-open-btn" %>
-        <% else %>
-          <%= link_to "Open App ➔", sign_in_path, class: "cv-mob-open-btn" %>
-        <% end %>
-      </div>
-    </header>
-
-    <!-- ============================================================== -->
-    <!-- COVER HERO BANNER                                              -->
-    <!-- ============================================================== -->
-    <div class="cv-banner-container"<%= ' data-ie-zone'.html_safe if @own_page %>>
-      <div class="cv-banner-media">
-        <% if @user.banner.attached? %>
-          <%= image_tag @user.banner, alt: "", width: 1600, height: 600, class: "cv-banner-img" %>
-        <% elsif @user.avatar_url.present? %>
-          <%= image_tag @user.avatar_url, alt: "", width: 1600, height: 600, class: "cv-banner-img" %>
-        <% else %>
-          <div class="cv-banner-placeholder"></div>
-        <% end %>
-
-        <!-- Banner Overlays -->
-        <div class="cv-banner-badge cv-banner-badge--top-left show-desktop">
-          <span class="cv-pulse-dot"></span>
-          Mumbai • Active VIP Drops
-        </div>
-        <div class="cv-banner-badge cv-banner-badge--top-right-desktop show-desktop">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
-            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-          </svg>
-          Direct UPI Payout Verified
-        </div>
-
-        <div class="cv-banner-badge cv-banner-badge--top-right-mobile show-mobile">
-          <span class="cv-pulse-dot"></span>
-          Mumbai • Active VIP Drops
-        </div>
-
-        <!-- Desktop Bottom Banner Text -->
-        <div class="cv-banner-overlay-bottom show-desktop">
-          <div class="cv-banner-couture">COUTURE VAULT 2026</div>
-          <h2 class="cv-banner-headline">Architectural Silhouettes &amp; Contemporary Drapes</h2>
-        </div>
-        <div class="cv-banner-cam-tag show-desktop">
-          📷 Sony Alpha 7R V • 4K 60fps HDR
-        </div>
-      </div>
-
+<div class="w-phone">
+  <header class="w-topbar">
+    <div class="w-topbar-handle">
+      <span class="w-ellipsis" translate="no"><%= @user.handle %></span><%= wf_verified if @user.upi_id.present? %>
+    </div>
+    <div class="w-topbar-actions">
+      <%= render "shared/theme_switch", compact: true %>
+      <button type="button" class="w-icon-btn" data-share-url="<%= profile_url(@user.handle) %>" data-share-title="<%= @user.name %> on Wishful" aria-label="Share this profile">
+        <%= wf_icon(:share) %>
+      </button>
       <% if @own_page %>
-        <%= render "profiles/photo_drop", user: @user, field: :banner,
-              variant: "cover",
-              title: @user.banner.attached? ? "Change cover photo" : "Add a cover photo",
-              hint: "Drop a photo here, or click to choose" %>
+        <%= link_to "Studio", dashboard_path, class: "w-btn w-btn--sm w-btn--outline" %>
+      <% end %>
+    </div>
+  </header>
+
+  <div class="w-desk-head">
+    <div class="w-profile-head">
+      <div class="w-ring">
+        <% if (src = wf_avatar_src(@user)) %>
+          <%= image_tag src, alt: @user.name %>
+        <% else %>
+          <span class="w-initial" style="font-size:30px"><%= @user.name.first.upcase %></span>
+        <% end %>
+      </div>
+      <div class="w-profile-stats">
+        <div><strong><%= @posts.size %></strong> <span><%= "post".pluralize(@posts.size) %></span></div>
+        <div><strong><%= wf_compact(@user.followers_count) %></strong> <span><%= @user.followers_count == 1 ? "fan" : "fans" %></span></div>
+        <div><strong><%= @collection_count %></strong> <span><%= "collection".pluralize(@collection_count) %></span></div>
+      </div>
+    </div>
+
+    <div class="w-profile-bio">
+      <div class="w-profile-name"><%= @user.name %></div>
+      <% cat = [ @user.creator_category, @user.creator_subcategory, @user.location ].compact_blank %>
+      <% if cat.any? %><div class="w-profile-cat"><%= cat.join(" · ") %></div><% end %>
+      <% if @user.bio.present? %>
+        <div class="w-profile-text"><%= @user.bio %></div>
+      <% elsif @own_page %>
+        <%= link_to "Add a bio so fans know what you post", creator_settings_path, class: "w-profile-text w-dim" %>
       <% end %>
     </div>
 
-    <!-- ============================================================== -->
-    <!-- DESKTOP CREATOR PROFILE CARD (>= 900px)                        -->
-    <!-- ============================================================== -->
-    <section class="cv-desktop-profile-card show-desktop">
-      <div class="cv-dp-top-row">
-        <!-- Left: Avatar Stack with Layered Reel Thumbnails -->
-        <div class="cv-dp-avatar-box">
-          <div class="cv-dp-avatar-frame cv-dp-avatar-frame--back2"></div>
-          <div class="cv-dp-avatar-frame cv-dp-avatar-frame--back1"></div>
-          <div class="cv-dp-avatar">
-            <% if @user.profile_picture.attached? %>
-              <%= image_tag @user.profile_picture, alt: @user.name, width: 220, height: 220 %>
-            <% elsif @user.avatar_url.present? %>
-              <%= image_tag @user.avatar_url, alt: @user.name, width: 220, height: 220 %>
-            <% else %>
-              <%= @user.name.first&.upcase %>
-            <% end %>
-            <div class="cv-verified-disc">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Center: Name, Category, Bio -->
-        <div class="cv-dp-info">
-          <div class="cv-dp-name-row">
-            <h1 class="cv-dp-name"><%= @user.name %></h1>
-            <span class="cv-dp-verified-pill">
-              👑 Verified Fashion VIP
-            </span>
-          </div>
-          <div class="cv-dp-category">
-            Fashion &amp; Fusion, Indo-Western Drapes • Mumbai, India
-          </div>
-          <p class="cv-dp-bio">
-            32 | Mumbai. Contemporary fusion drapes, jacket blouses &amp; architectural saree silhouettes. Direct VIP unlocks below.
-          </p>
-        </div>
-
-        <!-- Right: Actions -->
-        <div class="cv-dp-actions">
-          <% if @own_page %>
-            <%= link_to "Edit Profile", profile_path(@user.handle, tab: @active_tab, edit: 1), class: "cv-btn cv-btn--outline", data: { ie_open: true } %>
-          <% elsif !signed_in? %>
-            <%= link_to "+ Follow Creator", sign_in_path, class: "cv-btn cv-btn--outline" %>
-          <% elsif @following %>
-            <%= button_to "Following", unfollow_creator_path(@user.handle), method: :delete, class: "cv-btn cv-btn--outline" %>
-          <% else %>
-            <%= button_to "+ Follow Creator", follow_creator_path(@user.handle), method: :post, class: "cv-btn cv-btn--outline" %>
-          <% end %>
-
-          <% fan_ref = current_user&.handle || "fan" %>
-          <% fan_share_url = profile_url(@user.handle, ref: fan_ref) %>
-          <button type="button" class="cv-btn cv-btn--ruby" data-share-url="<%= fan_share_url %>" data-share-title="<%= @user.name %> on Wishful">
-            Share (?ref=<%= fan_ref %>)
-          </button>
-        </div>
-      </div>
-
-      <!-- 4-Column Stats Row -->
-      <div class="cv-dp-stats-row">
-        <div class="cv-stat-box">
-          <div class="cv-stat-icon cv-stat-icon--pink">📦</div>
-          <div class="cv-stat-details">
-            <div class="cv-stat-num"><%= @paid_media_posts.size > 0 ? @paid_media_posts.size : 24 %></div>
-            <div class="cv-stat-lbl">Vault Drops Active</div>
-          </div>
-        </div>
-        <div class="cv-stat-box">
-          <div class="cv-stat-icon cv-stat-icon--yellow">⭐</div>
-          <div class="cv-stat-details">
-            <div class="cv-stat-num"><%= @user.followers_count > 0 ? number_to_human(@user.followers_count, units: { thousand: "k", million: "m" }, format: "%n%u", precision: 2, significant: true) : "18.4k" %></div>
-            <div class="cv-stat-lbl">VIP Fan Circle</div>
-          </div>
-        </div>
-        <div class="cv-stat-box">
-          <div class="cv-stat-icon cv-stat-icon--green">⚡</div>
-          <div class="cv-stat-details">
-            <div class="cv-stat-num cv-stat-num--green">Instant</div>
-            <div class="cv-stat-lbl">Direct UPI Settlement</div>
-          </div>
-        </div>
-        <div class="cv-stat-box">
-          <div class="cv-stat-icon cv-stat-icon--red">🛡️</div>
-          <div class="cv-stat-details">
-            <div class="cv-stat-num cv-stat-num--red">0% Cut</div>
-            <div class="cv-stat-lbl">100% to Creator</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================================== -->
-    <!-- MOBILE CREATOR PROFILE HEADER (< 900px)                        -->
-    <!-- ============================================================== -->
-    <header class="cv-mobile-profile show-mobile">
-      <div class="cv-mp-avatar-row">
-        <div class="cv-mp-avatar">
-          <% if @user.profile_picture.attached? %>
-            <%= image_tag @user.profile_picture, alt: @user.name, width: 180, height: 180 %>
-          <% elsif @user.avatar_url.present? %>
-            <%= image_tag @user.avatar_url, alt: @user.name, width: 180, height: 180 %>
-          <% else %>
-            <%= @user.name.first&.upcase %>
-          <% end %>
-          <div class="cv-verified-disc">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-            </svg>
-          </div>
-        </div>
-
-        <% instagram_url = @social_links.find { |s| s[0].downcase == "instagram" }&.then { |s| social_url(s[2], s[1]) } || "https://instagram.com/#{@user.handle}" %>
-        <%= link_to instagram_url, class: "cv-mp-handle-pill", target: "_blank", rel: "noopener noreferrer" do %>
-          📷 @<%= @user.handle %> <span aria-hidden="true">↗</span>
-        <% end %>
-      </div>
-
-      <div class="cv-mp-name-row">
-        <h1 class="cv-mp-name"><%= @user.name %></h1>
-        <span class="cv-mp-check-icon">
-          <svg viewBox="0 0 24 24" fill="#C2185B" width="18" height="18">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-        </span>
-      </div>
-
-      <div class="cv-mp-category">
-        Fashion &amp; Fusion, Indo-Western Drapes • Mumbai, India
-      </div>
-
-      <p class="cv-mp-bio">
-        32 | Mumbai. Contemporary fusion drapes, jacket blouses &amp; architectural saree silhouettes. Direct VIP unlocks below.
-      </p>
-
-      <!-- 3-Column Stats Card -->
-      <div class="cv-mp-stats-card">
-        <div class="cv-mp-stat-cell">
-          <div class="cv-mp-stat-val"><%= @paid_media_posts.size > 0 ? @paid_media_posts.size : 24 %></div>
-          <div class="cv-mp-stat-tag">Vault Drops</div>
-        </div>
-        <div class="cv-mp-stat-cell">
-          <div class="cv-mp-stat-val"><%= @user.followers_count > 0 ? number_to_human(@user.followers_count, units: { thousand: "k", million: "m" }, format: "%n%u", precision: 2, significant: true) : "18.4k" %></div>
-          <div class="cv-mp-stat-tag">VIP Fans</div>
-        </div>
-        <div class="cv-mp-stat-cell">
-          <div class="cv-mp-stat-val cv-mp-stat-val--green">Instant</div>
-          <div class="cv-mp-stat-tag">Direct UPI</div>
-        </div>
-      </div>
-
-      <!-- Action Buttons Row -->
-      <div class="cv-mp-actions-row">
-        <% if @own_page %>
-          <%= link_to "Edit Profile", profile_path(@user.handle, tab: @active_tab, edit: 1), class: "cv-mp-btn cv-mp-btn--dark", data: { ie_open: true } %>
-        <% elsif !signed_in? %>
-          <%= link_to sign_in_path, class: "cv-mp-btn cv-mp-btn--dark" do %>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-            Follow Creator
-          <% end %>
-        <% elsif @following %>
-          <%= button_to unfollow_creator_path(@user.handle), method: :delete, class: "cv-mp-btn cv-mp-btn--dark" do %>
-            Following
-          <% end %>
+    <div class="w-profile-actions">
+      <% if @own_page %>
+        <%= link_to "Edit profile", creator_settings_path, class: "w-btn" %>
+        <%= link_to "New post", creator_posts_path, class: "w-btn w-btn--pink" %>
+      <% else %>
+        <% if @following %>
+          <%= button_to "Following", unfollow_creator_path(@user.handle), method: :delete, class: "w-btn", form: { class: "w-inline" } %>
         <% else %>
-          <%= button_to follow_creator_path(@user.handle), method: :post, class: "cv-mp-btn cv-mp-btn--dark" do %>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-            Follow Creator
+          <%= button_to "Follow", follow_creator_path(@user.handle), class: "w-btn w-btn--pink", form: { class: "w-inline" } %>
+        <% end %>
+        <%= button_to "Message", message_creator_path(@user.handle), class: "w-btn", form: { class: "w-inline" } %>
+        <% if @wishlist_items.any? %>
+          <%= link_to spoil_me_path(@user.handle), class: "w-btn w-btn--icon", title: "Spoil #{@user.first_name}" do %>
+            <%= wf_icon(:gift, size: 16) %><span class="w-sr">Spoil <%= @user.first_name %></span>
           <% end %>
         <% end %>
-
-        <% fan_ref = current_user&.handle || "fan" %>
-        <% fan_share_url = profile_url(@user.handle, ref: fan_ref) %>
-        <button type="button" class="cv-mp-btn cv-mp-btn--pink" data-share-url="<%= fan_share_url %>" data-share-title="<%= @user.name %> on Wishful">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
-          Share (?ref=<%= fan_ref %>)
-        </button>
-      </div>
-    </header>
-
-    <!-- ============================================================== -->
-    <!-- DESKTOP HERO GRID: VIP PASS (60%) + 100% GUARANTEE (40%)       -->
-    <!-- ============================================================== -->
-    <% vip_plan = @subscription_plans.first %>
-    <% default_plan_price = vip_plan ? money(vip_plan.price_cents) : "₹499" %>
-    <section class="cv-desktop-hero-grid show-desktop">
-      <!-- Left: VIP Pass Hero Card -->
-      <div class="cv-dh-vip-card">
-        <div class="cv-dh-vip-top">
-          <span class="cv-dh-pill cv-dh-pill--red">★ MOST POPULAR PASS</span>
-          <span class="cv-dh-price"><%= default_plan_price %> <span class="cv-dh-term">/ month</span></span>
-        </div>
-        <h3 class="cv-dh-title">Ananya's Inner Circle &amp; VIP Vault Pass</h3>
-        <p class="cv-dh-sub">
-          Monthly recurring or direct single-month access. Cancel anytime directly in GPay or PhonePe.
-        </p>
-        <ul class="cv-dh-perks">
-          <li>
-            <span class="cv-dh-chk">✔</span>
-            <span><strong>Auto-unlock all 24+ Vault photoshoot drops</strong> (High-resolution 4K uncensored editorial series + raw grading files).</span>
-          </li>
-          <li>
-            <span class="cv-dh-chk">✔</span>
-            <span><strong>Private Close Friends Instagram &amp; WhatsApp Broadcast circle</strong> for real-time behind-the-scenes fittings &amp; Mumbai fashion week invites.</span>
-          </li>
-          <li>
-            <span class="cv-dh-chk">✔</span>
-            <span><strong>Direct 1:1 priority saree drape styling feedback</strong> via dedicated VIP DMs and customized lookbook critiques.</span>
-          </li>
-        </ul>
-        <div class="cv-dh-actions">
-          <% if vip_plan %>
-            <%= render "shared/buy_button", purchasable: vip_plan, creator: @user,
-                  label: "⚡ JOIN VIP PASS VIA INSTANT UPI (#{default_plan_price})",
-                  signed_out_label: "⚡ JOIN VIP PASS VIA INSTANT UPI (#{default_plan_price})",
-                  price_label: "#{default_plan_price}/mo",
-                  button_class: "cv-btn cv-btn--ruby cv-btn--large",
-                  fallback_path: subscribe_subscription_plan_path(vip_plan) %>
-          <% else %>
-            <%= link_to "⚡ JOIN VIP PASS VIA INSTANT UPI (#{default_plan_price})", sign_in_path, class: "cv-btn cv-btn--ruby cv-btn--large" %>
-          <% end %>
-          <div class="cv-dh-meta-note">
-            💬 Instant WhatsApp Invite link on UPI approval
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: 100% Direct Settlement Guarantee Card -->
-      <div class="cv-dh-guarantee-card">
-        <div class="cv-dh-guarantee-icon">🏛️</div>
-        <h3 class="cv-dh-guarantee-title">100% Direct Settlement Guarantee</h3>
-        <p class="cv-dh-guarantee-sub">
-          Zero middleman transaction cuts. Payments flow directly to Ananya's verified creator bank handle under the National Payments Corporation of India (NPCI) protocol.
-        </p>
-        <div class="cv-dh-upi-box">
-          <div class="cv-dh-upi-label">SUPPORTED UPI APPS</div>
-          <div class="cv-dh-upi-pills">
-            <span class="cv-upi-pill">GPay</span>
-            <span class="cv-upi-pill">PhonePe</span>
-            <span class="cv-upi-pill">Paytm</span>
-            <span class="cv-upi-pill">BHIM</span>
-          </div>
-        </div>
-        <ul class="cv-dh-guarantee-checks">
-          <li>✔ Cryptographic dynamic watermarking with purchaser's UPI VPA</li>
-          <li>✔ Immediate vault media decryption token via SMS &amp; Email</li>
-        </ul>
-        <a href="#about" class="cv-dh-policy-link">
-          Read Creator Direct Settlement &amp; Anti-Piracy Policy <span aria-hidden="true">→</span>
-        </a>
-      </div>
-    </section>
-
-    <!-- ============================================================== -->
-    <!-- MOBILE VIP HERO CARD & SETTLEMENT BANNER (< 900px)             -->
-    <!-- ============================================================== -->
-    <div class="cv-mobile-hero-block show-mobile">
-      <div class="cv-mh-vip-card">
-        <div class="cv-mh-top-row">
-          <div class="cv-mh-pills">
-            <span class="cv-mh-pill cv-mh-pill--gold">★ CLOSE FRIENDS PASS</span>
-            <span class="cv-mh-pill cv-mh-pill--translucent">Direct UPI</span>
-          </div>
-          <div class="cv-mh-price"><%= default_plan_price %> <span class="cv-mh-term">/ month</span></div>
-        </div>
-        <h3 class="cv-mh-title">Ananya's Inner Circle &amp; VIP Vault</h3>
-        <p class="cv-mh-sub">All-inclusive pass for serious connoisseurs &amp; supporters.</p>
-        <ul class="cv-mh-perks">
-          <li><span class="cv-mh-chk">✔</span> Auto-unlock all 24+ Vault photoshoot drops</li>
-          <li><span class="cv-mh-chk">✔</span> Private Close Friends Instagram &amp; WhatsApp circle</li>
-          <li><span class="cv-mh-chk">✔</span> Direct 1:1 priority saree drape styling feedback</li>
-        </ul>
-        <% if vip_plan %>
-          <%= render "shared/buy_button", purchasable: vip_plan, creator: @user,
-                label: "⚡ JOIN VIP PASS VIA INSTANT UPI (#{default_plan_price})",
-                signed_out_label: "⚡ JOIN VIP PASS VIA INSTANT UPI (#{default_plan_price})",
-                price_label: "#{default_plan_price}/mo",
-                button_class: "cv-mh-white-btn",
-                fallback_path: subscribe_subscription_plan_path(vip_plan) %>
-        <% else %>
-          <%= link_to "⚡ JOIN VIP PASS VIA INSTANT UPI (#{default_plan_price})", sign_in_path, class: "cv-mh-white-btn" %>
-        <% end %>
-      </div>
-
-      <!-- Mint Green 100% Direct Settlement Banner -->
-      <div class="cv-mh-settle-banner">
-        <div class="cv-mh-settle-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-        </div>
-        <div class="cv-mh-settle-text">
-          <strong>100% Direct Settlement via UPI</strong>
-          <span>GPay • PhonePe • Paytm • BHIM. Zero middleman cuts.</span>
-        </div>
-        <div class="cv-mh-settle-cut">0% Cut</div>
-      </div>
+      <% end %>
     </div>
-
-    <!-- ============================================================== -->
-    <!-- TABS NAVIGATION BAR                                            -->
-    <!-- ============================================================== -->
-    <nav class="cv-tabs" aria-label="Sections">
-      <div class="cv-tabs-inner">
-        <% @sections.each do |sec| %>
-          <% on = @active_tab == sec[:id] %>
-          <%= link_to profile_path(@user.handle, tab: sec[:id]),
-                class: "cv-tab#{' is-on' if on}",
-                aria: { current: (on ? "page" : nil) } do %>
-            <% if sec[:id] == "vault" %>
-              <span class="cv-tab-icon show-desktop" aria-hidden="true">🔒</span>
-              <span class="cv-tab-label">The Vault</span>
-              <span class="cv-tab-count show-desktop">(8 Active Drops)</span>
-              <span class="cv-tab-count show-mobile">(8) •</span>
-            <% elsif sec[:id] == "recommendations" %>
-              <span class="cv-tab-icon show-desktop" aria-hidden="true">👗</span>
-              <span class="cv-tab-label">Curated Fits</span>
-              <span class="cv-tab-count">(6)</span>
-            <% elsif sec[:id] == "wishlist" %>
-              <span class="cv-tab-icon show-desktop" aria-hidden="true">🎁</span>
-              <span class="cv-tab-label show-desktop">Wishlist</span>
-              <span class="cv-tab-label show-mobile">Wishlist 🎁</span>
-              <span class="cv-tab-count show-desktop">(3)</span>
-            <% elsif sec[:id] == "about" %>
-              <span class="cv-tab-icon show-desktop" aria-hidden="true">📅</span>
-              <span class="cv-tab-label show-desktop">1:1 Connect &amp; Styling Consultation</span>
-              <span class="cv-tab-label show-mobile">1:1 Connect</span>
-            <% else %>
-              <span class="cv-tab-label"><%= sec[:label] %></span>
-            <% end %>
-          <% end %>
-        <% end %>
-      </div>
-    </nav>
-
-    <!-- ============================================================== -->
-    <!-- 1. THE VAULT TAB                                               -->
-    <!-- ============================================================== -->
-    <% if @active_tab == "vault" || @active_tab == "collections" %>
-      <section class="cv-vault-section" id="vault"<%= ' data-ie-zone'.html_safe if @own_page %>>
-        <div class="cv-section-header">
-          <div>
-            <h2 class="cv-section-title">Exclusive Vault Releases</h2>
-            <p class="cv-section-sub">Standalone drops unlocked permanently. Instant cloud delivery &amp; zero subscription lock-in.</p>
-          </div>
-          <div class="cv-section-sort show-desktop">
-            Sorted by: <strong>Most Recent</strong>
-          </div>
-        </div>
-
-        <!-- 3-Column Desktop / 1-Column Mobile Vault Grid -->
-        <div class="cv-vault-grid">
-          <!-- Drop Card 1: Golden Hour in Goa (Uncensored 4K Set) -->
-          <article class="cv-vault-card">
-            <div class="cv-vc-media">
-              <img src="/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MiwicHVyIjoiYmxvYl9pZCJ9fQ==--47672ade4df498bee2d7deae8c11475f8b992d7f/creator-saree.jpg" alt="" class="cv-vc-blur-img">
-              <div class="cv-vc-badges">
-                <span class="cv-tag cv-tag--red">HOT DROP</span>
-                <span class="cv-tag cv-tag--black">🔒 Forensic Encrypted Watermark</span>
-              </div>
-              <div class="cv-vc-center-overlay">
-                <div class="cv-vc-lock-disc">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-                    <rect x="4.5" y="10" width="15" height="11" rx="2.5"></rect>
-                    <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
-                    <circle cx="12" cy="15.5" r="1.5" fill="currentColor"></circle>
-                  </svg>
-                </div>
-                <div class="cv-vc-lock-text">VAULT PROTECTED SET</div>
-                <div class="cv-vc-items-pill">16 Ultra-HD Photos • 2 4K Reels</div>
-              </div>
-            </div>
-            <div class="cv-vc-body">
-              <div class="cv-vc-title-row">
-                <h3 class="cv-vc-title">Golden Hour in Goa (Uncensored 4K Set)</h3>
-              </div>
-              <p class="cv-vc-desc">Full sunset sequence, wet silk drape experiment &amp; unreleased BTS clips.</p>
-              <div class="cv-vc-price-row">
-                <div class="cv-vc-pricing">
-                  <span class="cv-vc-price">₹499</span>
-                  <span class="cv-vc-strike">₹2099</span>
-                  <span class="cv-vc-discount-tag">50% OFF Direct Drop</span>
-                </div>
-              </div>
-              <div class="cv-vc-btn-row">
-                <a href="/pay/PaidMediaPost/<%= @paid_media_posts.first&.id || 1 %>" class="cv-btn cv-btn--ruby cv-btn--full">
-                  🔒 Instant UPI Unlock • ₹499
-                </a>
-                <button type="button" class="cv-vc-cart-btn" aria-label="Add to cart">🛒</button>
-              </div>
-            </div>
-          </article>
-
-          <!-- Drop Card 2: Festive Silk Drapes & Backless Blouse BTS -->
-          <article class="cv-vault-card">
-            <div class="cv-vc-media">
-              <img src="/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MSwicHVyIjoiYmxvYl9pZCJ9fQ==--4df95fbf9929da2e578212c1555000a110969a1b/creator-portrait.jpg" alt="" class="cv-vc-blur-img">
-              <div class="cv-vc-badges">
-                <span class="cv-tag cv-tag--yellow">BTS ARCHIVE</span>
-                <span class="cv-tag cv-tag--black"><span class="cv-green-dot"></span> Forensic ID Attached</span>
-              </div>
-              <div class="cv-vc-center-overlay">
-                <div class="cv-vc-lock-disc">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-                    <rect x="4.5" y="10" width="15" height="11" rx="2.5"></rect>
-                    <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
-                    <circle cx="12" cy="15.5" r="1.5" fill="currentColor"></circle>
-                  </svg>
-                </div>
-                <div class="cv-vc-items-pill">8 High-Res Photos</div>
-              </div>
-            </div>
-            <div class="cv-vc-body">
-              <div class="cv-vc-title-row">
-                <h3 class="cv-vc-title">Festive Silk Drapes &amp; Backless Blouse BTS</h3>
-              </div>
-              <p class="cv-vc-desc">Archival Mumbai studio shoot. High dynamic range color grades focusing on handloom Banarasi motifs and uncut fitting room clips.</p>
-              <div class="cv-vc-price-row">
-                <div class="cv-vc-pricing">
-                  <span class="cv-vc-price">₹299</span>
-                  <span class="cv-vc-secure-tag">Peer-Device Encrypted</span>
-                </div>
-              </div>
-              <div class="cv-vc-btn-row">
-                <a href="/pay/PaidMediaPost/<%= @paid_media_posts.second&.id || 2 %>" class="cv-btn cv-btn--navy cv-btn--full">
-                  ⚡ Unlock Drop • ₹299
-                </a>
-                <button type="button" class="cv-vc-cart-btn" aria-label="Add to cart">🛒</button>
-              </div>
-            </div>
-          </article>
-
-          <!-- Drop Card 3: Private Reels & Unreleased Outfit Haul -->
-          <article class="cv-vault-card">
-            <div class="cv-vc-media">
-              <img src="/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MiwicHVyIjoiYmxvYl9pZCJ9fQ==--47672ade4df498bee2d7deae8c11475f8b992d7f/creator-saree.jpg" alt="" class="cv-vc-blur-img">
-              <div class="cv-vc-badges">
-                <span class="cv-tag cv-tag--orange">VIDEO SET</span>
-                <span class="cv-tag cv-tag--black">2 Uncut 4K GRWM Reels</span>
-              </div>
-              <div class="cv-vc-center-overlay">
-                <div class="cv-vc-play-disc">
-                  <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-                    <polygon points="5 3 19 12 5 21 5 3"/>
-                  </svg>
-                </div>
-                <div class="cv-vc-items-pill">2 Uncut 4K GRWM Reels</div>
-              </div>
-            </div>
-            <div class="cv-vc-body">
-              <div class="cv-vc-title-row">
-                <h3 class="cv-vc-title">Private Reels &amp; Unreleased Outfit Haul</h3>
-              </div>
-              <p class="cv-vc-desc">Candid GRWM commentary, drape hacks &amp; bloopers not on IG. Detailed mirror pleating and safety-pin techniques.</p>
-              <div class="cv-vc-price-row">
-                <div class="cv-vc-pricing">
-                  <span class="cv-vc-price">₹199</span>
-                  <span class="cv-vc-val-tag">Creator Best Value</span>
-                </div>
-              </div>
-              <div class="cv-vc-btn-row">
-                <a href="/pay/PaidMediaPost/<%= @paid_media_posts.third&.id || 3 %>" class="cv-btn cv-btn--navy cv-btn--full">
-                  ⚡ Unlock Video Teaser • ₹199
-                </a>
-                <button type="button" class="cv-vc-cart-btn" aria-label="Add to cart">🛒</button>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <!-- ========================================================== -->
-        <!-- CURATED FIT PICKS SHOWCASE                                 -->
-        <!-- ========================================================== -->
-        <div class="cv-fits-section">
-          <div class="cv-fits-head">
-            <div>
-              <h3 class="cv-fits-title">
-                <span class="show-desktop">🛍️ </span>Ananya's Curated Fit Picks
-              </h3>
-              <p class="cv-fits-sub">
-                <span class="show-desktop">Handpicked partner pieces seen across Ananya's latest viral drapes. Direct store links.</span>
-                <span class="show-mobile">Items featured in recent viral reels with direct links.</span>
-              </p>
-            </div>
-            <a href="<%= profile_path(@user.handle, tab: 'recommendations') %>" class="cv-fits-view-all">
-              <span class="show-desktop">View All 32 Styling Pieces →</span>
-              <span class="show-mobile">View All (6)</span>
-            </a>
-          </div>
-
-          <div class="cv-fits-grid">
-            <!-- Item 1: Pre-Stitched Ruffled Saree -->
-            <div class="cv-fit-item">
-              <div class="cv-fit-media">
-                <span class="cv-fit-tag">Myntra</span>
-                <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=75&auto=format&fit=crop" alt="Pre-Stitched Ruffled Saree" loading="lazy">
-              </div>
-              <div class="cv-fit-body">
-                <div class="cv-fit-overline">DEEP BURGUNDY DRAPE</div>
-                <h4 class="cv-fit-name">Pre-Stitched Ruffled Saree</h4>
-                <div class="cv-fit-foot">
-                  <span class="cv-fit-price">₹2,799</span>
-                  <a href="https://example.com/pre-stitched-ruffled-saree" class="cv-fit-btn" target="_blank" rel="noopener noreferrer">Shop</a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 2: Handcrafted Kamarbandh -->
-            <div class="cv-fit-item">
-              <div class="cv-fit-media">
-                <span class="cv-fit-tag">FabIndia</span>
-                <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&q=75&auto=format&fit=crop" alt="Handcrafted Kamarbandh" loading="lazy">
-              </div>
-              <div class="cv-fit-body">
-                <div class="cv-fit-overline">PURE SILVER 925</div>
-                <h4 class="cv-fit-name">Handcrafted Kamarbandh</h4>
-                <div class="cv-fit-foot">
-                  <span class="cv-fit-price">₹2,850</span>
-                  <a href="https://example.com/handcrafted-silver-kamarbandh" class="cv-fit-btn" target="_blank" rel="noopener noreferrer">Shop</a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 3: Halter Neck Brocade Blouse -->
-            <div class="cv-fit-item show-desktop">
-              <div class="cv-fit-media">
-                <span class="cv-fit-tag">Nykaa Fashion</span>
-                <img src="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400&q=75&auto=format&fit=crop" alt="Halter Neck Brocade Blouse" loading="lazy">
-              </div>
-              <div class="cv-fit-body">
-                <div class="cv-fit-overline">GOLDEN ZARI WEAVE</div>
-                <h4 class="cv-fit-name">Halter Neck Brocade Blouse</h4>
-                <div class="cv-fit-foot">
-                  <span class="cv-fit-price">₹1,699</span>
-                  <a href="https://example.com/halter-neck-brocade-blouse" class="cv-fit-btn" target="_blank" rel="noopener noreferrer">Shop</a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Item 4: Velvet Drape Corset Top -->
-            <div class="cv-fit-item show-desktop">
-              <div class="cv-fit-media">
-                <span class="cv-fit-tag">Amazon Fashion</span>
-                <img src="https://images.unsplash.com/photo-1542272604-787c3835535d?w=240&q=72&auto=format&fit=crop" alt="Velvet Drape Corset Top" loading="lazy">
-              </div>
-              <div class="cv-fit-body">
-                <div class="cv-fit-overline">PLUM STRUCTURE</div>
-                <h4 class="cv-fit-name">Velvet Drape Corset Top</h4>
-                <div class="cv-fit-foot">
-                  <span class="cv-fit-price">₹1,499</span>
-                  <a href="https://example.com/velvet-drape-corset-top" class="cv-fit-btn" target="_blank" rel="noopener noreferrer">Shop</a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ========================================================== -->
-        <!-- DIRECT CREATOR TIP CARD                                    -->
-        <!-- ========================================================== -->
-        <div class="cv-tip-container">
-          <!-- Desktop Version -->
-          <div class="cv-dt-tip-box show-desktop">
-            <div class="cv-tip-left">
-              <div class="cv-tip-heart">💖</div>
-              <div class="cv-tip-details">
-                <h4 class="cv-tip-title">Send Direct Creator Tip</h4>
-                <p class="cv-tip-desc">Show love for styling tips, saree hacks &amp; GRWM reels. 100% credited to Ananya's account immediately.</p>
-              </div>
-            </div>
-            <div class="cv-tip-actions">
-              <button type="button" class="cv-btn cv-btn--outline">Custom Tip</button>
-              <a href="/pay/User/<%= @user.id %>?amount=100" class="cv-btn cv-btn--ruby">
-                ⚡ Quick ₹100 Tip (UPI)
-              </a>
-            </div>
-          </div>
-
-          <!-- Mobile Version -->
-          <div class="cv-mt-tip-box show-mobile">
-            <div class="cv-mt-tip-left">
-              <div class="cv-mt-tip-icon">₹</div>
-              <div class="cv-mt-tip-text">
-                <strong>Send Direct Creator Tip</strong>
-                <span>Show love for styling tips &amp; GRWM reels</span>
-              </div>
-            </div>
-            <a href="/pay/User/<%= @user.id %>?amount=100" class="cv-mt-tip-btn">
-              Tip ₹100
-            </a>
-          </div>
-        </div>
-
-        <!-- Mobile Security Note -->
-        <div class="cv-mobile-security-note show-mobile">
-          <p>🔒 End-to-End Encrypted Access • PWA Verified</p>
-          <p>Wishful Platform • Built for Independent Creators &amp; Indian Fans</p>
-          <p class="cv-registered-sub">@<%= @user.handle %> • Registered verified talent via Wishful</p>
-        </div>
-      </section>
-    <% end %>
-
-    <!-- ============================================================== -->
-    <!-- 2. CURATED FITS TAB                                            -->
-    <!-- ============================================================== -->
-    <% if @active_tab == "recommendations" %>
-      <section class="cv-tab-section" id="recommendations"<%= ' data-ie-zone'.html_safe if @own_page %>>
-        <div class="cv-section-header">
-          <div>
-            <h2 class="cv-section-title">Ananya's Curated Looks &amp; Saree Wardrobe</h2>
-            <p class="cv-section-sub">Direct source links, boutique picks &amp; GRWM essentials.</p>
-          </div>
-          <span class="cv-section-sort"><%= pluralize(@all_links.size, "item") %></span>
-        </div>
-
-        <div class="cv-fits-grid cv-fits-grid--full">
-          <% @all_links.each do |link| %>
-            <div class="cv-fit-item">
-              <div class="cv-fit-media">
-                <span class="cv-fit-tag"><%= link.merchant.presence || "Boutique" %></span>
-                <% if link.image_url.present? %>
-                  <img src="<%= link.image_url %>" alt="<%= link.title %>" loading="lazy">
-                <% else %>
-                  <div class="cv-fit-placeholder">👗</div>
-                <% end %>
-              </div>
-              <div class="cv-fit-body">
-                <div class="cv-fit-overline"><%= link.description.presence || "CURATED PIECE" %></div>
-                <h4 class="cv-fit-name"><%= link.title %></h4>
-                <div class="cv-fit-foot">
-                  <span class="cv-fit-price"><%= link.price.presence || "₹2,499" %></span>
-                  <a href="<%= link.url %>" class="cv-fit-btn" target="_blank" rel="noopener noreferrer">Shop</a>
-                </div>
-              </div>
-            </div>
-          <% end %>
-        </div>
-      </section>
-    <% end %>
-
-    <!-- ============================================================== -->
-    <!-- 3. WISHLIST TAB                                                -->
-    <!-- ============================================================== -->
-    <% if @active_tab == "wishlist" %>
-      <section class="cv-tab-section" id="wishlist"<%= ' data-ie-zone'.html_safe if @own_page %>>
-        <div class="cv-section-header">
-          <div>
-            <h2 class="cv-section-title">Spoil Me &amp; Shoot Wardrobe ✨</h2>
-            <p class="cv-section-sub">Help fund pieces for upcoming festive lookbooks, bespoke blouses &amp; 4K Vault productions.</p>
-          </div>
-        </div>
-
-        <% if @wishlists.any? { |w| w.wishlist_items.any? } %>
-          <% @wishlists.each do |w| %>
-            <div class="wish-grid wf-stagger" style="margin-top: 20px;">
-              <%= render partial: "wishlists/item", collection: w.wishlist_items %>
-            </div>
-          <% end %>
-        <% else %>
-          <div class="pf-empty"><div class="empty-title">No wishlist items right now</div></div>
-        <% end %>
-      </section>
-    <% end %>
-
-    <!-- ============================================================== -->
-    <!-- 4. ABOUT / 1:1 CONNECT TAB                                     -->
-    <!-- ============================================================== -->
-    <% if @active_tab == "about" %>
-      <section class="cv-tab-section" id="about"<%= ' data-ie-zone'.html_safe if @own_page %>>
-        <div class="cv-section-header">
-          <div>
-            <h2 class="cv-section-title">1:1 Connect &amp; Styling Consultations</h2>
-            <p class="cv-section-sub">Book personal styling sessions, saree drape tutorials &amp; VIP channels over direct UPI.</p>
-          </div>
-        </div>
-
-        <% if @meet_offers.any? %>
-          <div class="stack" style="margin-top: 20px;">
-            <%= render partial: "meet_offers/card", collection: @meet_offers %>
-          </div>
-        <% end %>
-
-        <% if @contact_reveals.any? %>
-          <div class="stack" style="margin-top: 20px;">
-            <%= render partial: "contact_reveals/card", collection: @contact_reveals %>
-          </div>
-        <% end %>
-
-        <div class="cv-about-bio-card" style="margin-top: 32px; padding: 24px; border-radius: 20px; background: #fff; border: 1px solid var(--p-line);">
-          <h3 style="font-size: 18px; font-weight: 700; margin: 0 0 12px;">About <%= @user.name %></h3>
-          <p style="font-size: 14.5px; line-height: 1.6; color: var(--p-body); margin: 0 0 16px;"><%= @user.bio %></p>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <span class="cv-tag cv-tag--black">📍 <%= @user.location.presence || "Mumbai, India" %></span>
-            <span class="cv-tag cv-tag--black">⚡ UPI: <%= @user.upi_id %></span>
-            <span class="cv-tag cv-tag--red">Zero Platform Cut</span>
-          </div>
-        </div>
-      </section>
-    <% end %>
-
-    <!-- ============================================================== -->
-    <!-- DESKTOP FOOTER (>= 900px)                                      -->
-    <!-- ============================================================== -->
-    <footer class="cv-desktop-footer show-desktop">
-      <div class="cv-df-left">
-        <span class="cv-df-dot"></span>
-        <span>CreatorVault Direct Pay Protocol • NPCI &amp; UPI Instant Settle Compliant</span>
-      </div>
-      <div class="cv-df-links">
-        <a href="/legal/creator-protection">Creator Protection</a>
-        <a href="/legal/watermark-verification">Watermark Verification</a>
-        <a href="/legal/terms">Terms &amp; Dispute Resolution</a>
-        <a href="/support">Support &amp; FAQ</a>
-      </div>
-    </footer>
-
-    <!-- ============================================================== -->
-    <!-- MOBILE STICKY FLOATING CTA BAR (< 900px)                       -->
-    <!-- ============================================================== -->
-    <div class="cv-mobile-sticky-bar show-mobile">
-      <div class="cv-ms-inner">
-        <a href="/pay/User/<%= @user.id %>?amount=100" class="cv-ms-tip-btn">
-          <span>💖</span> Tip
-        </a>
-        <a href="<%= profile_path(@user.handle, tab: 'vault') %>" class="cv-ms-unlock-btn">
-          🔒 Unlock All Drops • VIP Pass <%= default_plan_price %>
-        </a>
-      </div>
-    </div>
-
   </div>
+
+  <% highlights = [] %>
+  <% highlights << [ "VIP", close_friends_path(@user.handle), :vip ] if @plan %>
+  <% highlights << [ "Lives", live_session_path(@lives.first), :live ] if @lives.any? %>
+  <% @link_lists.first(4).each { |list| highlights << [ list.title.truncate(10), public_link_list_path(@user.handle, list.slug), list ] } %>
+  <% highlights << [ "Spoil me", spoil_me_path(@user.handle), :gift ] if @wishlist_items.any? %>
+  <% highlights << [ "Book", profile_path(@user.handle, tab: "book"), :calendar ] if @meet_offers.any? || @contact_reveals.any? %>
+  <% if highlights.any? %>
+    <nav class="w-highlights" aria-label="Highlights">
+      <% highlights.each do |label, path, kind| %>
+        <%= link_to path, class: "w-highlight" do %>
+          <span class="w-highlight-ring <%= "w-highlight-ring--gold" if kind == :vip %>">
+            <% if kind == :vip %><span>★</span>
+            <% elsif kind == :live %>
+              <% if (src = wf_avatar_src(@user)) %><%= image_tag src, alt: "" %><% else %><span><%= wf_icon(:video) %></span><% end %>
+            <% elsif kind == :gift %><span><%= wf_icon(:gift) %></span>
+            <% elsif kind == :calendar %><span><%= wf_icon(:calendar) %></span>
+            <% else %>
+              <% item = kind.fallback_image_item %>
+              <% if kind.cover.attached? %><%= image_tag url_for(kind.cover), alt: "" %>
+              <% elsif item && item.image_source.is_a?(String) %><%= image_tag item.image_source, alt: "" %>
+              <% elsif item %><%= image_tag wf_post_image_src(item.image_source), alt: "" %>
+              <% else %><span><%= wf_icon(:link) %></span><% end %>
+            <% end %>
+          </span>
+          <span><%= label %></span>
+        <% end %>
+      <% end %>
+    </nav>
+  <% end %>
+
+  <nav class="w-tabs" aria-label="Sections">
+    <% [ [ "posts", "Posts", :grid ], [ "collections", "Collections", :stack ], [ "shop", "Shop", :bag ], [ "book", "Book", :calendar ] ].each do |id, label, icon| %>
+      <%= link_to profile_path(@user.handle, tab: id), class: "w-tab", aria: { current: (@tab == id ? "page" : nil) } do %>
+        <%= wf_icon(icon) %><%= label %>
+      <% end %>
+    <% end %>
+  </nav>
+
+  <%= render "profiles/tab_#{@tab}" %>
 </div>
+
+<% if @plan && !@own_page && !current_user&.subscribed_to?(@plan) %>
+  <%= link_to close_friends_path(@user.handle), class: "w-dock" do %>
+    <% if @tab == "collections" && @collection_count.positive? %>
+      <span><span class="w-gold">★</span> All <%= @collection_count %> with Close Friends</span>
+      <span class="w-btn w-btn--pink"><%= @plan.price_label %>/mo</span>
+    <% else %>
+      <span><span class="w-gold">★</span> Get every collection</span>
+      <span class="w-btn w-btn--pink">Close Friends</span>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= render "shared/install_prompt", creator: @user unless @own_page %>

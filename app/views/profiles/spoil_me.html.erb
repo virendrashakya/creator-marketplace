@@ -1,0 +1,102 @@
+<% content_for :title, "Spoil #{@user.first_name} | Wishful" %>
+<% content_for :chrome, "fan" %>
+<% raised = @item.raised_cents %>
+<% pct = @item.target_cents.positive? ? [ (raised * 100.0 / @item.target_cents).round, 100 ].min : 0 %>
+<% givers = @item.gift_contributions.select { |g| g.status == "paid" }.map(&:giver).uniq %>
+<% remaining_rupees = @item.remaining_cents / 100 %>
+<% presets = [ 101, 501, 1001 ].select { |a| a <= remaining_rupees } %>
+<% presets = [ remaining_rupees ] if presets.empty? && remaining_rupees.positive? %>
+<% default_amount = presets[presets.size > 1 ? 1 : 0] %>
+
+<div class="w-phone w-phone--flush" style="display:flex;flex-direction:column;min-height:100dvh">
+  <header class="w-topbar w-topbar--line">
+    <%= link_to profile_path(@user.handle), class: "w-icon-btn", aria: { label: "Back" } do %><%= wf_icon(:back) %><% end %>
+    <span style="font-size:15px;font-weight:800">Spoil me</span>
+    <span style="width:36px"></span>
+  </header>
+
+  <div style="padding:16px 16px 0">
+    <div style="border-radius:18px;overflow:hidden;position:relative;height:260px;background:var(--w-raise)">
+      <% if @item.image_url.present? %>
+        <%= image_tag @item.image_url, alt: "", style: "width:100%;height:100%;object-fit:cover" %>
+      <% elsif (src = wf_banner_src(@user)) %>
+        <%= image_tag src, alt: "", style: "width:100%;height:100%;object-fit:cover;object-position:center 60%" %>
+      <% end %>
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(14,14,16,.9))"></div>
+      <div style="position:absolute;left:14px;right:14px;bottom:14px">
+        <div class="w-eyebrow w-eyebrow--gold"><%= @item.wishlist.title.truncate(40) %></div>
+        <div style="font-size:21px;font-weight:800;letter-spacing:-.02em;margin-top:3px"><%= @item.title %></div>
+      </div>
+    </div>
+
+    <div class="w-row w-row--between" style="align-items:baseline;margin-top:16px">
+      <span style="font-size:24px;font-weight:800"><%= money(raised, @item.currency) %> <span class="w-sub" style="font-size:14px;font-weight:600">of <%= money(@item.target_cents, @item.currency) %></span></span>
+      <span class="w-pink" style="font-size:15px;font-weight:800"><%= pct %>%</span>
+    </div>
+    <div class="w-progress" style="margin-top:10px"><span style="width:<%= pct %>%"></span></div>
+
+    <% if givers.any? %>
+      <div class="w-row" style="margin-top:14px">
+        <div class="w-faces">
+          <% givers.first(4).each_with_index do |g, i| %>
+            <span style="background:<%= %w[#3B2330 #23303B #2F3B23 #3B3423][i] %>"><%= g.handle.first.upcase %></span>
+          <% end %>
+        </div>
+        <span class="w-sub" style="font-size:12.5px">
+          <%= givers.first(2).map(&:handle).to_sentence(two_words_connector: ", ", last_word_connector: ", ") %><%= " and #{givers.size - 2} #{givers.size - 2 == 1 ? "other" : "others"}" if givers.size > 2 %> chipped in
+        </span>
+      </div>
+    <% end %>
+
+    <% if @item.note.present? %>
+      <p class="w-sub" style="font-size:13px;line-height:1.5;margin:12px 0 0"><%= @item.note %></p>
+    <% end %>
+  </div>
+
+  <% if @item.open_for_gifts? %>
+    <%= form_with url: new_payment_claim_path("WishlistItem", @item.id), method: :get, local: true, html: { style: "display:flex;flex-direction:column;flex:1" } do %>
+      <div style="padding:0 16px">
+        <div class="w-step-label" style="margin-top:24px">Chip in</div>
+        <div class="w-amounts" data-amounts="#gift_amount">
+          <% presets.each do |amount| %>
+            <label class="w-amount">
+              <input type="radio" name="preset" value="<%= amount %>" <%= "checked" if amount == default_amount %>>
+              ₹<%= number_with_delimiter(amount, delimiter: ",") %>
+            </label>
+          <% end %>
+        </div>
+        <div class="w-input-wrap w-input-wrap--sm" style="margin-top:10px;height:48px;border-radius:14px">
+          <span class="w-prefix">₹</span>
+          <input type="number" name="amount" id="gift_amount" min="1" max="<%= remaining_rupees %>" step="1" value="<%= default_amount %>" inputmode="numeric" aria-label="Amount in rupees">
+          <span class="w-dim" style="font-size:12px;padding-right:10px">up to <%= money(@item.remaining_cents, @item.currency) %></span>
+        </div>
+      </div>
+      <div style="margin-top:auto;padding:24px 16px calc(20px + env(safe-area-inset-bottom))">
+        <button type="submit" class="w-btn w-btn--pink w-btn--lg w-btn--block" data-amount-cta data-template="Gift %s over UPI">Gift ₹<%= number_with_delimiter(default_amount, delimiter: ",") %> over UPI</button>
+      </div>
+    <% end %>
+  <% else %>
+    <div style="margin-top:auto;padding:24px 16px">
+      <div class="w-card w-card--pad w-center" style="gap:6px">
+        <div style="font-size:15px;font-weight:800">Fully gifted</div>
+        <div class="w-sub" style="font-size:13px">Thank you to everyone who chipped in.</div>
+      </div>
+    </div>
+  <% end %>
+
+  <% others = @items.reject { |i| i == @item }.select(&:open_for_gifts?) %>
+  <% if others.any? %>
+    <div style="padding:0 16px 24px">
+      <div class="w-eyebrow" style="margin-bottom:10px">More on <%= @user.first_name %>'s list</div>
+      <div class="w-stack" style="gap:8px">
+        <% others.first(4).each do |other| %>
+          <%= link_to spoil_me_path(@user.handle, item: other.id), class: "w-list-row" do %>
+            <% if other.image_url.present? %><%= image_tag other.image_url, alt: "", class: "w-thumb" %><% else %><span class="w-thumb w-center" style="justify-content:center"><%= wf_icon(:gift) %></span><% end %>
+            <div class="w-grow"><div class="w-row-title"><%= other.title %></div><div class="w-row-meta"><%= money(other.raised_cents, other.currency) %> of <%= money(other.target_cents, other.currency) %></div></div>
+            <span class="w-round-btn"><%= wf_icon(:arrow) %></span>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

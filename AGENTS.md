@@ -21,16 +21,22 @@ Whenever any code, architectural pattern, database schema, route, controller, se
 
 ---
 
-## 3. Design System Standard: Indian Modern Editorial Chic
+## 3. Design System Standard: Dark "Studio" (since 13 Oct 2026)
 
-- **Brand Token Memory**: Refer to `.agents/rules/design_system.md`.
-- **Typography**: Clean, geometric modernism driven entirely by **Plus Jakarta Sans** across display, headlines, bio, Rupee amounts, micro-metadata, navigation bars, and lock badges.
+The light "Indian Modern Editorial Chic" theme was replaced by one dark system, ported from the Claude Design files. `DESIGN.md` and `.agents/rules/design_system.md` describe the old light theme and are kept for history only.
+
+- **Source of truth**: `public/assets/wf.css` (tokens and `w-` components) and `app/helpers/wf_helper.rb` (icons, avatars, cover sources, Studio nav). Screenshots: `docs/screenshots/redesign-2026-10/`.
+- **Typography**: **Plus Jakarta Sans** everywhere.
 - **Colors**:
-  - Primary: `#C2185B` (Sindoor Ruby)
-  - Secondary: `#D4AF37` (Zari Gold)
-  - Tertiary: `#7A1C3C` (Deep Jamun / Velvet Maroon)
-  - Neutral: `#111317` (Kajal Charcoal)
-  - Canvas: `#F6F7F5` / `#F9F9FF` (Raw Alabaster Silk)
-- **Responsive Viewport Standard**:
-  - **Mobile (< 900px)**: 100% full-bleed mobile canvas, top bar with `Wishful` + `CREATOR & FAN` pill, 3-column stats, rich ruby VIP pass, 1-col Vault drops, 2-col Curated Fit Picks, sticky bottom CTA bar.
-  - **Desktop (>= 900px)**: 1200px responsive canvas with full top navbar (`CreatorVault`), wide hero cover with overline and camera tag, 4-column stats row, 2-column split (VIP Pass hero + 100% Direct Settlement Guarantee card), 3-column Vault drop cards with cart triggers, 4-column Curated Fit Picks, wide tip box, and desktop footer.
+  - Page `#0E0E10`, cards `#16161A`, raised `#1C1C20`, lines `#26262A`
+  - Text `#F5F5F7`, secondary `#A1A1AA`, muted `#71717A`
+  - Ruby pink `#E0306A`: the paid action and active states
+  - Gold `#F5B942`: Close Friends and anything the fan already owns
+  - Green `#4ADE80`: money received, approved, live
+  - Rose `#F87196`: errors and short payments
+- **Layouts** (`content_for :chrome`):
+  - `fan`: phone-width (≤480px) dark app for everything a fan sees; desktop storefront widens to 960px.
+  - `list`: public link-list page; floats over a blurred copy of its cover on desktop.
+  - `studio`: creator web app with the 220px sidebar (Overview, Posts, Collections, Shop, Link lists, Book, Payments, Messages, Settings); collapses to a scrolling top strip under 960px.
+- **Light theme**: `html[data-theme="light"]` re-points the same tokens (page `#F6F5F2`, cards `#FFFFFF`, text `#17151A`, pink `#D6245F`, gold text `#A86A00`, green `#15803D`). Use tokens, not hex, in new markup so both themes work. Anything over a photo or video stays dark.
+- **Rules**: prices appear only where a fan can act on them (never in the Collections grid); the first item of a collection is its public cover; every unlocked image goes through `/paid_media_posts/:id/media`.

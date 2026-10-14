@@ -71,7 +71,7 @@ class LiveSessionsController < ApplicationController
     # Cancelled rather than deleted: people may have it in their calendar,
     # and the chat transcript is a record.
     @live.update!(status: "canceled")
-    redirect_to inline_edit_redirect(dashboard_path), notice: "Live canceled."
+    redirect_to schedule_path, notice: "Live canceled."
   end
 
   private

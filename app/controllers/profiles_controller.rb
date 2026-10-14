@@ -1,110 +1,88 @@
+# The public storefront at /:handle, and the two fan screens that hang off
+# it: joining Close Friends and chipping in to a Spoil Me gift.
+#
+# Four tabs, in the order a fan should meet them:
+#   Posts        free, public posts. No prices anywhere.
+#   Collections  only each collection's cover, a lock and a count.
+#   Shop         the creator's looks, as affiliate links.
+#   Book         calls, lives, paid DMs and private circles.
 class ProfilesController < ApplicationController
-  # Below this many recommendations, search and category chips are noise.
-  # Wishlink's creators have thousands of items and need both; a creator with
-  # twelve links does not.
-  FILTER_THRESHOLD = 12
+  TABS = %w[posts collections shop book].freeze
+  TAB_ALIASES = {
+    "vault" => "collections", "media" => "collections", "unlock" => "collections",
+    "recommendations" => "shop", "fits" => "shop", "feed" => "posts",
+    "about" => "book", "time" => "book"
+  }.freeze
+
+  before_action :load_creator
 
   def show
-    handle = params[:handle].to_s.delete_prefix("@")
-    @user = User.find_by!(handle: handle)
-    return head :not_found if @user.blocks?(current_user)
-
-    @collections = @user.link_collections.includes(:product_links)
-    @uncategorized_links = @user.product_links.where(link_collection_id: nil)
-    @paid_media_posts = @user.paid_media_posts.published.order(created_at: :desc)
-    @wishlists = @user.wishlists.where(published: true).includes(:wishlist_items)
-    @contact_reveals = @user.contact_reveals.published.order(:created_at)
-    @meet_offers = @user.meet_offers.published.includes(:meet_slots).order(:created_at)
-    @creator_posts = @user.creator_posts.where(published: true).includes(:creator_post_likes, creator_post_comments: :user).order(created_at: :desc)
-
-    @following = current_user.present? && current_user != @user && current_user.following?(@user)
-    @own_page = current_user == @user
-
-    # Search and category filters only earn their space once a page has enough
-    # items that scrolling hurts. Below the threshold they are chrome that
-    # makes a small page look empty.
-    @all_links = @collections.flat_map(&:product_links) + @uncategorized_links.to_a
-    @filterable = @all_links.size >= FILTER_THRESHOLD
-
-    # Collection names double as category chips: a creator who grouped their
-    # links has already named their own categories.
-    @categories = @collections.reject { |c| c.product_links.empty? }
-    @query = params[:q].to_s.strip
-    if @query.present?
-      needle = @query.downcase
-      @matched_links = @all_links.select do |l|
-        [ l.title, l.description, l.merchant ].compact.any? { |v| v.downcase.include?(needle) }
-      end
-    end
-
-    # Which sections actually have something in them. The tab bar is built from
-    # this, so it can never offer an empty tab.
-    #
-    # Order matters: the first one with content becomes the default tab, and
-    # what a fan should see first is the creator's own work, not a catalogue
-    # of other people's products.
-    # Tab labels stay short and generic even when a creator renames a section:
-    # "Behind the haul" is a good heading and a terrible tab. The heading is
-    # theirs, the tab label is ours, and they are allowed to differ.
-    @paid_media_collections = @user.paid_media_collections.published.order(created_at: :desc)
-    @subscription_plans = @user.subscription_plans.where(active: true).order(:price_cents)
-
-    # Five dedicated tabs on the creator/fan page:
-    # 1. Posts: all updates and feed
-    # 2. Recommendations: recommended products and referral links
-    # 3. Vault: exclusive paywalled drops, uncut sets, Close Friends / VIP tiers
-    # 4. Wishlist: fan gifting lists
-    # 5. About: creator bio, reach, booking time slots & direct contact ("Sell your time and reach")
-    @sections = [
-      { id: "vault",           label: "The Vault",       icon: "vault", badge: (@paid_media_posts.size > 0 ? @paid_media_posts.size : nil) },
-      { id: "recommendations", label: "Curated Fits",    icon: "shop",  badge: (@all_links.size > 0 ? @all_links.size : nil) },
-      { id: "wishlist",        label: "Spoil Me Wishlist", icon: "gift", badge: (@wishlists.sum { |w| w.wishlist_items.size } > 0 ? @wishlists.sum { |w| w.wishlist_items.size } : nil) },
-      { id: "about",           label: "About",           icon: "about" }
-    ]
-    @sections << { id: "posts", label: "Feed", icon: "post", badge: (@creator_posts.size > 0 ? @creator_posts.size : nil) } if @creator_posts.any?
-
-    tab_aliases = {
-      "feed"        => "posts",
-      "shop"        => "recommendations",
-      "fits"        => "recommendations",
-      "collections" => "vault",
-      "unlock"      => "vault",
-      "media"       => "vault",
-      "exclusives"  => "vault",
-      "gifts"       => "wishlist",
-      "time"        => "about"
-    }
+    @posts = @user.creator_posts.where(published: true).with_attached_media.order(created_at: :desc)
+    @collections = @user.live_collections.includes(paid_media_posts: [ :media_attachment, :preview_attachment ])
+    @collections = @collections.reject { |c| c.paid_media_posts.empty? }
+    @drops = @user.paid_media_posts.published.standalone.order(created_at: :desc)
+    @links = @user.product_links.includes(:link_collection)
+    @link_categories = @user.link_collections.select { |c| @links.any? { |l| l.link_collection_id == c.id } }
+    @meet_offers = @user.meet_offers.published.includes(meet_slots: :meet_booking).order(:created_at)
+    # On now, or still to come. A scheduled live whose time has long passed
+    # (never started) is not something to offer a fan.
+    @lives = @user.live_sessions.where(unlisted: false)
+                  .where("status = ? OR (status = ? AND scheduled_for > ?)", "live", "scheduled", 2.hours.ago)
+                  .order(:scheduled_for).limit(3)
+    @contact_reveals = @user.contact_reveals.published.order(:price_cents)
+    @plan = @user.close_friends_plan
+    @wishlist_items = WishlistItem.joins(:wishlist).where(wishlists: { user_id: @user.id, published: true }).where(status: "available")
+    @link_lists = @user.link_lists.on_profile.includes(:items).order(updated_at: :desc)
 
     requested = params[:tab].to_s.downcase
-    requested = tab_aliases[requested] || requested
-
-    valid_ids = @sections.map { |s| s[:id] }
-
-    @shared_drop = @paid_media_posts.find_by(id: params[:drop]) if params[:drop].present?
-    @referring_user = User.find_by(handle: params[:ref].to_s.downcase.strip) if params[:ref].present?
-
-    if @shared_drop.present?
-      @active_tab = "vault"
-    elsif valid_ids.include?(requested)
-      @active_tab = requested
-    elsif @query.present?
-      @active_tab = "recommendations"
+    requested = TAB_ALIASES.fetch(requested, requested)
+    @tab = if TABS.include?(requested)
+      requested
+    elsif @posts.any?
+      "posts"
+    elsif @collections.any? || @drops.any?
+      "collections"
     else
-      has_content = {
-        "vault"           => @paid_media_posts.any? || @paid_media_collections.any? || @subscription_plans.any?,
-        "recommendations" => @all_links.any?,
-        "wishlist"        => @wishlists.any? { |w| w.wishlist_items.any? },
-        "posts"           => @creator_posts.any?,
-        "about"           => true
-      }
-      @active_tab = valid_ids.find { |id| has_content[id] } || "vault"
+      "posts"
     end
-    @social_links = [
-      [ "Instagram", @user.instagram_handle, "https://instagram.com/" ],
-      [ "YouTube", @user.youtube_handle, "https://youtube.com/@" ],
-      [ "X", @user.x_handle, "https://x.com/" ],
-      [ "Reddit", @user.reddit_handle, "https://reddit.com/user/" ],
-      [ "TikTok", @user.tiktok_handle, "https://tiktok.com/@" ]
-    ].select { |link| link[1].present? }
+
+    if @tab == "shop" && params[:cat].present?
+      @active_category = @link_categories.find { |c| c.id.to_s == params[:cat].to_s }
+      @shown_links = @active_category ? @links.select { |l| l.link_collection_id == @active_category.id } : @links
+    else
+      @shown_links = @links
+    end
+
+    @collection_count = @collections.size + @drops.size
+  end
+
+  # 3i. One screen, the plan's perks and its price, then off to pay.
+  def close_friends
+    @plans = @user.subscription_plans.where(active: true).order(:price_cents)
+    return redirect_to(profile_path(@user.handle), alert: "#{@user.first_name} hasn't opened Close Friends yet.") if @plans.empty?
+
+    @plan = @plans.find { |p| p.id.to_s == params[:plan].to_s } || @plans.first
+    @member = current_user&.subscribed_to?(@plan)
+    @collection_count = @user.live_collections.count
+    @next_live = @user.live_sessions.upcoming.where(access: "members").where(scheduled_for: Time.current..).first
+    @members = @user.active_close_friends.count
+  end
+
+  # 3j. The creator's open gifts, the biggest one first.
+  def spoil_me
+    @items = WishlistItem.joins(:wishlist).where(wishlists: { user_id: @user.id, published: true })
+                         .includes(gift_contributions: :giver).order(:created_at)
+    @item = @items.find { |i| i.id.to_s == params[:item].to_s } || @items.find(&:open_for_gifts?) || @items.first
+    return redirect_to(profile_path(@user.handle), alert: "#{@user.first_name} has no gifts on their list right now.") unless @item
+  end
+
+  private
+
+  def load_creator
+    handle = params[:handle].to_s.delete_prefix("@").downcase
+    @user = User.find_by!(handle: handle)
+    head :not_found if @user.blocks?(current_user)
+    @own_page = current_user.present? && current_user == @user
+    @following = current_user.present? && !@own_page && current_user.following?(@user)
   end
 end

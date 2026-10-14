@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_13_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -131,6 +131,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
     t.boolean "published", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "paid_media_collection_id"
+    t.index ["paid_media_collection_id"], name: "index_creator_posts_on_paid_media_collection_id"
     t.index ["user_id"], name: "index_creator_posts_on_user_id"
   end
 
@@ -187,6 +189,41 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_link_collections_on_user_id"
+  end
+
+  create_table "link_list_items", force: :cascade do |t|
+    t.bigint "link_list_id", null: false
+    t.string "kind", default: "url", null: false
+    t.string "url"
+    t.string "title", null: false
+    t.string "subtitle"
+    t.string "image_url"
+    t.string "price_label"
+    t.bigint "product_link_id"
+    t.bigint "paid_media_collection_id"
+    t.integer "position", default: 0, null: false
+    t.integer "clicks_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["link_list_id", "position"], name: "index_link_list_items_on_link_list_id_and_position"
+    t.index ["link_list_id"], name: "index_link_list_items_on_link_list_id"
+    t.index ["paid_media_collection_id"], name: "index_link_list_items_on_paid_media_collection_id"
+    t.index ["product_link_id"], name: "index_link_list_items_on_product_link_id"
+  end
+
+  create_table "link_lists", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "title", null: false
+    t.string "slug", null: false
+    t.string "description"
+    t.boolean "published", default: true, null: false
+    t.boolean "show_on_profile", default: true, null: false
+    t.string "socials", default: [], null: false, array: true
+    t.integer "opens_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "slug"], name: "index_link_lists_on_user_id_and_slug", unique: true
+    t.index ["user_id"], name: "index_link_lists_on_user_id"
   end
 
   create_table "live_messages", force: :cascade do |t|
@@ -274,6 +311,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
     t.index ["meet_offer_id"], name: "index_meet_slots_on_meet_offer_id"
   end
 
+  create_table "otp_codes", force: :cascade do |t|
+    t.string "phone_number", null: false
+    t.string "code_digest", null: false
+    t.string "purpose", default: "sign_in", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "consumed_at"
+    t.integer "attempts", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["phone_number", "created_at"], name: "index_otp_codes_on_phone_number_and_created_at"
+  end
+
   create_table "paid_media_collections", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "subscription_plan_id"
@@ -284,6 +333,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
     t.boolean "published", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "release_at"
+    t.boolean "allow_downloads", default: false, null: false
     t.index ["subscription_plan_id"], name: "index_paid_media_collections_on_subscription_plan_id"
     t.index ["user_id"], name: "index_paid_media_collections_on_user_id"
   end
@@ -302,6 +353,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
     t.datetime "updated_at", null: false
     t.bigint "paid_media_collection_id"
     t.bigint "subscription_plan_id"
+    t.integer "position", default: 0, null: false
+    t.index ["paid_media_collection_id", "position"], name: "idx_on_paid_media_collection_id_position_4c7b84c86c"
     t.index ["paid_media_collection_id"], name: "index_paid_media_posts_on_paid_media_collection_id"
     t.index ["subscription_plan_id"], name: "index_paid_media_posts_on_subscription_plan_id"
     t.index ["user_id"], name: "index_paid_media_posts_on_user_id"
@@ -324,11 +377,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
     t.string "reject_reason"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "link_list_id"
     t.index ["claimant_id", "purchasable_type", "purchasable_id"], name: "index_payment_claims_on_claimant_and_purchasable"
     t.index ["claimant_id"], name: "index_payment_claims_on_claimant_id"
     t.index ["creator_id", "status"], name: "index_payment_claims_on_creator_id_and_status"
     t.index ["creator_id", "utr"], name: "index_payment_claims_unique_utr_per_creator", unique: true, where: "(utr IS NOT NULL)"
     t.index ["creator_id"], name: "index_payment_claims_on_creator_id"
+    t.index ["link_list_id"], name: "index_payment_claims_on_link_list_id"
     t.index ["purchasable_type", "purchasable_id"], name: "index_payment_claims_on_purchasable"
   end
 
@@ -350,6 +405,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
     t.index ["user_id"], name: "index_product_links_on_user_id"
   end
 
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "endpoint", null: false
+    t.string "p256dh", null: false
+    t.string "auth", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
+    t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
+  end
+
   create_table "subscription_plans", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "name", null: false
@@ -364,7 +430,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
 
   create_table "users", force: :cascade do |t|
     t.string "name", null: false
-    t.string "email", null: false
+    t.string "email"
     t.string "handle", null: false
     t.string "password_digest", null: false
     t.string "bio"
@@ -397,8 +463,15 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
     t.string "meet_heading"
     t.string "reveal_heading"
     t.text "links_note"
+    t.datetime "phone_verified_at"
+    t.string "blog_url"
+    t.string "backup_upi_id"
+    t.integer "auto_approve_under_cents"
+    t.boolean "notify_whatsapp_claims", default: false, null: false
+    t.datetime "onboarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["handle"], name: "index_users_on_handle", unique: true
+    t.index ["phone_number"], name: "index_users_on_phone_number", unique: true, where: "(phone_number IS NOT NULL)"
   end
 
   create_table "wishlist_items", force: :cascade do |t|
@@ -438,6 +511,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
   add_foreign_key "creator_post_comments", "users"
   add_foreign_key "creator_post_likes", "creator_posts"
   add_foreign_key "creator_post_likes", "users"
+  add_foreign_key "creator_posts", "paid_media_collections"
   add_foreign_key "creator_posts", "users"
   add_foreign_key "creator_subscriptions", "subscription_plans"
   add_foreign_key "creator_subscriptions", "users", column: "subscriber_id"
@@ -447,6 +521,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
   add_foreign_key "gift_contributions", "wishlist_items"
   add_foreign_key "link_clicks", "product_links"
   add_foreign_key "link_collections", "users"
+  add_foreign_key "link_list_items", "link_lists"
+  add_foreign_key "link_list_items", "paid_media_collections"
+  add_foreign_key "link_list_items", "product_links"
+  add_foreign_key "link_lists", "users"
   add_foreign_key "live_messages", "live_sessions"
   add_foreign_key "live_messages", "users"
   add_foreign_key "live_sessions", "subscription_plans"
@@ -462,11 +540,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_020000) do
   add_foreign_key "paid_media_posts", "paid_media_collections"
   add_foreign_key "paid_media_posts", "subscription_plans"
   add_foreign_key "paid_media_posts", "users"
+  add_foreign_key "payment_claims", "link_lists"
   add_foreign_key "payment_claims", "users", column: "claimant_id"
   add_foreign_key "payment_claims", "users", column: "creator_id"
   add_foreign_key "payment_claims", "users", column: "reviewed_by_id"
   add_foreign_key "product_links", "link_collections"
   add_foreign_key "product_links", "users"
+  add_foreign_key "push_subscriptions", "users"
   add_foreign_key "subscription_plans", "users"
   add_foreign_key "wishlist_items", "wishlists"
   add_foreign_key "wishlists", "users"

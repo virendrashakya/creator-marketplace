@@ -25,6 +25,25 @@ class User < ApplicationRecord
 
   has_secure_password
 
+  # Phone numbers are stored as E.164. Indian numbers are what this app is
+  # for, so a bare ten-digit number is read as +91.
+  def self.normalize_phone(value)
+    digits = value.to_s.gsub(/[^0-9]/, "")
+    return nil if digits.blank?
+    return "+91#{digits}" if digits.length == 10
+    return "+#{digits}" if digits.length == 12 && digits.start_with?("91")
+
+    "+#{digits}"
+  end
+
+  def self.find_by_phone(value)
+    normalized = normalize_phone(value)
+    normalized && find_by(phone_number: normalized)
+  end
+
+  has_many :link_lists, dependent: :destroy
+  has_many :push_subscriptions, dependent: :destroy
+
   has_many :link_collections, dependent: :destroy
   has_many :product_links, dependent: :destroy
   has_many :paid_media_posts, dependent: :destroy
@@ -103,7 +122,13 @@ class User < ApplicationRecord
   ].freeze
 
   validates :name, presence: true
-  validates :email, presence: true, uniqueness: { case_sensitive: false }, format: { with: URI::MailTo::EMAIL_REGEXP }
+  # Email is optional for people who joined with a phone number, but an
+  # account must carry at least one way to sign back in.
+  validates :email, uniqueness: { case_sensitive: false }, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
+  validates :email, presence: true, if: -> { phone_number.blank? }
+  validates :phone_number, uniqueness: true, format: { with: /\A\+[0-9]{10,15}\z/, message: "should be a valid mobile number" }, allow_blank: true
+  validates :backup_upi_id, format: { with: UPI_ID_FORMAT, message: "should look like yourname@bank" }, allow_blank: true
+  validates :auto_approve_under_cents, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :handle, presence: true, uniqueness: { case_sensitive: false },
                      format: { with: /\A[a-z0-9_]+\z/, message: "can use lowercase letters, numbers, and underscores" },
                      exclusion: { in: RESERVED_HANDLES, message: "is reserved by the platform" },
@@ -124,11 +149,75 @@ class User < ApplicationRecord
   end
 
   def normalize_handle
-    self.email = email.to_s.downcase.strip
+    self.email = email.to_s.downcase.strip.presence
+    self.phone_number = self.class.normalize_phone(phone_number) if phone_number.present?
     self.handle = handle.to_s.downcase.strip.delete_prefix("@")
   end
 
   public
+
+  # Accounts created by OTP still need a password digest (the column and
+  # has_secure_password both insist), but nobody is ever told this one: these
+  # people sign in with a code.
+  def assign_unusable_password
+    self.password = SecureRandom.base58(32) if password_digest.blank?
+  end
+
+  def creator?
+    account_type == "creator"
+  end
+
+  def first_name
+    name.to_s.split.first
+  end
+
+  # The plan the storefront sells as "Close Friends": the cheapest active one.
+  def close_friends_plan
+    subscription_plans.where(active: true).order(:price_cents).first
+  end
+
+  def active_close_friends
+    CreatorSubscription.joins(:subscription_plan)
+                       .where(subscription_plans: { user_id: id }, status: "active")
+                       .where("current_period_ends_at > ?", Time.current)
+  end
+
+  # Collections a fan can see right now: published and past their release.
+  def live_collections
+    paid_media_collections.live.order(created_at: :desc)
+  end
+
+  SOCIALS = [
+    # key, label, column, url prefix (nil: the column holds a full URL)
+    [ "instagram", "Instagram", :instagram_handle, "https://instagram.com/" ],
+    [ "youtube",   "YouTube",   :youtube_handle,   "https://youtube.com/@" ],
+    [ "website",   "Website",   :website_url,      nil ],
+    [ "blog",      "Blog",      :blog_url,         nil ],
+    [ "x",         "X",         :x_handle,         "https://x.com/" ],
+    [ "tiktok",    "TikTok",    :tiktok_handle,    "https://tiktok.com/@" ],
+    [ "reddit",    "Reddit",    :reddit_handle,    "https://reddit.com/user/" ]
+  ].freeze
+
+  # The socials this creator has filled in, ready to render. Website and blog
+  # are shown without their scheme, the way people say them out loud.
+  def social_links(only: nil)
+    SOCIALS.filter_map do |key, label, column, prefix|
+      value = public_send(column).to_s.strip
+      next if value.blank?
+      next if only && !only.include?(key)
+
+      if prefix
+        handle = value.delete_prefix("@").delete_prefix("u/")
+        display = key == "youtube" ? "/#{handle}" : "@#{handle}"
+        { key: key, label: label, display: display, url: "#{prefix}#{ERB::Util.url_encode(handle)}" }
+      else
+        url = value.match?(%r{\Ahttps?://}i) ? value : "https://#{value}"
+        next if ProductLink.http_url_error(url)
+
+        { key: key, label: label, display: value.sub(%r{\Ahttps?://}i, "").delete_suffix("/"), url: url }
+      end
+    end
+  end
 
   def subscribed_to?(plan)
     creator_subscriptions.where(subscription_plan: plan, status: "active").where("current_period_ends_at > ?", Time.current).exists?

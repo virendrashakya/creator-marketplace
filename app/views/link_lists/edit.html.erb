@@ -1,0 +1,147 @@
+<%# 4c. The list editor, with a live preview and the ways to share it. %>
+<% content_for :title, "#{@list.title} | Wishful Studio" %>
+<% content_for :main_class, "w-main w-main--split" %>
+<% url = public_link_list_url(current_user.handle, @list.slug) %>
+<% socials = current_user.social_links %>
+
+<section class="w-pane">
+  <div class="w-crumbs">
+    <%= link_to "Link lists", link_lists_path %><span>/</span><strong><%= @list.title %></strong>
+    <span class="w-crumbs-end">Saved · <%= wf_ago(@list.updated_at) %></span>
+  </div>
+
+  <%= form_with model: @list, url: link_list_path(@list), method: :patch, local: true, multipart: true, html: { class: "w-stack", style: "gap:16px" } do |f| %>
+    <%= render "paid_media_collections/errors", record: @list %>
+    <div class="w-row" style="gap:16px;align-items:stretch">
+      <label style="width:110px;height:138px;border-radius:12px;overflow:hidden;position:relative;flex:none;background:var(--w-raise);cursor:pointer">
+        <% if @list.cover.attached? %><%= image_tag url_for(@list.cover), alt: "", style: "width:100%;height:100%;object-fit:cover" %><% end %>
+        <span style="position:absolute;left:6px;right:6px;bottom:6px;height:26px;border-radius:8px;background:rgba(14,14,16,.7);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700"><%= @list.cover.attached? ? "Change cover" : "Add cover" %></span>
+        <%= f.file_field :cover, accept: "image/*", style: "position:absolute;inset:0;opacity:0;cursor:pointer", data: { autosubmit: true } %>
+      </label>
+      <div class="w-grow w-stack" style="gap:10px">
+        <label class="w-field"><span class="w-label">Title</span><%= f.text_field :title, class: "w-input", style: "font-size:15px;font-weight:800", maxlength: 80 %></label>
+        <label class="w-field"><span class="w-label">Description</span><%= f.text_field :description, class: "w-input", maxlength: 160, placeholder: "One line about this list" %></label>
+      </div>
+    </div>
+
+    <div>
+      <div class="w-row w-row--between" style="align-items:baseline;margin-bottom:8px">
+        <span class="w-eyebrow">Socials, blog &amp; website on this list</span>
+        <span class="w-sub" style="font-size:12px">Tap to show or hide on this list</span>
+      </div>
+      <%= hidden_field_tag "link_list[socials_present]", "1", id: nil %>
+      <div class="w-chips" style="gap:6px">
+        <% socials.each do |s| %>
+          <% on = @list.socials.include?(s[:key]) %>
+          <label class="w-row" style="gap:8px;height:40px;padding:0 12px 0 10px;border-radius:10px;font-size:12.5px;cursor:pointer;<%= on ? "background:rgba(224,48,106,.10);border:1px solid rgba(224,48,106,.55)" : "background:var(--w-card);border:1px solid var(--w-line);opacity:.55" %>">
+            <input type="checkbox" name="link_list[socials][]" value="<%= s[:key] %>" <%= "checked" if on %> data-autosubmit style="width:16px;height:16px;accent-color:#E0306A;margin:0">
+            <%= wf_social_icon(s[:key]) %><span style="font-weight:700"><%= s[:label] %></span><span class="w-sub"><%= s[:display] %></span>
+          </label>
+        <% end %>
+        <%= link_to "+ Add", creator_settings_path, class: "w-btn w-btn--dashed", style: "height:40px;border-radius:10px;font-size:12.5px" %>
+      </div>
+    </div>
+    <noscript><%= f.submit "Save", class: "w-btn" %></noscript>
+    <button type="submit" class="w-btn w-btn--sm" style="align-self:flex-start">Save title &amp; description</button>
+  <% end %>
+
+  <%= form_with url: link_list_items_path(@list), method: :post, local: true, html: { class: "w-input-wrap w-input-wrap--sm", style: "height:48px;border-radius:12px;padding:0 6px 0 14px;background:var(--w-bg-deep);border:1.5px solid var(--w-pink);box-shadow:0 0 0 4px rgba(224,48,106,.14)" } do %>
+    <%= wf_icon(:link, size: 16, color: "#A1A1AA") %>
+    <input type="text" name="item[url]" placeholder="Paste a link: product, video, anything" style="font-size:14px" aria-label="Paste a link" autocomplete="off" required>
+    <button type="submit" class="w-btn w-btn--pink" style="height:36px;border-radius:9px">Add</button>
+  <% end %>
+  <div class="w-row" style="gap:8px;margin-top:-6px;flex-wrap:wrap">
+    <% if @collections.any? %>
+      <%= form_with url: link_list_items_path(@list), method: :post, local: true, html: { class: "w-inline" } do %>
+        <label class="w-btn w-btn--sm" style="position:relative">+ My collection
+          <select name="item[paid_media_collection_id]" data-autosubmit style="position:absolute;inset:0;opacity:0;cursor:pointer" aria-label="Add one of your collections">
+            <option value="">Pick a collection…</option>
+            <% @collections.each do |c| %><option value="<%= c.id %>"><%= c.title %> · <%= c.price_label %></option><% end %>
+          </select>
+        </label>
+      <% end %>
+    <% end %>
+    <% if @products.any? %>
+      <%= form_with url: link_list_items_path(@list), method: :post, local: true, html: { class: "w-inline" } do %>
+        <label class="w-btn w-btn--sm" style="position:relative">+ From Shop
+          <select name="item[product_link_id]" data-autosubmit style="position:absolute;inset:0;opacity:0;cursor:pointer" aria-label="Add a Shop item">
+            <option value="">Pick from your Shop…</option>
+            <% @products.each do |p| %><option value="<%= p.id %>"><%= p.title %><%= " · #{p.price}" if p.price.present? %></option><% end %>
+          </select>
+        </label>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="w-eyebrow"><%= pluralize(@list.items.size, "link") %> · drag to reorder</div>
+  <div class="w-stack" style="gap:6px" data-sortable="<%= reorder_link_list_path(@list) %>" data-sortable-reload>
+    <% @list.items.each do |item| %>
+      <% source = item.image_source %>
+      <div class="w-list-row w-list-row--compact" data-id="<%= item.id %>">
+        <span class="w-dim" style="cursor:grab"><%= wf_icon(:grip, size: 16) %></span>
+        <% if item.collection? && item.paid_media_collection %>
+          <% if (src = wf_collection_cover_src(item.paid_media_collection)) %><%= image_tag src, alt: "", class: "w-thumb w-thumb--40" %><% end %>
+        <% elsif source.is_a?(String) %>
+          <%= image_tag source, alt: "", class: "w-thumb w-thumb--40" %>
+        <% else %>
+          <span class="w-thumb w-thumb--40 <%= item.video? ? "w-thumb--video" : "w-center" %>" style="justify-content:center"><%= wf_icon(item.video? ? :play : :link, size: 14) %></span>
+        <% end %>
+        <details class="w-grow" style="min-width:0">
+          <summary style="list-style:none;cursor:pointer">
+            <div class="w-ellipsis" style="font-size:13.5px;font-weight:700"><%= item.title %></div>
+            <div class="w-sub" style="font-size:12px;margin-top:1px"><%= item.collection? ? "Your Wishful collection · paid" : [ item.host, ("affiliate" if item.product_link_id) ].compact.join(" · ") %></div>
+          </summary>
+          <%= form_with url: link_list_item_path(@list, item), method: :patch, local: true, html: { class: "w-stack", style: "gap:8px;margin-top:10px" } do %>
+            <input type="text" name="item[title]" value="<%= item.title %>" class="w-input" aria-label="Title" required>
+            <input type="text" name="item[subtitle]" value="<%= item.subtitle %>" class="w-input" placeholder="Subtitle, e.g. myntra.com · ₹8,999" aria-label="Subtitle">
+            <% unless item.collection? || item.product_link_id %>
+              <input type="url" name="item[image_url]" value="<%= item.image_url %>" class="w-input" placeholder="Image URL (optional)" aria-label="Image URL">
+              <input type="text" name="item[price_label]" value="<%= item.price_label %>" class="w-input" placeholder="Price, e.g. ₹1,499 (optional)" aria-label="Price">
+            <% end %>
+            <div class="w-row"><button type="submit" class="w-btn w-btn--sm w-btn--pink">Save</button></div>
+          <% end %>
+        </details>
+        <span style="font-size:13px;font-weight:800;color:var(--w-soft);white-space:nowrap"><%= item.price_label %></span>
+        <span class="w-dim" style="font-size:11.5px;white-space:nowrap"><%= item.clicks_count %> taps</span>
+        <%= button_to link_list_item_path(@list, item), method: :delete, class: "w-btn w-btn--xs w-btn--ghost", form: { class: "w-inline" }, title: "Remove" do %><%= wf_icon(:trash) %><span class="w-sr">Remove</span><% end %>
+      </div>
+    <% end %>
+    <% if @list.items.empty? %>
+      <div class="w-dashed w-sub" style="padding:20px;text-align:center;font-size:13px">Paste a link above, or add one of your collections or Shop items.</div>
+    <% end %>
+  </div>
+</section>
+
+<aside class="w-aside">
+  <div class="w-row w-row--between">
+    <span style="font-size:13px;font-weight:800">Public page</span>
+    <span class="w-status <%= "w-status--live" if @list.status_label == "Live" %>"><%= @list.status_label %></span>
+  </div>
+  <div class="w-input-wrap w-input-wrap--sm" style="display:flex">
+    <span class="w-ellipsis" style="flex:1" translate="no"><%= request.host %>/<%= current_user.handle %>/<strong><%= @list.slug %></strong></span>
+    <button type="button" class="w-btn w-btn--light w-btn--sm" data-copy="<%= url %>">Copy</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+    <%= link_to "WhatsApp", "https://wa.me/?text=#{ERB::Util.url_encode("#{@list.title} #{url}")}", class: "w-btn w-btn--sm", style: "font-size:11.5px;padding:0", target: "_blank", rel: "noopener" %>
+    <button type="button" class="w-btn w-btn--sm" style="font-size:11.5px;padding:0" data-share-url="<%= url %>" data-share-title="<%= @list.title %>">Story</button>
+    <%= link_to "QR code", qr_link_list_path(@list), class: "w-btn w-btn--sm", style: "font-size:11.5px;padding:0" %>
+    <button type="button" class="w-btn w-btn--sm" style="font-size:11.5px;padding:0" data-copy="<%= url %>" data-copied="Copied">Bio link</button>
+  </div>
+
+  <div class="w-phone-frame">
+    <iframe src="<%= public_link_list_path(current_user.handle, @list.slug, preview: 1) %>" title="Preview of the public page" loading="lazy" tabindex="-1"></iframe>
+  </div>
+
+  <%= form_with model: @list, url: link_list_path(@list), method: :patch, local: true, html: { class: "w-stack", style: "gap:8px" } do |f| %>
+    <div class="w-card w-switch-row" style="padding:12px 14px">
+      <span>Show on my profile</span>
+      <span class="w-switch"><%= f.hidden_field :show_on_profile, value: "0", id: nil %><%= f.check_box :show_on_profile, { include_hidden: false, data: { autosubmit: true }, aria: { label: "Show on my profile" } } %><span></span></span>
+    </div>
+    <div class="w-card w-switch-row" style="padding:12px 14px">
+      <span>Link is on</span>
+      <span class="w-switch"><%= f.hidden_field :published, value: "0", id: nil %><%= f.check_box :published, { include_hidden: false, data: { autosubmit: true }, aria: { label: "Link is on" } } %><span></span></span>
+    </div>
+  <% end %>
+  <%= button_to "Delete list", link_list_path(@list), method: :delete, class: "w-btn w-btn--ghost w-btn--sm", form: { style: "margin:0" },
+        data: { turbo_confirm: "Delete #{@list.title}? Its link stops working." } %>
+</aside>

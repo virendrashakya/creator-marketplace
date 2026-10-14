@@ -1,0 +1,64 @@
+<% content_for :title, "Close Friends · #{@user.name} | Wishful" %>
+<% content_for :chrome, "fan" %>
+<% included = @user.live_collections.where(subscription_plan_id: @plan.id).count %>
+
+<div class="w-phone w-phone--flush" style="display:flex;flex-direction:column;min-height:100dvh">
+  <div class="w-cf-hero">
+    <%= link_to profile_path(@user.handle), class: "w-icon-btn", style: "position:absolute;top:12px;left:12px", aria: { label: "Close" } do %><%= wf_icon(:close) %><% end %>
+    <div class="w-ring w-ring--gold" style="width:96px;height:96px">
+      <% if (src = wf_avatar_src(@user)) %><%= image_tag src, alt: "" %><% else %><span class="w-initial" style="font-size:32px"><%= @user.name.first %></span><% end %>
+    </div>
+    <div class="w-eyebrow w-eyebrow--gold" style="margin-top:14px;letter-spacing:.14em">★ Close Friends</div>
+    <div style="font-size:24px;font-weight:800;letter-spacing:-.03em;margin-top:4px;text-align:center;padding:0 16px">Join <%= @user.first_name %>'s inner circle</div>
+  </div>
+
+  <div class="w-stack" style="padding:6px 18px 0;gap:14px">
+    <div class="w-perk">
+      <span class="w-perk-tick"><%= wf_icon(:check) %></span>
+      <div>
+        <div style="font-size:14.5px;font-weight:700"><%= included.positive? && included == @collection_count ? "All #{included} collections, unlocked" : "#{included} #{"collection".pluralize(included)} unlocked" %></div>
+        <div class="w-sub" style="font-size:12.5px;margin-top:1px">Plus every new drop included with Close Friends, the day it lands</div>
+      </div>
+    </div>
+    <div class="w-perk">
+      <span class="w-perk-tick"><%= wf_icon(:check) %></span>
+      <div>
+        <div style="font-size:14.5px;font-weight:700">Close Friends lives</div>
+        <div class="w-sub" style="font-size:12.5px;margin-top:1px">
+          <%= @next_live ? "#{@next_live.title} · #{@next_live.scheduled_for.strftime("%a %-d %b")}, #{wf_time(@next_live.scheduled_for)}" : "Members-only broadcasts, with chat" %>
+        </div>
+      </div>
+    </div>
+    <div class="w-perk">
+      <span class="w-perk-tick"><%= wf_icon(:check) %></span>
+      <div>
+        <div style="font-size:14.5px;font-weight:700">Priority DMs</div>
+        <div class="w-sub" style="font-size:12.5px;margin-top:1px">Your messages are marked as Close Friends</div>
+      </div>
+    </div>
+    <% if @plan.description.present? %>
+      <p class="w-sub" style="font-size:13px;line-height:1.5;margin:0"><%= @plan.description %></p>
+    <% end %>
+  </div>
+
+  <div class="w-row" style="gap:8px;padding:20px 18px 0;align-items:stretch">
+    <% @plans.first(3).each do |plan| %>
+      <%= link_to close_friends_path(@user.handle, plan: plan.id), class: "w-plan-opt#{" is-on" if plan == @plan}", aria: { current: (plan == @plan ? "true" : nil) } do %>
+        <div style="font-size:12px;font-weight:700;color:<%= plan == @plan ? "var(--w-gold)" : "var(--w-sub)" %>"><%= plan.name.truncate(22) %></div>
+        <div style="font-size:22px;font-weight:800;margin-top:4px"><%= plan.price_label %></div>
+        <div class="w-sub" style="font-size:11.5px;margin-top:2px">per month</div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div style="margin-top:auto;padding:24px 18px calc(20px + env(safe-area-inset-bottom))">
+    <% if @member %>
+      <div class="w-sub" style="font-size:12px;text-align:center;margin-bottom:10px">You're in. Paying again adds another month.</div>
+    <% else %>
+      <div class="w-sub" style="font-size:12px;text-align:center;margin-bottom:10px">
+        <%= @members.positive? ? "#{@members} #{@members == 1 ? "fan is" : "fans are"} in · " : "" %>one month per payment, no auto-debit
+      </div>
+    <% end %>
+    <%= link_to "Continue to UPI · #{@plan.price_label}", new_payment_claim_path("SubscriptionPlan", @plan.id), class: "w-btn w-btn--gold w-btn--lg w-btn--block" %>
+  </div>
+</div>

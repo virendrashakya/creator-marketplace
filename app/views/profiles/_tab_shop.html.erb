@@ -1,0 +1,42 @@
+<% if @links.any? %>
+  <% if @link_categories.any? %>
+    <nav class="w-chips w-chips--scroll" style="padding:14px 16px 0" aria-label="Categories">
+      <%= link_to "All · #{@links.size}", profile_path(@user.handle, tab: "shop"), class: "w-chip", aria: { current: (@active_category ? nil : "page") } %>
+      <% @link_categories.each do |cat| %>
+        <%= link_to cat.name, profile_path(@user.handle, tab: "shop", cat: cat.id), class: "w-chip", aria: { current: (@active_category == cat ? "page" : nil) } %>
+      <% end %>
+    </nav>
+  <% end %>
+  <div class="w-shop">
+    <% @shown_links.each do |link| %>
+      <div>
+        <%= link_to visit_product_link_path(link), class: "w-shop-img", target: "_blank", rel: "nofollow sponsored noopener" do %>
+          <% if link.image_url.present? %>
+            <%= image_tag link.image_url, alt: "", loading: "lazy" %>
+          <% else %>
+            <span class="w-center" style="height:100%;justify-content:center;color:var(--w-dim);font-size:28px"><%= wf_icon(:bag) %></span>
+          <% end %>
+          <% if link.featured? %><span class="w-pill"><%= wf_icon(:play) %>Featured</span><% end %>
+        <% end %>
+        <% if link.merchant.present? %><div class="w-shop-merchant"><%= link.merchant %></div><% end %>
+        <div class="w-shop-title"><%= link.title %></div>
+        <div class="w-shop-foot">
+          <span class="w-shop-price"><%= link.price %></span>
+          <%= link_to "Shop ↗", visit_product_link_path(link), class: "w-btn w-btn--sm", target: "_blank", rel: "nofollow sponsored noopener" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <p class="w-dim" style="font-size:11.5px;text-align:center;padding:20px 16px 0">
+    <%= @user.first_name %> may earn a small commission from these links.
+  </p>
+<% else %>
+  <div class="w-center" style="padding:48px 40px 0;gap:10px">
+    <div class="w-big-icon w-big-icon--pink"><%= wf_icon(:bag) %></div>
+    <div style="font-size:17px;font-weight:800"><%= @own_page ? "Share the looks you love" : "Nothing in the shop yet" %></div>
+    <% if @own_page %>
+      <div class="w-sub" style="font-size:13.5px;line-height:1.5">Add the outfits, makeup and gear fans ask about.</div>
+      <%= link_to "+ Add a product", new_product_link_path, class: "w-btn w-btn--pink", style: "margin-top:8px" %>
+    <% end %>
+  </div>
+<% end %>

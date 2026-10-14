@@ -1,0 +1,104 @@
+<% content_for :title, "#{@claim.item_title} | Wishful" %>
+<% content_for :chrome, "fan" %>
+<% summary = wf_purchase_summary(@claim.purchasable) %>
+<% name = @creator.first_name %>
+
+<% if @claim.rejected? %>
+  <%# 10b. The creator could not find the money. %>
+  <div class="w-screen">
+    <div class="w-row" style="justify-content:flex-end">
+      <%= link_to profile_path(@creator.handle), class: "w-icon-btn", aria: { label: "Close" } do %><%= wf_icon(:close) %><% end %>
+    </div>
+    <div class="w-center" style="margin-top:20px">
+      <div class="w-big-icon w-big-icon--rose"><%= wf_icon(:alert, stroke: 2.2) %></div>
+      <h1 class="w-screen-title" style="margin-top:18px;font-size:24px"><%= name %> couldn't find this payment</h1>
+      <p class="w-screen-lede">No money has been taken by Wishful. Check the UTR, or message <%= name %> with your receipt.</p>
+    </div>
+    <div class="w-card w-card--r16 w-stack" style="margin-top:22px;padding:14px 16px;gap:8px">
+      <div class="w-kv"><span>Item</span><span><%= @claim.item_title %></span></div>
+      <div class="w-kv"><span>UTR you sent</span><span class="w-mono"><%= @claim.short_utr.presence || "Screenshot only" %></span></div>
+      <div class="w-kv"><span>Amount</span><span><%= @claim.money_label(@claim.claimed_amount_cents || @claim.amount_cents) %></span></div>
+      <% if @claim.reject_reason.present? %>
+        <div class="w-kv"><span><%= name %>'s note</span><span>"<%= @claim.reject_reason %>"</span></div>
+      <% end %>
+    </div>
+    <div class="w-screen-foot">
+      <%= link_to "Fix UTR and resend", new_payment_claim_path(@claim.purchasable_type, @claim.purchasable_id), class: "w-btn w-btn--pink w-btn--lg w-btn--block" %>
+      <%= button_to "Message #{name}", message_creator_path(@creator.handle), class: "w-btn w-btn--lg w-btn--block", form: { style: "margin:0" } %>
+    </div>
+  </div>
+
+<% else %>
+  <%# 3g. Sent, and waiting; or approved. %>
+  <div class="w-screen" <%= %(data-poll="15000").html_safe if @claim.pending? %>>
+    <div class="w-row" style="justify-content:flex-end">
+      <%= link_to profile_path(@creator.handle), class: "w-icon-btn", aria: { label: "Close" } do %><%= wf_icon(:close) %><% end %>
+    </div>
+    <div class="w-center" style="margin-top:18px">
+      <div style="position:relative;width:120px;height:150px">
+        <% if summary[:image] %>
+          <%= image_tag summary[:image], alt: "", style: "position:absolute;top:8px;left:0;width:120px;height:150px;border-radius:14px;object-fit:cover" %>
+        <% end %>
+        <span style="position:absolute;right:-10px;bottom:-18px;width:40px;height:40px;border-radius:999px;background:<%= @claim.approved? ? "var(--w-green)" : "var(--w-gold)" %>;display:flex;align-items:center;justify-content:center;border:3px solid var(--w-bg);color:var(--w-gold-ink)">
+          <%= wf_icon(@claim.approved? ? :check : :clock, size: 18, stroke: 2.4) %>
+        </span>
+      </div>
+      <h1 class="w-screen-title" style="margin-top:34px;font-size:26px"><%= @claim.approved? ? "It's yours" : "Sent to #{name}" %></h1>
+      <p class="w-screen-lede" style="max-width:290px">
+        <%= @claim.approved? ? "#{name} approved your payment. #{@claim.item_title} is unlocked." : "#{name} checks their bank and approves. Most unlocks happen within 2 hours." %>
+      </p>
+    </div>
+
+    <div class="w-card w-card--r16 w-timeline" style="margin-top:28px">
+      <div class="w-tl-step">
+        <span class="w-tl-dot w-tl-dot--done"><%= wf_icon(:check, size: 12) %></span>
+        <div class="w-tl-body"><div class="w-tl-title">Paid <%= @claim.money_label(@claim.claimed_amount_cents || @claim.amount_cents) %> over UPI</div><div class="w-tl-meta"><%= wf_time(@claim.created_at) %></div></div>
+      </div>
+      <div class="w-tl-step">
+        <span class="w-tl-dot w-tl-dot--done"><%= wf_icon(:check, size: 12) %></span>
+        <div class="w-tl-body"><div class="w-tl-title"><%= @claim.utr.present? ? "UTR sent" : "Screenshot sent" %></div><div class="w-tl-meta"><%= [ @claim.short_utr.presence, wf_time(@claim.created_at) ].compact.join(" · ") %></div></div>
+      </div>
+      <div class="w-tl-step">
+        <span class="w-tl-dot <%= @claim.approved? ? "w-tl-dot--done" : "w-tl-dot--now" %>"><%= wf_icon(:check, size: 12) if @claim.approved? %></span>
+        <div class="w-tl-body"><div class="w-tl-title"><%= @claim.approved? ? "#{name} confirmed it" : "#{name} is checking" %></div><div class="w-tl-meta"><%= @claim.approved? ? wf_time(@claim.reviewed_at) : "Usually under 2 hrs" %></div></div>
+      </div>
+      <div class="w-tl-step">
+        <span class="w-tl-dot <%= "w-tl-dot--done" if @claim.approved? %>"><%= wf_icon(:check, size: 12) if @claim.approved? %></span>
+        <div class="w-tl-body">
+          <div class="w-tl-title <%= "is-todo" unless @claim.approved? %>"><%= @claim.item_kind == "unlock" ? "Unlocked for you" : "#{@claim.item_kind.capitalize} confirmed" %></div>
+          <div class="w-tl-meta"><%= @claim.item_kind == "unlock" ? "Watermarked to @#{current_user.handle}" : "We'll let you know" %></div>
+        </div>
+      </div>
+    </div>
+
+    <% if @claim.pending? && @ask_push %>
+      <div class="w-card w-card--r16" style="margin-top:12px;padding:16px">
+        <div class="w-row" style="gap:12px;align-items:flex-start">
+          <span class="w-big-icon w-big-icon--pink" style="width:40px;height:40px;font-size:18px;flex:none"><%= wf_icon(:bell) %></span>
+          <div class="w-grow">
+            <div style="font-size:14.5px;font-weight:800">Know the moment it's yours</div>
+            <div class="w-sub" style="font-size:12.5px;margin-top:2px;line-height:1.45">We'll ping you when <%= name %> approves, and before their lives. Nothing else.</div>
+          </div>
+        </div>
+        <button type="button" class="w-btn w-btn--pink w-btn--block" style="margin-top:12px" data-push-enable>Turn on notifications</button>
+      </div>
+    <% elsif @claim.pending? && current_user.phone_verified_at && current_user.notify_whatsapp_claims? %>
+      <div class="w-card w-card--r16 w-row w-row--between" style="margin-top:12px;padding:14px 16px">
+        <div>
+          <div style="font-size:14px;font-weight:700">We'll tell you on WhatsApp</div>
+          <div class="w-sub" style="font-size:12px;margin-top:2px"><%= current_user.phone_number.to_s.sub(/\A(\+\d{2})(\d{2})\d+(\d{4})\z/, '\1 \2•••• \3') %></div>
+        </div>
+        <span class="w-status w-status--ok">On</span>
+      </div>
+    <% end %>
+
+    <div class="w-screen-foot">
+      <% if @claim.approved? %>
+        <%= link_to (@claim.item_kind == "unlock" ? "Open it now" : "Back to @#{@creator.handle}"), @destination, class: "w-btn w-btn--gold w-btn--lg w-btn--block" %>
+      <% else %>
+        <%= link_to "Back to @#{@creator.handle}", profile_path(@creator.handle), class: "w-btn w-btn--lg w-btn--block" %>
+        <div class="w-dim" style="text-align:center;font-size:12px">This page updates on its own.</div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -2,10 +2,10 @@ class SubscriptionPlansController < ApplicationController
   before_action :require_user
   before_action :set_plan, only: %i[edit update destroy]
   def new; @subscription_plan = current_user.subscription_plans.new(currency: "INR"); end
-  def create; @subscription_plan = current_user.subscription_plans.new(plan_params); @subscription_plan.save ? (redirect_to(dashboard_path, notice: "Subscription plan created.")) : (render :new, status: :unprocessable_entity); end
+  def create; @subscription_plan = current_user.subscription_plans.new(plan_params); @subscription_plan.save ? (redirect_to(creator_settings_path, notice: "Subscription plan created.")) : (render :new, status: :unprocessable_entity); end
   def edit; end
-  def update; @subscription_plan.update(plan_params) ? (redirect_to(dashboard_path, notice: "Plan updated.")) : (render :edit, status: :unprocessable_entity); end
-  def destroy; @subscription_plan.destroy; redirect_to dashboard_path, notice: "Plan removed."; end
+  def update; @subscription_plan.update(plan_params) ? (redirect_to(creator_settings_path, notice: "Plan updated.")) : (render :edit, status: :unprocessable_entity); end
+  def destroy; @subscription_plan.destroy; redirect_to creator_settings_path, notice: "Plan removed."; end
   def subscribe
     plan = SubscriptionPlan.where(active: true).find(params[:id])
     unless Rails.env.development? || Rails.env.test?

@@ -53,6 +53,34 @@ This document tracks implemented security safeguards and upcoming improvements f
   - Captured and saved 10 full-page desktop screenshots (1280×683) into `docs/screenshots/`: Landing, Sign Up, Sign In, Dashboard, Fan Profile, Schedule, Live Studio, Payment Claims, Messages, and Creator Settings.
   - Screenshots embedded in `DESIGN.md` with relative paths for portable viewing.
 
+- [x] **Dark "Studio" redesign (13 Oct 2026)** from the Claude Design files
+  - One dark design system (`public/assets/wf.css`, `WfHelper`) replacing the light theme and the five creator themes.
+  - Fan storefront with Posts / Collections / Shop / Book tabs, highlights, Close Friends bar, desktop layout, empty states.
+  - Collection-centric selling: ordered items, public cover, release scheduling, Close Friends inclusion, downloads switch; collection page, watermarked viewer, standalone drops.
+  - Pay sheet with UPI app deep links and QR, fan sign-in only at pay time, waiting / approved / rejected receipts, reused-UTR error, shortfall "Ask ₹N" DM, optional auto-approve, CSV export.
+  - Studio sidebar app: Overview, Posts, Collections + editor, Shop, Link lists, Book (week calendar), Payments, Messages (three panes), Settings; phone live studio.
+  - Link lists (`LinkList`, `LinkListItem`): public page, counted taps, list attribution on payments, editor with preview and sharing, QR download.
+  - Phone + WhatsApp OTP accounts and four-step creator onboarding (`OtpCode`, `OtpController`, `OnboardingController`, `WhatsappClient`).
+  - Installable PWA: manifest, icons, service worker with offline unlocks, install prompt, Web Push (`PushSubscription`, `WebPushNotifier`, `Notifier`).
+  - Screenshots in `docs/screenshots/redesign-2026-10/`.
+- [x] **Light theme (14 Oct 2026)**: Dark / Light / System per viewer (`wf_theme` cookie, `ThemesController`, `shared/_theme_switch`); light tokens in `wf.css`; photo and video surfaces stay dark.
+
+---
+
+## 🧭 Redesign follow-ups
+
+- [ ] **Install ImageMagick in every environment** (`sudo apt install imagemagick` in WSL). Without it `ForensicWatermarkService` serves unlocked images *unwatermarked* and teasers fall back to an SVG. Consider failing closed (refuse to serve) instead of falling back.
+- [ ] **Configure a WhatsApp provider** (`WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, approved `WHATSAPP_OTP_TEMPLATE` and `WHATSAPP_NOTICE_TEMPLATE`). Until then OTPs only reach the log. Add an SMS fallback ("Send by SMS" is in the design but not built).
+- [ ] **Set VAPID keys in production** (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`); development generates `storage/vapid.json`.
+- [ ] **Rate-limit OTP sends per IP and per number** (only a 30-second per-number throttle exists today).
+- [ ] **UPI payee-name verification**: the onboarding "name on this UPI ID" is typed by the creator; the design implies a bank lookup, which needs a PSP API.
+- [ ] **Instagram import** at onboarding (design 6c) is not built; it needs the Instagram Graph API.
+- [ ] **Post scheduling** (design 5e "Schedule") is not built; posts are draft or published.
+- [ ] **Live camera controls** (design 9a Flip / Mic / Pin) are not built: lives play a broadcast link from another app. Pinning a collection during a live and a live viewer count are also not built.
+- [ ] **Viewer count / "watching" numbers** for lives and real-time gift totals.
+- [ ] **Automated tests** for OTP, onboarding, pay flow, link lists and the media authorisation rules (the app has no test suite yet).
+- [ ] **Old stylesheets** (`profile.css`, `dashboard.css`, `live.css`) are no longer used by the redesigned screens; remove once no legacy page references them.
+
 ---
 
 ## 📋 Security & Anti-Theft TODO

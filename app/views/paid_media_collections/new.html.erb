@@ -1,1 +1,29 @@
-<div class="page page--form"><section class="card"><h1>Create a media collection</h1><p class="muted">Group paid posts into a set.</p><%= render "form" %></section></div>
+<% content_for :title, "New collection | Wishful Studio" %>
+
+<div class="w-crumbs">
+  <%= link_to "Collections", paid_media_collections_path %><span>/</span><strong>New collection</strong>
+</div>
+
+<div class="w-card" style="max-width:560px;padding:22px">
+  <h1 class="w-page-title" style="font-size:22px">Name your collection</h1>
+  <p class="w-page-lede">You'll add the photos next. The first one becomes the public cover.</p>
+  <%= form_with model: @paid_media_collection, local: true, html: { class: "w-stack", style: "margin-top:16px;gap:14px" } do |f| %>
+    <%= render "paid_media_collections/errors", record: @paid_media_collection %>
+    <label class="w-field"><span class="w-label">Title</span><%= f.text_field :title, class: "w-input", required: true, placeholder: "Diwali shoot", autofocus: true %></label>
+    <label class="w-field"><span class="w-label">Description</span><%= f.text_field :description, class: "w-input", placeholder: "Temple-border silk, three drapes, golden-hour light" %></label>
+    <label class="w-field"><span class="w-label">Price (₹)</span>
+      <input type="number" name="paid_media_collection[price_rupees]" class="w-input" min="1" step="1" inputmode="numeric" placeholder="499"
+             value="<%= @paid_media_collection.price_cents && (@paid_media_collection.price_cents / 100) %>">
+    </label>
+    <% if current_user.close_friends_plan %>
+      <div class="w-switch-row">
+        <span>Included in Close Friends</span>
+        <span class="w-switch"><%= hidden_field_tag "paid_media_collection[include_in_close_friends]", "0", id: nil %><input type="checkbox" name="paid_media_collection[include_in_close_friends]" value="1" <%= "checked" if @paid_media_collection.subscription_plan_id %>><span></span></span>
+      </div>
+    <% end %>
+    <div class="w-row" style="margin-top:6px">
+      <%= f.submit "Create and add photos", class: "w-btn w-btn--pink" %>
+      <%= link_to "Cancel", paid_media_collections_path, class: "w-btn w-btn--ghost" %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,64 @@
+<% content_for :title, "Collections | Wishful Studio" %>
+
+<div class="w-page-head">
+  <div>
+    <h1 class="w-page-title">Collections</h1>
+    <div class="w-page-lede">The cover is public. Everything inside stays hidden until a fan unlocks it.</div>
+  </div>
+  <div class="w-page-actions">
+    <%= link_to "+ New collection", new_paid_media_collection_path, class: "w-btn w-btn--pink" %>
+  </div>
+</div>
+
+<div class="w-coll-grid">
+  <% @collections.each do |c| %>
+    <%= link_to edit_paid_media_collection_path(c), class: "w-coll-card" do %>
+      <div class="w-coll-card-img">
+        <% if (post = c.cover_post) %>
+          <% if post.media_type == "image" %>
+            <%= image_tag media_paid_media_post_path(post), alt: "", loading: "lazy" %>
+          <% elsif post.preview.attached? %>
+            <%= image_tag url_for(post.preview), alt: "", loading: "lazy" %>
+          <% end %>
+        <% else %>
+          <span class="w-center w-dim" style="height:100%;justify-content:center;font-size:12px;gap:6px"><%= wf_icon(:upload, size: 20) %>Add photos</span>
+        <% end %>
+        <span class="w-status w-status--<%= c.status_label.downcase %>"><%= c.status_label %></span>
+        <span class="w-pill"><%= wf_icon(:lock, color: "#F5B942") %><%= c.items_count %></span>
+      </div>
+      <div class="w-coll-card-body">
+        <div class="w-row w-row--between" style="gap:8px">
+          <span class="w-ellipsis" style="font-size:14px;font-weight:800"><%= c.title %></span>
+          <span style="font-size:14px;font-weight:800;white-space:nowrap"><%= c.price_label %></span>
+        </div>
+        <div class="w-sub" style="font-size:12px;margin-top:3px">
+          <% if c.scheduled? %>Scheduled for <%= c.release_at.strftime("%-d %b") %>
+          <% elsif !c.published? %>Draft · <%= c.contents_label %>
+          <% else %><%= c.unlocks_count %> unlocks · <%= money(c.revenue_cents, c.currency) %><% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+  <%= link_to new_paid_media_collection_path, class: "w-coll-new" do %>
+    <span style="font-size:24px;font-weight:400">+</span>New collection
+  <% end %>
+</div>
+
+<% if @drops.any? %>
+  <div>
+    <div class="w-eyebrow" style="margin-bottom:10px">Single drops · sold on their own</div>
+    <div class="w-stack" style="gap:8px">
+      <% @drops.each do |drop| %>
+        <div class="w-list-row w-list-row--compact">
+          <%= image_tag wf_post_image_src(drop, viewer_can_see: true), alt: "", class: "w-thumb w-thumb--40" %>
+          <div class="w-grow">
+            <div class="w-row-title" style="font-size:13.5px"><%= drop.title %></div>
+            <div class="w-row-meta"><%= drop.media_purchases.count { |p| p.status == "paid" } %> unlocks · <%= drop.published? ? "Live" : "Hidden" %></div>
+          </div>
+          <span style="font-size:13px;font-weight:800"><%= drop.price_label %></span>
+          <%= link_to "Edit", edit_paid_media_post_path(drop), class: "w-btn w-btn--xs" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

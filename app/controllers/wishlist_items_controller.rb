@@ -10,7 +10,7 @@ class WishlistItemsController < ApplicationController
   def create
     @wishlist_item = @wishlist.wishlist_items.new(item_params)
     if @wishlist_item.save
-      redirect_to dashboard_path, notice: "Gift item added."
+      redirect_to creator_settings_path, notice: "Gift item added."
     else
       render :new, status: :unprocessable_entity
     end
@@ -20,7 +20,7 @@ class WishlistItemsController < ApplicationController
 
   def update
     if @wishlist_item.update(item_params)
-      redirect_to dashboard_path, notice: "Gift item updated."
+      redirect_to creator_settings_path, notice: "Gift item updated."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -28,7 +28,7 @@ class WishlistItemsController < ApplicationController
 
   def destroy
     @wishlist_item.destroy
-    redirect_to dashboard_path, notice: "Gift item removed."
+    redirect_to creator_settings_path, notice: "Gift item removed."
   end
 
   # Test-mode checkout. Replace with a real payment intent + webhook before

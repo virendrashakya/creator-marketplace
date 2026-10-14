@@ -1,1 +1,95 @@
-<div class="page page--form"><section class="card"><h1>Edit media collection</h1><%= render "form" %></section></div>
+<%# 5d. The collection editor. %>
+<% content_for :title, "#{@paid_media_collection.title} | Wishful Studio" %>
+<% content_for :main_class, "w-main w-main--split" %>
+<% c = @paid_media_collection %>
+<% cf = current_user.close_friends_plan %>
+
+<section class="w-pane">
+  <div class="w-crumbs">
+    <%= link_to "Collections", paid_media_collections_path %><span>/</span><strong><%= c.title %></strong>
+    <span class="w-crumbs-end"><span class="w-status w-status--<%= c.status_label.downcase %>"><%= c.status_label %></span> · saved <%= wf_ago(c.updated_at) %></span>
+  </div>
+
+  <div class="w-eyebrow"><%= pluralize(@items.size, "item") %> · the first one is the public cover</div>
+
+  <div class="w-editor-grid" data-sortable="<%= reorder_paid_media_collection_path(c) %>" data-sortable-reload>
+    <% @items.each_with_index do |item, i| %>
+      <div class="w-editor-item<%= " is-cover" if i.zero? %>" data-id="<%= item.id %>" tabindex="0" aria-label="<%= i.zero? ? "Cover" : "Item #{i + 1}" %>">
+        <% if item.media_type == "video" %>
+          <% if item.preview.attached? %><%= image_tag url_for(item.preview), alt: "" %><% else %><span class="w-center" style="height:100%;justify-content:center;color:var(--w-sub)"><%= wf_icon(:play, size: 22) %></span><% end %>
+        <% else %>
+          <%= image_tag media_paid_media_post_path(item), alt: "", loading: "lazy", draggable: false %>
+        <% end %>
+        <% if i.zero? %>
+          <span class="w-cover-tag">COVER · PUBLIC</span>
+        <% else %>
+          <span class="w-lock-dot"><%= wf_icon(:lock) %></span>
+        <% end %>
+        <%= button_to remove_item_paid_media_collection_path(c, post_id: item.id), method: :delete, class: "w-btn w-btn--xs w-remove",
+              form: { class: "w-inline" }, data: { turbo_confirm: "Remove this from the collection?" }, title: "Remove" do %>
+          <%= wf_icon(:trash) %><span class="w-sr">Remove</span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%= form_with url: items_paid_media_collection_path(c), method: :post, local: true, multipart: true do %>
+    <label class="w-file-drop" style="min-height:<%= @items.empty? ? 220 : 110 %>px">
+      <input type="file" name="files[]" multiple accept="image/*,video/*" data-file-label="#drop-label" data-autosubmit-files>
+      <strong>+</strong>
+      <span id="drop-label" data-empty="Add photos or videos">Add photos or videos</span>
+      <span class="w-dim" style="font-weight:500">They upload as soon as you pick them</span>
+    </label>
+    <noscript><button type="submit" class="w-btn" style="margin-top:8px">Upload</button></noscript>
+  <% end %>
+
+  <div class="w-dim" style="font-size:12px">Drag to reorder. The first item is shown to everyone. The rest are hidden and watermarked to each buyer.</div>
+</section>
+
+<aside class="w-aside">
+  <%= form_with model: c, local: true, html: { class: "w-stack", style: "gap:14px;flex:1" } do |f| %>
+    <%= render "paid_media_collections/errors", record: c %>
+    <label class="w-field"><span class="w-label">Title</span><%= f.text_field :title, class: "w-input", required: true %></label>
+    <label class="w-field"><span class="w-label">Description</span><%= f.text_area :description, class: "w-textarea", rows: 2 %></label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <label class="w-field"><span class="w-label">Price (₹)</span>
+        <input type="number" name="paid_media_collection[price_rupees]" class="w-input" min="1" step="1" inputmode="numeric" placeholder="<%= cf ? "CF only" : "499" %>"
+               value="<%= c.price_cents && (c.price_cents / 100) %>">
+      </label>
+      <label class="w-field"><span class="w-label">Release</span>
+        <%= f.datetime_local_field :release_at, class: "w-input", style: "font-size:12px;padding:0 8px", value: c.release_at&.strftime("%Y-%m-%dT%H:%M") %>
+      </label>
+    </div>
+
+    <div class="w-card w-stack" style="padding:14px;gap:12px">
+      <% if cf %>
+        <div class="w-switch-row">
+          <span>Included in Close Friends</span>
+          <span class="w-switch">
+            <input type="hidden" name="paid_media_collection[include_in_close_friends]" value="0">
+            <input type="checkbox" name="paid_media_collection[include_in_close_friends]" value="1" <%= "checked" if c.subscription_plan_id %> aria-label="Included in Close Friends"><span></span>
+          </span>
+        </div>
+      <% end %>
+      <div class="w-switch-row">
+        <span>Allow downloads</span>
+        <span class="w-switch"><%= f.hidden_field :allow_downloads, value: "0", id: nil %><%= f.check_box :allow_downloads, { include_hidden: false, aria: { label: "Allow downloads" } } %><span></span></span>
+      </div>
+      <div class="w-switch-row">
+        <span>Show on my profile</span>
+        <span class="w-switch"><%= f.hidden_field :published, value: "0", id: nil %><%= f.check_box :published, { include_hidden: false, aria: { label: "Show on my profile" } } %><span></span></span>
+      </div>
+    </div>
+    <div class="w-row w-sub" style="font-size:12px"><%= wf_icon(:shield, size: 14) %>Buyer watermark is always on</div>
+    <% unless cf %>
+      <div class="w-dim" style="font-size:12px">Want this in Close Friends? <%= link_to "Create a Close Friends plan", new_subscription_plan_path, class: "w-pink" %> first.</div>
+    <% end %>
+
+    <div class="w-row" style="margin-top:auto;gap:8px">
+      <%= link_to "Preview", public_collection_path(current_user.handle, c), class: "w-btn w-btn--outline", target: "_blank", rel: "noopener" %>
+      <%= f.submit (c.release_at && c.release_at > Time.current ? "Schedule release" : (c.published? ? "Save" : "Save")), class: "w-btn w-btn--pink w-grow" %>
+    </div>
+  <% end %>
+  <%= button_to "Delete collection", paid_media_collection_path(c), method: :delete, class: "w-btn w-btn--ghost w-btn--sm",
+        form: { style: "margin:0" }, data: { turbo_confirm: "Delete #{c.title}? Fans who bought it lose access." } %>
+</aside>

@@ -2,6 +2,14 @@ class ProductLinksController < ApplicationController
   before_action :require_user, except: :visit
   before_action :set_product_link, only: %i[edit update destroy]
 
+  # Studio · Shop. The looks on the storefront's Shop tab, with their taps.
+  def index
+    @categories = current_user.link_collections.to_a
+    @links = current_user.product_links.includes(:link_collection)
+    @links = @links.where(link_collection_id: params[:cat]) if params[:cat].present?
+    @total_clicks = current_user.product_links.sum(:clicks_count)
+  end
+
   def new
     @product_link = current_user.product_links.new
   end
@@ -9,7 +17,7 @@ class ProductLinksController < ApplicationController
   def create
     @product_link = current_user.product_links.new(product_link_params)
     if @product_link.save
-      redirect_to dashboard_path, notice: "Recommendation published."
+      redirect_to product_links_path, notice: "Recommendation published."
     else
       render :new, status: :unprocessable_entity
     end
@@ -19,7 +27,7 @@ class ProductLinksController < ApplicationController
 
   def update
     if @product_link.update(product_link_params)
-      redirect_to dashboard_path, notice: "Recommendation updated."
+      redirect_to product_links_path, notice: "Recommendation updated."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -27,7 +35,7 @@ class ProductLinksController < ApplicationController
 
   def destroy
     @product_link.destroy
-    redirect_to dashboard_path, notice: "Recommendation removed."
+    redirect_to product_links_path, notice: "Recommendation removed."
   end
 
   def visit

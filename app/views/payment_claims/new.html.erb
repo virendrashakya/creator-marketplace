@@ -1,148 +1,107 @@
 <% content_for :title, "Pay #{@creator.name} | Wishful" %>
-<% content_for :head do %>
-  <link rel="stylesheet" href="/assets/dashboard.css" data-turbo-track="reload">
-<% end %>
+<% content_for :chrome, "fan" %>
+<% summary = wf_purchase_summary(@purchasable) %>
+<% currency = @purchasable.is_a?(MeetSlot) ? @purchasable.meet_offer.currency : (@purchasable.try(:currency) || "INR") %>
+<% rupees = (@amount_cents.to_i / 100.0) %>
+<% rupees_label = rupees == rupees.floor ? rupees.to_i : rupees.round(2) %>
+<% upi = { pa: @creator.upi_id, pn: (@creator.upi_payee_name.presence || @creator.name), am: rupees_label, cu: currency, tn: summary[:title].to_s.truncate(28) }.compact_blank.to_query %>
+<% gift = @purchasable.is_a?(WishlistItem) %>
+<% utr_error = @payment_claim.errors[:utr].first %>
 
-<% currency = @payment_claim.currency.presence || "INR" %>
-<% amount_in_rupees = (@amount_cents.to_i / 100.0).round %>
-<% item_name = @purchasable.try(:title) || @purchasable.try(:label) || @purchasable.try(:name) || "Vault Unlock" %>
-<% upi_params = {
-     pa: @creator.upi_id,
-     pn: @creator.upi_payee_name.presence || @creator.name,
-     am: amount_in_rupees,
-     cu: currency,
-     tn: item_name.to_s.truncate(28)
-   } %>
-<% upi_deep_link = "upi://pay?#{upi_params.to_query}" %>
+<div class="w-sheet-page">
+  <% if summary[:image] %><%= image_tag summary[:image], alt: "", class: "w-sheet-bg" %><% end %>
 
-<div class="page" style="max-width: 560px; padding-top: 26px">
-  <div class="receipt">
-    <div class="receipt-head">
-      <div class="receipt-eyebrow">You are paying</div>
-      <div class="receipt-who"><%= @creator.name %></div>
-      <div class="receipt-item"><%= item_name %></div>
-      <div class="receipt-amount-row">
-        <div>
-          <div class="receipt-eyebrow">Amount due</div>
-          <div class="receipt-amount" style="color: var(--p-accent); font-weight: 700;"><%= money(@amount_cents, currency) %></div>
-        </div>
-        <span class="badge badge--pending">Reviewed by <%= @creator.name.split.first %></span>
+  <div class="w-sheet">
+    <%= link_to :back, class: "w-grabber", aria: { label: "Back" } do %><% end %>
+
+    <div class="w-row" style="gap:12px;margin-top:16px">
+      <% if summary[:image] %><%= image_tag summary[:image], alt: "", style: "width:48px;height:60px;border-radius:8px;object-fit:cover;flex:none" %><% end %>
+      <div class="w-grow">
+        <div style="font-size:15.5px;font-weight:800"><%= summary[:title] %></div>
+        <div class="w-sub" style="font-size:12.5px;margin-top:2px"><%= summary[:meta] %></div>
       </div>
+      <span style="font-size:22px;font-weight:800"><%= money(@amount_cents, currency) %></span>
     </div>
 
-    <div class="receipt-pay">
+    <%= form_with model: @payment_claim,
+          url: payment_claims_create_path(purchasable_type: params[:purchasable_type], purchasable_id: params[:purchasable_id]),
+          method: :post, html: { style: "display:flex;flex-direction:column;flex:1", multipart: true } do |f| %>
+      <%= hidden_field_tag :list, @list_id if @list_id %>
+      <% if gift %><%= hidden_field_tag :amount, rupees_label %><% end %>
+
+      <div class="w-step-label">Step 1 · Pay <%= @creator.first_name %></div>
       <% if @creator.upi_id.present? %>
-        <div style="margin-bottom: 18px; width: 100%;">
-          <a href="<%= upi_deep_link %>" class="btn btn--accent btn--block" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; padding: 12px; font-size: 15px; border-radius: var(--r-md); box-shadow: 0 4px 14px rgba(233,30,99,0.3);">
-            <span>⚡ Pay <%= money(@amount_cents, currency) %> in UPI App</span>
-          </a>
-          <div style="font-size: 11.5px; color: var(--p-sub); text-align: center; margin-top: 5px;">
-            Tap to open Google Pay, PhonePe, Paytm, or CRED directly on your phone
+        <div class="w-upi-apps">
+          <a class="w-upi-app" href="tez://upi/pay?<%= upi %>">GPay</a>
+          <a class="w-upi-app" href="phonepe://pay?<%= upi %>">PhonePe</a>
+          <a class="w-upi-app" href="paytmmp://pay?<%= upi %>">Paytm</a>
+          <a class="w-upi-app" href="upi://pay?<%= upi %>">BHIM</a>
+        </div>
+        <div class="w-upi-id">
+          <div class="w-grow">
+            <div class="w-sub" style="font-size:11.5px">Or pay to UPI ID</div>
+            <div style="font-size:14px;font-weight:700;margin-top:2px;overflow-wrap:anywhere" translate="no"><%= @creator.upi_id %></div>
+            <% if @creator.upi_payee_name.present? %><div class="w-dim" style="font-size:11.5px;margin-top:2px">Your app should show <strong style="color:var(--w-soft)"><%= @creator.upi_payee_name %></strong></div><% end %>
+          </div>
+          <div class="w-row" style="gap:8px">
+            <button type="button" class="w-btn w-btn--sm" data-copy="<%= @creator.upi_id %>">Copy</button>
+            <button type="button" class="w-btn w-btn--sm" data-toggle="#upi-qr" aria-expanded="false">QR</button>
           </div>
         </div>
+        <div id="upi-qr" class="w-qr" hidden>
+          <% if @creator.upi_qr.attached? %>
+            <%= image_tag @creator.upi_qr, alt: "UPI QR code for #{@creator.name}" %>
+          <% else %>
+            <%= wf_qr_svg("upi://pay?#{upi}") %>
+          <% end %>
+        </div>
+      <% elsif @creator.upi_qr.attached? %>
+        <div class="w-qr"><%= image_tag @creator.upi_qr, alt: "UPI QR code for #{@creator.name}" %></div>
       <% end %>
 
-      <% if @creator.upi_qr.attached? %>
-        <div>
-          <div class="qr"><%= image_tag @creator.upi_qr, alt: "UPI QR code for #{@creator.name}", width: 380, height: 380 %></div>
-          <div class="qr-hint">Scan in any UPI app</div>
-        </div>
+      <% if gift %>
+        <p class="w-sub" style="font-size:12px;margin:10px 0 0">You're gifting <strong style="color:var(--w-text)"><%= money(@amount_cents, currency) %></strong>. <%= link_to "Change amount", spoil_me_path(@creator.handle, item: @purchasable.id), class: "w-pink" %></p>
       <% end %>
-      <div class="stack" style="flex: 1;">
-        <% if @creator.upi_id.present? %>
-          <div>
-            <div class="pay-detail-label">UPI ID</div>
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 3px;">
-              <div class="pay-detail" translate="no" style="font-size: 15px; font-weight: 600;"><%= @creator.upi_id %></div>
-              <button type="button" class="btn btn--small btn--ghost" onclick="navigator.clipboard.writeText('<%= @creator.upi_id %>'); this.innerText = 'Copied! ✓'; setTimeout(() => this.innerText = 'Copy', 2000);" style="font-size: 12px; padding: 4px 10px;">
-                Copy
-              </button>
-            </div>
+
+      <div class="w-step-label">Step 2 · Paste your UTR</div>
+      <%= f.text_field :utr, class: "w-input w-input--utr", style: "margin-top:10px", data: { utr: true },
+            inputmode: "numeric", autocomplete: "off", spellcheck: false, autocapitalize: "characters", maxlength: 29,
+            placeholder: "1234 5678 9012", translate: "no", value: @payment_claim.utr.to_s.scan(/.{1,4}/).join(" "),
+            aria: { invalid: utr_error.present?, describedby: "utr-help" } %>
+      <% if utr_error %>
+        <div class="w-error" role="alert"><%= wf_icon(:alert, size: 16) %><span>This UTR <%= utr_error.delete_prefix("Utr ") %></span></div>
+        <div class="w-card w-card--pad" style="margin-top:14px;font-size:13px;color:var(--w-soft);line-height:1.5">
+          <strong style="color:var(--w-text)">Where to find it:</strong> GPay → payment → "UPI transaction ID". PhonePe → History → "UTR". Paytm → Passbook → "UPI Ref No."
+        </div>
+      <% else %>
+        <div class="w-help" id="utr-help">12 digits. It's the "UPI Ref No." on your payment receipt.</div>
+      <% end %>
+      <% @payment_claim.errors.full_messages.reject { |m| m.start_with?("Utr") }.each do |m| %>
+        <div class="w-error" role="alert"><%= wf_icon(:alert, size: 16) %><span><%= m %></span></div>
+      <% end %>
+
+      <label class="w-attach">
+        <%= wf_icon(:image, size: 16) %>
+        <span id="proof-label" data-empty="Add payment screenshot">Add payment screenshot</span>
+        <span class="w-dim">· optional</span>
+        <%= f.file_field :proof, accept: "image/*", data: { file_label: "#proof-label" } %>
+      </label>
+
+      <details style="margin-top:10px">
+        <summary class="w-sub" style="font-size:12.5px;cursor:pointer">I paid a different amount<%= gift ? " / add a note" : "" %></summary>
+        <div class="w-stack" style="margin-top:10px">
+          <div class="w-input-wrap w-input-wrap--sm">
+            <span class="w-prefix">₹</span>
+            <input type="number" name="paid_rupees" min="1" step="1" inputmode="numeric" placeholder="<%= rupees_label %>" aria-label="Amount you actually paid, in rupees">
           </div>
-        <% end %>
-        <% if @creator.upi_payee_name.present? %>
-          <div>
-            <div class="pay-detail-label">Payee name</div>
-            <div style="font-size: 15px; font-weight: 500;"><%= @creator.upi_payee_name %></div>
-            <small style="font-size: 11.5px; color: var(--p-sub);">This is the recipient name your UPI app will verify before you confirm.</small>
-          </div>
-        <% end %>
+          <%= f.text_area :note, class: "w-textarea", rows: 2, maxlength: 300, placeholder: "Add a note for #{@creator.first_name} (optional)" %>
+        </div>
+      </details>
+
+      <div class="w-sheet-foot">
+        <%= f.submit "Send for approval", class: "w-btn w-btn--pink w-btn--lg w-btn--block", data: { disable_with: "Sending…" } %>
+        <div class="w-assure"><%= wf_icon(:shield, size: 14) %>Paid directly to <%= @creator.first_name %> · Wishful takes 0%</div>
       </div>
-    </div>
-
-    <div style="padding: 0 24px; margin-bottom: 16px;">
-      <div style="display: grid; gap: 8px;">
-        <div style="padding: 10px 14px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); border-radius: var(--r-md); font-size: 12px; color: var(--p-ink); line-height: 1.45;">
-          <strong style="color: #10b981;">🔒 100% Discreet &amp; Direct:</strong> Settles directly into <%= @creator.name.split.first %>'s account over UPI. No platform fees or brand statements on bank records.
-        </div>
-        <div style="padding: 10px 14px; background: rgba(255,92,138,0.08); border: 1px solid rgba(255,92,138,0.25); border-radius: var(--r-md); font-size: 12px; color: var(--p-ink); line-height: 1.45;">
-          <strong style="color: var(--p-accent);">🛡️ Digital Watermark Security:</strong> Unlocked 4K media is dynamically watermarked with your fan ID (<%= current_user&.handle ? "@#{current_user.handle}" : "your account" %>). Redistribution or leaks are strictly tracked.
-        </div>
-      </div>
-    </div>
-
-    <div class="receipt-explain" style="border-top: 1px solid var(--p-line); padding-top: 16px;">
-      Step 2: After completing payment in your UPI app, enter the 12-digit UTR from your receipt below.
-      <%= @creator.name.split.first %> verifies it against their statement and unlocks your purchase.
-    </div>
-
-    <div class="receipt-foot">
-      <%= form_with model: @payment_claim,
-            url: payment_claims_create_path(purchasable_type: params[:purchasable_type], purchasable_id: params[:purchasable_id]),
-            method: :post do |f| %>
-        <%= render "shared/errors", record: @payment_claim %>
-
-        <% if @purchasable.is_a?(WishlistItem) %>
-          <div class="field">
-            <%= f.label :claimed_amount_cents, "Amount sent (₹)" %>
-            <div class="input-group input-group--money">
-              <span class="addon addon--left" aria-hidden="true">₹</span>
-              <input type="number" id="rupee_amount_input" min="1" step="1"
-                     value="<%= amount_in_rupees %>" class="form-input"
-                     oninput="document.getElementById('hidden_claimed_amount_cents').value = Math.round(parseFloat(this.value || 0) * 100);">
-            </div>
-            <%= f.hidden_field :claimed_amount_cents, id: "hidden_claimed_amount_cents", value: @amount_cents %>
-            <small>You can spoil with any amount towards this item.</small>
-          </div>
-        <% else %>
-          <div class="field" style="margin-bottom: 16px;">
-            <label style="font-size: 13.5px; font-weight: 600; color: var(--p-ink); margin-bottom: 4px; display: block;">Payment Amount</label>
-            <div style="font-size: 15px; font-weight: 700; color: var(--p-accent); padding: 10px 14px; background: var(--bg); border: 1px solid var(--p-line); border-radius: var(--r-md); display: flex; align-items: center; justify-content: space-between;">
-              <span><%= money(@amount_cents, currency) %></span>
-              <span class="badge badge--ok" style="font-size: 11px;">Fixed Price</span>
-            </div>
-            <%= f.hidden_field :claimed_amount_cents, value: @amount_cents %>
-          </div>
-        <% end %>
-
-        <div class="field">
-          <%= f.label :utr, "12-digit UPI Reference (UTR)" %>
-          <%= f.text_field :utr, class: "utr-input", translate: "no",
-                inputmode: "numeric", maxlength: 12, placeholder: "e.g. 402913887561",
-                autocomplete: "off", spellcheck: false, autocapitalize: "off",
-                aria: { describedby: "utr_hint" } %>
-          <div class="utr-hint" id="utr_hint">Look for "UPI Ref No.", "UTR", or "Transaction ID" (12 digits) in Google Pay, PhonePe, or Paytm.</div>
-        </div>
-
-        <div class="field">
-          <%= f.label :proof, "Screenshot, optional" %>
-          <%= f.file_field :proof, accept: "image/*" %>
-          <small>A payment screenshot speeds up verification. PNG or JPG.</small>
-        </div>
-
-        <div class="field">
-          <%= f.label :note, "Private note for #{@creator.name.split.first}, optional" %>
-          <%= f.text_area :note, rows: 2, maxlength: 300, placeholder: "Add a message or your preferred handle" %>
-        </div>
-
-        <div class="actions">
-          <%= f.submit "Submit UTR for Instant Unlock", class: "btn btn--accent btn--big btn--block",
-                data: { disable_with: "Sending your reference…" } %>
-        </div>
-      <% end %>
-      <p class="muted" style="font-size: 12.5px; text-align: center; margin-top: 14px">
-        ⚡ 100% Direct UPI &middot; Verified by <%= @creator.name.split.first %> &middot; Wishful never touches your money
-      </p>
-    </div>
+    <% end %>
   </div>
 </div>

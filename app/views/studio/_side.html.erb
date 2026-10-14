@@ -1,0 +1,31 @@
+<nav class="w-side" aria-label="Studio">
+  <%= link_to dashboard_path, class: "w-brand" do %>
+    <span class="w-brand-mark">W</span>
+    <span class="w-brand-name">Wishful</span>
+    <span class="w-brand-tag">Studio</span>
+  <% end %>
+  <% wf_studio_nav.each do |label, path, controllers, opts| %>
+    <% opts ||= {} %>
+    <%= link_to path, class: "w-nav-item", aria: { current: (wf_nav_current?(controllers) ? "page" : nil) } do %>
+      <span><%= label %></span>
+      <% if opts[:new] && current_user.link_lists.none? %>
+        <span class="w-nav-new">NEW</span>
+      <% elsif opts[:count].to_i.positive? %>
+        <span class="w-count <%= "w-count--pink" if opts[:pink] %>"><%= opts[:count] %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+  <div class="w-side-theme" style="margin-top:auto;padding:0 8px 12px"><%= render "shared/theme_switch" %></div>
+  <div class="w-side-me" style="margin-top:0">
+    <%= link_to profile_path(current_user.handle), class: "w-row", title: "View your profile" do %>
+      <%= wf_avatar(current_user, size: 32) %>
+      <span class="w-side-me-text">
+        <span style="display:block;font-size:13px;font-weight:800"><%= current_user.name %></span>
+        <span style="display:block;font-size:11.5px" class="w-sub">@<%= current_user.handle %></span>
+      </span>
+    <% end %>
+    <%= button_to sign_out_path, method: :delete, title: "Sign out", form: { class: "w-inline" } do %>
+      <%= wf_icon(:sign_out) %><span class="w-sr">Sign out</span>
+    <% end %>
+  </div>
+</nav>

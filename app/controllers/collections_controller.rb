@@ -9,7 +9,7 @@ class CollectionsController < ApplicationController
   def create
     @collection = current_user.link_collections.new(collection_params)
     if @collection.save
-      redirect_to dashboard_path, notice: "Collection created."
+      redirect_to product_links_path, notice: "Collection created."
     else
       render :new, status: :unprocessable_entity
     end
@@ -19,7 +19,7 @@ class CollectionsController < ApplicationController
 
   def update
     if @collection.update(collection_params)
-      redirect_to dashboard_path, notice: "Collection updated."
+      redirect_to product_links_path, notice: "Collection updated."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -27,7 +27,7 @@ class CollectionsController < ApplicationController
 
   def destroy
     @collection.destroy
-    redirect_to dashboard_path, notice: "Collection removed. Its links are still available."
+    redirect_to product_links_path, notice: "Collection removed. Its links are still available."
   end
 
   private

@@ -1,0 +1,33 @@
+<%# 6e. %>
+<% content_for :title, "You're live | Wishful" %>
+<% content_for :chrome, "fan" %>
+
+<div class="w-screen">
+  <div class="w-step-head">
+    <%= link_to onboarding_upi_path, class: "w-icon-btn", aria: { label: "Back" } do %><%= wf_icon(:back) %><% end %>
+    <span>Step 4 of 4</span><span style="width:18px"></span>
+  </div>
+  <div class="w-steps"><span class="is-done"></span><span class="is-done"></span><span class="is-done"></span><span class="is-done"></span></div>
+  <h1 class="w-screen-title">You're live, <%= current_user.first_name %></h1>
+  <p class="w-screen-lede">Add your first collection now, or go straight to your dashboard.</p>
+
+  <div class="w-input-wrap" style="margin-top:20px;height:52px;padding:0 6px 0 14px">
+    <span style="flex:1;font-size:14px;font-weight:700" translate="no"><%= request.host %>/<%= current_user.handle %></span>
+    <button type="button" class="w-btn w-btn--light" data-copy="<%= profile_url(current_user.handle) %>">Copy</button>
+  </div>
+
+  <div class="w-center w-dashed" style="margin-top:20px;border-radius:18px;border-width:1.5px;padding:18px;gap:8px">
+    <div class="w-row" style="gap:6px">
+      <%= image_tag "/assets/img/creator-saree.jpg", alt: "", style: "width:64px;height:80px;border-radius:10px;object-fit:cover;transform:rotate(-6deg)" %>
+      <div class="w-center" style="width:64px;height:80px;border-radius:10px;background:var(--w-raise);justify-content:center;color:var(--w-gold)"><%= wf_icon(:lock, size: 18) %></div>
+      <div style="width:64px;height:80px;border-radius:10px;background:var(--w-raise);transform:rotate(6deg)"></div>
+    </div>
+    <div style="font-size:16px;font-weight:800;margin-top:6px">Create your first collection</div>
+    <div class="w-sub" style="font-size:13px;line-height:1.45">Pick a cover everyone can see, add the photos fans unlock, set a price.</div>
+    <%= link_to "+ New collection", new_paid_media_collection_path, class: "w-btn w-btn--pink", style: "margin-top:6px" %>
+  </div>
+
+  <div class="w-screen-foot">
+    <%= link_to "Go to dashboard", dashboard_path, class: "w-btn w-btn--lg w-btn--block" %>
+  </div>
+</div>

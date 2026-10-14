@@ -9,7 +9,7 @@ class ContactRevealsController < ApplicationController
   def create
     @contact_reveal = current_user.contact_reveals.new(contact_reveal_params)
     if @contact_reveal.save
-      redirect_to dashboard_path, notice: "Contact reveal published."
+      redirect_to schedule_path, notice: "Contact reveal published."
     else
       render :new, status: :unprocessable_entity
     end
@@ -19,7 +19,7 @@ class ContactRevealsController < ApplicationController
 
   def update
     if @contact_reveal.update(contact_reveal_params)
-      redirect_to dashboard_path, notice: "Contact reveal updated."
+      redirect_to schedule_path, notice: "Contact reveal updated."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -27,7 +27,7 @@ class ContactRevealsController < ApplicationController
 
   def destroy
     @contact_reveal.destroy
-    redirect_to dashboard_path, notice: "Contact reveal removed."
+    redirect_to schedule_path, notice: "Contact reveal removed."
   end
 
   # Test-mode checkout. Replace with a real payment intent + webhook before

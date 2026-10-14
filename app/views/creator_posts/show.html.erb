@@ -1,0 +1,61 @@
+<% content_for :title, "#{@user.name} on Wishful: #{@post.body.truncate(50)}" %>
+<% content_for :chrome, "fan" %>
+<% liked = signed_in? && @post.creator_post_likes.any? { |l| l.user_id == current_user.id } %>
+<% teased = @post.paid_media_collection if @post.paid_media_collection&.released? %>
+
+<div class="w-phone">
+  <header class="w-topbar w-topbar--line">
+    <%= link_to profile_path(@user.handle), class: "w-icon-btn", aria: { label: "Back" } do %><%= wf_icon(:back) %><% end %>
+    <div class="w-row w-grow" style="gap:8px">
+      <%= wf_avatar(@user, size: 28) %><span style="font-size:15px;font-weight:800" translate="no"><%= @user.handle %></span><%= wf_verified(size: 14) if @user.upi_id.present? %>
+    </div>
+    <button type="button" class="w-icon-btn" data-share-url="<%= public_post_url(@user.handle, @post) %>" aria-label="Share"><%= wf_icon(:share) %></button>
+  </header>
+
+  <% if @post.media.attached? %>
+    <% if @post.video? %>
+      <video src="<%= url_for(@post.media) %>" controls playsinline preload="metadata" style="width:100%;display:block;background:#000;max-height:80vh"></video>
+    <% else %>
+      <%= image_tag url_for(@post.media), alt: "", style: "width:100%;display:block" %>
+    <% end %>
+  <% end %>
+
+  <div style="padding:14px 16px 0">
+    <div class="w-row" style="gap:14px">
+      <% if signed_in? %>
+        <%= button_to creator_post_creator_post_like_path(@post), method: liked ? :delete : :post, class: "w-btn w-btn--ghost", style: "padding:0;height:auto;font-size:15px;color:#{liked ? "var(--w-pink)" : "var(--w-text)"}",
+              form: { class: "w-inline" }, aria: { pressed: liked.to_s, label: liked ? "Unlike" : "Like" } do %>
+          <%= liked ? "♥" : "♡" %> <%= @post.creator_post_likes.size %>
+        <% end %>
+      <% else %>
+        <%= link_to "♡ #{@post.creator_post_likes.size}", sign_in_path, style: "font-size:15px;font-weight:800" %>
+      <% end %>
+      <span class="w-sub" style="font-size:13px"><%= pluralize(@post.creator_post_comments.size, "comment") %> · <%= @post.created_at.strftime("%-d %b") %></span>
+    </div>
+    <p style="font-size:14.5px;line-height:1.5;margin:10px 0 0;white-space:pre-line"><strong translate="no"><%= @user.handle %></strong> <%= @post.body %></p>
+
+    <% if teased %>
+      <%= link_to public_collection_path(@user.handle, teased), class: "w-list-row", style: "margin-top:14px;border-color:var(--w-gold-line)" do %>
+        <% if (src = wf_collection_cover_src(teased)) %><%= image_tag src, alt: "", class: "w-thumb" %><% end %>
+        <div class="w-grow"><div class="w-eyebrow w-eyebrow--gold">The full set</div><div class="w-row-title"><%= teased.title %></div><div class="w-row-meta"><%= teased.contents_label %></div></div>
+        <span class="w-btn w-btn--sm w-btn--pink"><%= teased.price_label %></span>
+      <% end %>
+    <% end %>
+
+    <div class="w-stack" style="margin-top:18px;gap:12px">
+      <% @post.creator_post_comments.sort_by(&:created_at).last(30).each do |comment| %>
+        <div class="w-row" style="align-items:flex-start;gap:10px">
+          <%= wf_avatar(comment.user, size: 28) %>
+          <div><span style="font-size:13px;font-weight:800" translate="no"><%= comment.user.handle %></span> <span style="font-size:13.5px"><%= comment.body %></span></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<% if signed_in? %>
+  <%= form_with url: creator_post_creator_post_comments_path(@post), local: true, class: "w-chat-form", html: { style: "position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px" } do %>
+    <input type="text" name="creator_post_comment[body]" class="chat-input" placeholder="Add a comment…" maxlength="500" required aria-label="Comment">
+    <button type="submit" class="w-chat-send" aria-label="Post comment"><%= wf_icon(:send) %></button>
+  <% end %>
+<% end %>

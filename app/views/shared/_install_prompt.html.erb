@@ -1,0 +1,20 @@
+<%# Hidden until wf.js decides this browser can install (or is iOS Safari,
+    which needs the Share-sheet hint instead). Dismissing it sticks. %>
+<div class="w-install" data-install-banner hidden>
+  <div class="w-row" style="gap:12px">
+    <span class="w-app-icon">W</span>
+    <div class="w-grow">
+      <div style="font-size:14.5px;font-weight:800">Add Wishful to your home screen</div>
+      <div class="w-sub" style="font-size:12px;margin-top:2px">
+        Opens full-screen and alerts you when <%= local_assigns[:creator]&.first_name || "a creator" %> approves.
+      </div>
+      <div class="w-sub" style="font-size:12px;margin-top:6px" data-install-ios hidden>
+        Tap <strong style="color:var(--w-text)">Share</strong>, then <strong style="color:var(--w-text)">Add to Home Screen</strong>.
+      </div>
+    </div>
+  </div>
+  <div class="w-row" style="gap:8px;margin-top:12px">
+    <button type="button" class="w-btn w-grow" data-install-dismiss>Not now</button>
+    <button type="button" class="w-btn w-btn--pink w-grow" data-install-go>Add to home screen</button>
+  </div>
+</div>

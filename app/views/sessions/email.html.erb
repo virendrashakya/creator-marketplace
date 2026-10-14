@@ -1,0 +1,24 @@
+<% content_for :title, "Sign in with email | Wishful" %>
+<% content_for :chrome, "fan" %>
+
+<div class="w-screen">
+  <div class="w-step-head">
+    <%= link_to sign_in_path, class: "w-icon-btn", aria: { label: "Back" } do %><%= wf_icon(:back) %><% end %>
+    <span></span><span style="width:18px"></span>
+  </div>
+  <h1 class="w-screen-title">Sign in with email</h1>
+  <p class="w-screen-lede">For accounts made with an email and password.</p>
+  <%= form_with url: sign_in_path, method: :post, local: true, html: { style: "display:flex;flex-direction:column;flex:1;margin-top:24px;gap:12px" } do %>
+    <label class="w-field">
+      <span class="w-label">Email</span>
+      <input type="email" name="email" class="w-input w-input--big" autocomplete="email" required value="<%= params[:email] %>">
+    </label>
+    <label class="w-field">
+      <span class="w-label">Password</span>
+      <input type="password" name="password" class="w-input w-input--big" autocomplete="current-password" required>
+    </label>
+    <div class="w-screen-foot">
+      <button type="submit" class="w-btn w-btn--pink w-btn--lg w-btn--block">Sign in</button>
+    </div>
+  <% end %>
+</div>

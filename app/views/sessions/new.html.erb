@@ -1,42 +1,31 @@
 <% content_for :title, "Sign in | Wishful" %>
-<%# Bare: no marketing nav or footer. This screen fills the viewport and
-    carries its own way back to the home page. %>
-<% content_for :chrome, "bare" %>
-<% content_for :head do %>
-  <link rel="stylesheet" href="/assets/home.css" data-turbo-track="reload">
-<% end %>
+<% content_for :chrome, "fan" %>
 
-<div class="auth-split">
-  <div class="auth-form">
-    <div class="auth-form-inner">
-      <%= link_to "Wishful", root_path, class: "auth-brand" %>
-      <h1>Welcome back</h1>
-      <p>Sign in to check your payments and update your page.</p>
-
-      <%= form_with url: sign_in_path do |f| %>
-        <div class="field">
-          <%= f.label :email, "Email" %>
-          <%= f.email_field :email, placeholder: "you@email.com", autocomplete: "email",
-                spellcheck: false, autocapitalize: "off", required: true %>
-        </div>
-        <div class="field">
-          <%= f.label :password, "Password" %>
-          <%= f.password_field :password, placeholder: "Your password",
-                autocomplete: "current-password", required: true %>
-        </div>
-        <%= f.submit "Sign in", class: "btn btn--accent btn--big btn--block",
-              data: { disable_with: "Signing in…" } %>
-      <% end %>
-
-      <p class="muted" style="margin-top: 16px; font-size: 14px">New here? <%= link_to "Claim your handle", sign_up_path %></p>
-    </div>
+<div class="w-screen" style="padding:0">
+  <div style="height:300px;position:relative;flex:none">
+    <%= image_tag "/assets/img/creator-saree.jpg", alt: "", style: "width:100%;height:100%;object-fit:cover;object-position:center 22%" %>
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(14,14,16,.2),var(--w-bg))"></div>
+    <%= link_to root_path, class: "w-row", style: "position:absolute;top:20px;left:20px;gap:8px" do %>
+      <span class="w-brand-mark">W</span><span style="font-size:17px;font-weight:800">Wishful</span>
+    <% end %>
   </div>
-
-  <div class="auth-aside">
-    <div class="auth-aside-inner">
-      <div class="auth-aside-title">Your handle is the whole address. Short, lowercase, yours.</div>
-      <div class="auth-aside-url">wishful.app/@yourname</div>
-      <div class="auth-aside-note">Everything you recommend and sell lives at one link, and the money goes straight to your UPI ID.</div>
+  <%= form_with url: otp_path, method: :post, local: true, html: { style: "padding:0 20px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;flex:1;margin-top:-40px;position:relative" } do %>
+    <%= hidden_field_tag :intent, "sign_in" %>
+    <%= hidden_field_tag :return_to, params[:return_to] if params[:return_to].present? %>
+    <h1 style="font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:0">Welcome back</h1>
+    <p class="w-sub" style="font-size:14px;margin:10px 0 0;line-height:1.5">Sign in with the number you joined with. We'll send a code on WhatsApp.</p>
+    <label class="w-input-wrap" style="margin-top:22px">
+      <span class="w-prefix">+91</span><span class="w-sep"></span>
+      <input type="tel" name="phone" inputmode="tel" autocomplete="tel-national" placeholder="98201 44100" required autofocus aria-label="Mobile number">
+    </label>
+    <div style="margin-top:auto;padding-top:28px">
+      <button type="submit" class="w-btn w-btn--pink w-btn--lg w-btn--block">Get OTP on WhatsApp</button>
+      <div class="w-dim" style="font-size:12px;text-align:center;margin-top:12px">
+        <%= link_to "Use email and password instead", sign_in_email_path, style: "color:var(--w-text);font-weight:700" %>
+      </div>
+      <div class="w-dim" style="font-size:12px;text-align:center;margin-top:8px">
+        New here? <%= link_to "Start your page", start_path, style: "color:var(--w-text);font-weight:700" %>
+      </div>
     </div>
-  </div>
+  <% end %>
 </div>

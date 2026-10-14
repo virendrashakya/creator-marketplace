@@ -1,0 +1,37 @@
+<%# 6f. A fan meets the account step only when they pay. %>
+<% content_for :title, "One quick step | Wishful" %>
+<% content_for :chrome, "fan" %>
+<% bg = @creator && wf_banner_src(@creator) %>
+
+<div class="w-sheet-page">
+  <% if bg %><%= image_tag bg, alt: "", class: "w-sheet-bg", style: "height:50%" %><% end %>
+  <div class="w-sheet" style="margin-top:34vh;min-height:66vh">
+    <%= link_to (@return_to.present? && @creator ? profile_path(@creator.handle) : root_path), class: "w-grabber", aria: { label: "Back" } do %><% end %>
+    <h1 style="font-size:22px;font-weight:800;letter-spacing:-.02em;margin:18px 0 0">One quick step</h1>
+    <p class="w-sub" style="font-size:13.5px;margin:6px 0 0;line-height:1.5">
+      We use your number to watermark your copy and tell you when <%= @creator&.first_name || "the creator" %> approves. No password needed.
+    </p>
+    <%= form_with url: otp_path, method: :post, local: true, html: { style: "display:flex;flex-direction:column;flex:1" } do %>
+      <%= hidden_field_tag :intent, "fan" %>
+      <%= hidden_field_tag :return_to, @return_to %>
+      <label class="w-input-wrap" style="margin-top:18px">
+        <span class="w-prefix">+91</span><span class="w-sep"></span>
+        <input type="tel" name="phone" inputmode="tel" autocomplete="tel-national" placeholder="98765 43210" required autofocus aria-label="Mobile number">
+      </label>
+      <label class="w-input-wrap" style="margin-top:12px">
+        <span class="w-prefix" style="color:var(--w-dim)">@</span>
+        <input type="text" name="handle" autocapitalize="off" autocomplete="username" spellcheck="false" pattern="[a-zA-Z0-9_]{2,30}" placeholder="your_handle" aria-label="Your handle">
+        <span class="w-dim" style="font-size:12px;font-weight:600;white-space:nowrap">your handle</span>
+      </label>
+      <p class="w-dim" style="font-size:12px;margin:8px 0 0">Already have an account? Just enter your number; we'll use your existing handle.</p>
+      <label class="w-row" style="margin-top:14px;font-size:13px;color:var(--w-soft);gap:10px;cursor:pointer">
+        <input type="checkbox" name="whatsapp_updates" value="1" checked style="width:20px;height:20px;accent-color:#E0306A">
+        Send updates on WhatsApp
+      </label>
+      <div class="w-sheet-foot">
+        <button type="submit" class="w-btn w-btn--pink w-btn--lg w-btn--block">Continue to payment</button>
+        <div class="w-dim" style="font-size:11.5px;text-align:center;margin-top:10px">By continuing you agree not to share unlocked content.</div>
+      </div>
+    <% end %>
+  </div>
+</div>

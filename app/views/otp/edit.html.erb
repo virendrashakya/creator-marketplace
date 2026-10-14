@@ -1,0 +1,41 @@
+<% content_for :title, "Enter the code | Wishful" %>
+<% content_for :chrome, "fan" %>
+<% creator = @pending["intent"] == "creator" %>
+<% phone = @pending["phone"].to_s.sub(/\A(\+\d{2})(\d{5})(\d+)\z/, '\1 \2 \3') %>
+<% wait = @latest ? [ (@latest.resend_available_at - Time.current).ceil, 0 ].max : 0 %>
+
+<div class="w-screen">
+  <div class="w-step-head">
+    <%= link_to (creator ? start_path : (@pending["intent"] == "fan" ? fan_join_path(return_to: @pending["return_to"]) : sign_in_path)), class: "w-icon-btn", aria: { label: "Back" } do %><%= wf_icon(:back) %><% end %>
+    <span><%= creator ? "Step 1 of 4" : "" %></span>
+    <span style="width:18px"></span>
+  </div>
+  <% if creator %><div class="w-steps"><span class="is-done"></span><span></span><span></span><span></span></div><% end %>
+
+  <h1 class="w-screen-title">Enter the code</h1>
+  <p class="w-screen-lede">We sent a 6-digit code to WhatsApp on <span translate="no"><%= phone %></span></p>
+
+  <%= form_with url: verify_otp_path, method: :post, local: true, html: { style: "display:flex;flex-direction:column;flex:1" } do %>
+    <div class="w-otp" data-otp style="margin-top:24px">
+      <% 6.times do |i| %>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="<%= i.zero? ? 6 : 1 %>" data-otp-box
+               autocomplete="<%= i.zero? ? "one-time-code" : "off" %>" aria-label="Digit <%= i + 1 %>">
+      <% end %>
+      <input type="hidden" name="code" data-otp-value>
+    </div>
+    <noscript>
+      <input type="text" name="code" inputmode="numeric" class="w-input w-input--big" style="margin-top:12px" placeholder="6-digit code">
+    </noscript>
+    <div class="w-sub" style="font-size:13px;margin-top:14px">
+      <% if wait.positive? %>
+        Resend in <strong style="color:var(--w-text)">0:<%= wait.to_s.rjust(2, "0") %></strong>
+      <% else %>
+        <%# A second submit button on the same form rather than a nested form. %>
+        <button type="submit" formaction="<%= resend_otp_path %>" formnovalidate class="w-btn w-btn--ghost" style="height:auto;padding:0;color:var(--w-text);font-size:13px">Resend code</button>
+      <% end %>
+    </div>
+    <div class="w-screen-foot">
+      <button type="submit" class="w-btn w-btn--pink w-btn--lg w-btn--block">Verify</button>
+    </div>
+  <% end %>
+</div>

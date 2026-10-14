@@ -1,0 +1,54 @@
+<% if @collections.any? || @drops.any? %>
+  <p class="w-note"><%= wf_icon(:shield) %>Covers are free to view. What's inside stays hidden until you unlock it.</p>
+  <div class="w-covers">
+    <% @collections.each do |collection| %>
+      <% yours = !@own_page && collection.unlocked_for?(current_user) %>
+      <%= link_to public_collection_path(@user.handle, collection), class: "w-cover#{" is-yours" if yours}" do %>
+        <div class="w-cover-stack">
+          <div class="w-cover-img">
+            <% if (src = wf_collection_cover_src(collection)) %><%= image_tag src, alt: "", loading: "lazy" %><% end %>
+            <% if yours %>
+              <span class="w-pill w-pill--gold"><%= wf_icon(:check) %>Yours</span>
+            <% else %>
+              <span class="w-pill">
+                <% if collection.photos_count.zero? %><%= wf_icon(:play, color: "#F5B942") %><% else %><%= wf_icon(:lock, color: "#F5B942", stroke: 2.4) %><% end %>
+                <%= collection.items_count %>
+              </span>
+            <% end %>
+          </div>
+        </div>
+        <div class="w-cover-title"><%= collection.title %></div>
+        <div class="w-cover-meta"><%= yours ? "Unlocked · #{collection.contents_label}" : (@own_page ? "#{collection.status_label} · #{collection.contents_label}" : collection.contents_label) %></div>
+      <% end %>
+    <% end %>
+    <% @drops.each do |drop| %>
+      <% yours = !@own_page && drop.unlocked_for?(current_user) %>
+      <%= link_to public_drop_path(@user.handle, drop), class: "w-cover#{" is-yours" if yours}" do %>
+        <div class="w-cover-stack">
+          <div class="w-cover-img">
+            <%= image_tag wf_post_image_src(drop), alt: "", loading: "lazy" %>
+            <% if yours %>
+              <span class="w-pill w-pill--gold"><%= wf_icon(:check) %>Yours</span>
+            <% else %>
+              <span class="w-pill"><%= drop.media_type == "video" ? wf_icon(:play, color: "#F5B942") : wf_icon(:lock, color: "#F5B942", stroke: 2.4) %>1</span>
+            <% end %>
+          </div>
+        </div>
+        <div class="w-cover-title"><%= drop.title %></div>
+        <div class="w-cover-meta"><%= yours ? "Unlocked · 1 #{drop.media_type == "video" ? "reel" : "photo"}" : "1 #{drop.media_type == "video" ? "reel" : "photo"}" %></div>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="w-center" style="padding:48px 40px 0;gap:10px">
+    <div class="w-big-icon w-big-icon--pink"><%= wf_icon(:stack) %></div>
+    <% if @own_page %>
+      <div style="font-size:19px;font-weight:800">Create your first collection</div>
+      <div class="w-sub" style="font-size:13.5px;line-height:1.5">Pick a cover everyone can see, add the photos fans unlock, set a price.</div>
+      <%= link_to "+ New collection", new_paid_media_collection_path, class: "w-btn w-btn--pink", style: "margin-top:8px" %>
+    <% else %>
+      <div style="font-size:17px;font-weight:800">No collections yet</div>
+      <div class="w-sub" style="font-size:13.5px">When <%= @user.first_name %> drops one, it lands here.</div>
+    <% end %>
+  </div>
+<% end %>

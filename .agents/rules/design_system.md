@@ -1,4 +1,6 @@
 ---
+# SUPERSEDED (13 Oct 2026): the app uses the dark "Studio" system in
+# public/assets/wf.css. These light tokens are kept for history only.
 name: Indian Modern Editorial Chic
 colors:
   surface: '#f9f9ff'

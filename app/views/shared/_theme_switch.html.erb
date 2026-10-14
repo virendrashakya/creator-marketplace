@@ -1,0 +1,23 @@
+<%# Light / dark / system. A real form, so it works without JavaScript;
+    wf.js applies the choice instantly and saves it in the background.
+    compact: one icon button that cycles, for tight top bars. %>
+<% pref = wf_theme_pref %>
+<% options = [ [ "dark", "Dark", :moon ], [ "light", "Light", :sun ], [ "system", "System", :monitor ] ] %>
+<% if local_assigns[:compact] %>
+  <% current = options.find { |o| o[0] == pref } %>
+  <% nxt = options[(options.index(current) + 1) % options.size] %>
+  <%= form_with url: theme_path, method: :patch, local: true, class: "w-inline", data: { theme_form: true } do %>
+    <button type="submit" name="theme" value="<%= nxt[0] %>" class="w-icon-btn" data-theme-cycle
+            title="Theme: <%= current[1] %>. Switch to <%= nxt[1].downcase %>." aria-label="Theme: <%= current[1] %>. Switch to <%= nxt[1].downcase %>.">
+      <%= wf_icon(current[2]) %>
+    </button>
+  <% end %>
+<% else %>
+  <%= form_with url: theme_path, method: :patch, local: true, class: "w-theme-switch", data: { theme_form: true }, aria: { label: "Theme" } do %>
+    <% options.each do |value, label, icon| %>
+      <button type="submit" name="theme" value="<%= value %>" aria-pressed="<%= pref == value %>" title="<%= label %>">
+        <%= wf_icon(icon, size: 14) %><% if local_assigns[:labels] %><span><%= label %></span><% else %><span class="w-sr"><%= label %></span><% end %>
+      </button>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,51 @@
+<% content_for :title, "Shop | Wishful Studio" %>
+
+<div class="w-page-head">
+  <div>
+    <h1 class="w-page-title">Shop</h1>
+    <div class="w-page-lede">The outfits, makeup and gear fans ask about. <%= number_with_delimiter(@total_clicks) %> taps so far.</div>
+  </div>
+  <div class="w-page-actions">
+    <%= link_to "+ Category", new_collection_path, class: "w-btn w-btn--outline" %>
+    <%= link_to "+ Add product", new_product_link_path, class: "w-btn w-btn--pink" %>
+  </div>
+</div>
+
+<% if @categories.any? %>
+  <nav class="w-chips" aria-label="Categories">
+    <%= link_to "All", product_links_path, class: "w-chip", aria: { current: (params[:cat].blank? ? "page" : nil) } %>
+    <% @categories.each do |cat| %>
+      <span class="w-row" style="gap:2px">
+        <%= link_to cat.name, product_links_path(cat: cat.id), class: "w-chip", aria: { current: (params[:cat].to_s == cat.id.to_s ? "page" : nil) } %>
+        <%= link_to "✎", edit_collection_path(cat), class: "w-btn w-btn--ghost w-btn--xs", title: "Rename #{cat.name}", aria: { label: "Edit #{cat.name}" } %>
+      </span>
+    <% end %>
+  </nav>
+<% end %>
+
+<% if @links.any? %>
+  <div class="w-stack" style="gap:6px">
+    <% @links.each do |link| %>
+      <div class="w-list-row w-list-row--compact">
+        <% if link.image_url.present? %>
+          <%= image_tag link.image_url, alt: "", class: "w-thumb w-thumb--40" %>
+        <% else %>
+          <span class="w-thumb w-thumb--40 w-center" style="justify-content:center;color:var(--w-dim)"><%= wf_icon(:bag) %></span>
+        <% end %>
+        <div class="w-grow">
+          <div class="w-row-title" style="font-size:13.5px"><%= link.title %><%= " ★" if link.featured? %></div>
+          <div class="w-row-meta"><%= [ link.merchant.presence, link.link_collection&.name, "#{link.clicks_count} taps" ].compact.join(" · ") %></div>
+        </div>
+        <span style="font-size:13px;font-weight:800;color:var(--w-soft)"><%= link.price %></span>
+        <%= link_to "Edit", edit_product_link_path(link), class: "w-btn w-btn--xs" %>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="w-card w-center" style="padding:48px 24px;gap:8px">
+    <div class="w-big-icon w-big-icon--pink"><%= wf_icon(:bag) %></div>
+    <div style="font-size:17px;font-weight:800">Nothing in your shop yet</div>
+    <div class="w-sub" style="font-size:13.5px">Paste an affiliate link to a look fans keep asking about.</div>
+    <%= link_to "+ Add product", new_product_link_path, class: "w-btn w-btn--pink", style: "margin-top:6px" %>
+  </div>
+<% end %>

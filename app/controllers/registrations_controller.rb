@@ -1,15 +1,19 @@
+# Email sign-up predates phone onboarding. Links to /sign_up still exist in
+# the wild, so the page forwards to /start; the POST stays for any old form
+# still open in someone's tab.
 class RegistrationsController < ApplicationController
   def new
-    @user = User.new
+    redirect_to start_path
   end
 
   def create
     @user = User.new(user_params)
     if @user.save
+      reset_session
       session[:user_id] = @user.id
-      redirect_to dashboard_path, notice: "Your creator page is ready. Add your first recommendation."
+      redirect_to onboarding_upi_path, notice: "Your page is ready. Add your UPI ID so fans can pay you."
     else
-      render :new, status: :unprocessable_entity
+      redirect_to start_path, alert: @user.errors.full_messages.to_sentence
     end
   end
 

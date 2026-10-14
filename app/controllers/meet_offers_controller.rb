@@ -21,7 +21,7 @@ class MeetOffersController < ApplicationController
 
   def update
     if @meet_offer.update(meet_offer_params)
-      redirect_to dashboard_path, notice: "Meet offer updated."
+      redirect_to schedule_path, notice: "Meet offer updated."
     else
       @meet_slot = @meet_offer.meet_slots.new
       render :edit, status: :unprocessable_entity
@@ -30,7 +30,7 @@ class MeetOffersController < ApplicationController
 
   def destroy
     @meet_offer.destroy
-    redirect_to dashboard_path, notice: "Meet offer removed."
+    redirect_to schedule_path, notice: "Meet offer removed."
   end
 
   private

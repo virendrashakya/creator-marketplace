@@ -1,0 +1,41 @@
+<%# 6d. %>
+<% content_for :title, "Add your UPI ID | Wishful" %>
+<% content_for :chrome, "fan" %>
+
+<div class="w-screen">
+  <div class="w-step-head">
+    <%= link_to onboarding_profile_path, class: "w-icon-btn", aria: { label: "Back" } do %><%= wf_icon(:back) %><% end %>
+    <span>Step 3 of 4</span><span style="width:18px"></span>
+  </div>
+  <div class="w-steps"><span class="is-done"></span><span class="is-done"></span><span class="is-done"></span><span></span></div>
+  <h1 class="w-screen-title">Where should fans pay you?</h1>
+  <p class="w-screen-lede">Fans pay this UPI ID directly. Wishful never touches your money.</p>
+
+  <%= form_with model: @user, url: onboarding_upi_path, method: :patch, local: true, html: { style: "display:flex;flex-direction:column;flex:1" } do |f| %>
+    <% upi_error = @user.errors[:upi_id].first %>
+    <label class="w-input-wrap<%= " is-invalid" if upi_error %>" style="margin-top:24px">
+      <%= f.text_field :upi_id, autocapitalize: "off", autocomplete: "off", spellcheck: false, required: true,
+            placeholder: "yourname@okhdfc", translate: "no", aria: { label: "UPI ID", invalid: upi_error.present? } %>
+    </label>
+    <% if upi_error %><div class="w-error"><%= wf_icon(:alert, size: 16) %><span>UPI ID <%= upi_error %>.</span></div><% end %>
+
+    <label class="w-field" style="margin-top:12px">
+      <span class="w-label">Name on this UPI ID</span>
+      <%= f.text_field :upi_payee_name, class: "w-input w-input--big", placeholder: "AS YOUR BANK SHOWS IT", autocapitalize: "characters" %>
+    </label>
+    <div class="w-help">Fans' UPI apps show this name before they pay. Make it match your bank so they trust it's you.</div>
+
+    <div class="w-stack" style="margin-top:22px;gap:12px">
+      <% [ "Fans pay on GPay, PhonePe, Paytm or BHIM", "They send you the 12-digit UTR", "You check your bank and approve in one tap" ].each_with_index do |line, i| %>
+        <div class="w-row" style="gap:12px">
+          <span class="w-initial" style="width:26px;height:26px;font-size:12px;background:var(--w-raise)"><%= i + 1 %></span>
+          <span style="font-size:13.5px"><%= line %></span>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="w-screen-foot">
+      <button type="submit" class="w-btn w-btn--pink w-btn--lg w-btn--block">Save and continue</button>
+    </div>
+  <% end %>
+</div>

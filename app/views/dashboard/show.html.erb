@@ -1,636 +1,132 @@
-<% content_for :title, "Creator Portal Dashboard | Wishful" %>
-<% content_for :chrome, "portal" %>
-<% content_for :head do %>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap">
-  <link rel="stylesheet" href="/assets/dashboard.css?v=<%= Time.current.to_i %>" data-turbo-track="reload">
-<% end %>
+<% content_for :title, "Overview | Wishful Studio" %>
+<% line, area = wf_chart_paths(@series) %>
+<% mismatches = @pending.count(&:amount_mismatch?) %>
 
-<div class="cp-portal">
-  <!-- ============================================================== -->
-  <!-- 1. TOP PORTAL NAVBAR                                           -->
-  <!-- ============================================================== -->
-  <header class="cp-navbar">
-    <div class="cp-navbar-inner">
-      <div class="cp-nav-left">
-        <%= link_to dashboard_path, class: "cp-brand" do %>
-          <span class="cp-brand-icon">
-            <svg viewBox="0 0 24 24" fill="#C2185B" width="22" height="22">
-              <path d="M12 4C12 8.4 8.4 12 4 12C8.4 12 12 15.6 12 20C12 15.6 15.6 12 20 12C15.6 12 12 8.4 12 4Z"/>
-              <path d="M19 2C19 3.7 17.7 5 16 5C17.7 5 19 6.3 19 8C19 6.3 20.3 5 22 5C20.3 5 19 3.7 19 2Z"/>
-              <path d="M5 16C5 17.7 3.7 19 2 19C3.7 19 5 20.3 5 22C5 20.3 6.3 19 8 19C6.3 19 5 17.7 5 16Z"/>
-            </svg>
-          </span>
-          <span class="cp-brand-text">Wishful</span>
-        <% end %>
-      </div>
-
-      <nav class="cp-nav-center">
-        <%= link_to "Dashboard", dashboard_path, class: "cp-nav-item is-active" %>
-        <a href="#vault-section" class="cp-nav-item">The Vault</a>
-        <% if @airing_live %>
-          <%= link_to "Live Studio", studio_live_session_path(@airing_live), class: "cp-nav-item" %>
-        <% else %>
-          <%= link_to "Live Studio", new_live_session_path, class: "cp-nav-item" %>
-        <% end %>
-        <%= link_to "Calendar Schedule", schedule_path, class: "cp-nav-item" %>
-        <%= link_to "Messages & DMs", conversations_path, class: "cp-nav-item" %>
-        <%= link_to "Payment Claims", payment_claims_path, class: "cp-nav-item" %>
-      </nav>
-
-      <div class="cp-nav-right">
-        <%= link_to profile_path(current_user.handle), class: "cp-user-pill" do %>
-          <% if current_user.profile_picture.attached? %>
-            <%= image_tag current_user.profile_picture, class: "cp-user-thumb", alt: current_user.name %>
-          <% elsif current_user.avatar_url.present? %>
-            <img src="<%= current_user.avatar_url %>" class="cp-user-thumb" alt="<%= current_user.name %>">
-          <% else %>
-            <div class="cp-user-thumb cp-user-thumb--fallback"><%= current_user.name.first&.upcase %></div>
-          <% end %>
-          <span class="cp-user-handle">@<%= current_user.handle %></span>
-          <span class="cp-user-badge" title="Verified">
-            <svg viewBox="0 0 24 24" width="15" height="15">
-              <path d="M12 2l2.4 2.4 3.4-.4 1.4 3.1 3.1 1.4-.4 3.4 2.4 2.4-2.4 2.4.4 3.4-3.1 1.4-1.4 3.1-3.4-.4L12 22l-2.4-2.4-3.4.4-1.4-3.1-3.1-1.4.4-3.4L0 12l2.4-2.4-.4-3.4 3.1-1.4 1.4-3.1 3.4.4L12 2z" fill="#D4AF37"/>
-              <path d="M8.5 12.5L11 15L16 9.5" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        <% end %>
-
-        <%= button_to sign_out_path, method: :delete, class: "cp-logout-btn", title: "Sign out", aria: { label: "Sign out" } do %>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
-        <% end %>
-      </div>
-    </div>
-  </header>
-
-  <!-- ============================================================== -->
-  <!-- 2. MAIN PORTAL BODY CONTAINER                                  -->
-  <!-- ============================================================== -->
-  <main class="cp-container">
-
-    <!-- 2.1 PENDING P2P UPI CLAIMS ALERT BANNER -->
-    <% pending_count = @pending_claim_count.to_i > 0 ? @pending_claim_count : 3 %>
-    <% pending_amount = @pending_claim_amount_cents.to_i > 0 ? money(@pending_claim_amount_cents) : "₹1,797" %>
-    <section class="cp-alert-banner">
-      <div class="cp-ab-left">
-        <div class="cp-ab-icon-disc">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            <path d="M9 12l2 2 4-4"></path>
-          </svg>
-        </div>
-        <div class="cp-ab-text">
-          <div class="cp-ab-title-row">
-            <h2 class="cp-ab-title"><%= pending_count %> Pending P2P UPI Claims</h2>
-            <span class="cp-ab-pill"><%= pending_amount %> waiting verification</span>
-            <span class="cp-ab-dot-sep">•</span>
-            <span class="cp-ab-hint">Confirm within 4 hours to auto-unlock patron content</span>
-          </div>
-        </div>
-      </div>
-      <div class="cp-ab-right">
-        <div class="cp-ab-mobile-status">
-          <span class="cp-live-dot cp-live-dot--red"></span> Awaiting Bank VPA Match
-        </div>
-        <%= link_to payment_claims_path, class: "cp-ab-cta" do %>
-          <span class="cp-ab-cta-desk">Review <%= pending_count %> Claims <span aria-hidden="true">➔</span></span>
-          <span class="cp-ab-cta-mob">Review (<%= pending_count %>) <span aria-hidden="true">➔</span></span>
-        <% end %>
-      </div>
-    </section>
-
-    <!-- 2.2 CREATOR SUITE HERO / GREETING -->
-    <% creator_first_name = current_user.name.to_s.split.first.presence || "Vanya" %>
-    <section class="cp-hero-row">
-      <div class="cp-hr-left">
-        <div class="cp-hr-avatar-wrap cp-mob-only">
-          <% if current_user.profile_picture.attached? %>
-            <%= image_tag current_user.profile_picture, class: "cp-hr-avatar", alt: current_user.name %>
-          <% elsif current_user.avatar_url.present? %>
-            <img src="<%= current_user.avatar_url %>" class="cp-hr-avatar" alt="<%= current_user.name %>">
-          <% else %>
-            <div class="cp-hr-avatar cp-hr-avatar--fallback"><%= current_user.name.first&.upcase %></div>
-          <% end %>
-          <span class="cp-hr-avatar-badge" title="Verified">✓</span>
-        </div>
-        <div class="cp-hr-details">
-          <div class="cp-hr-title-wrap">
-            <h1 class="cp-hr-greeting">
-              Namaste, <span class="cp-hr-name"><%= creator_first_name %></span>
-              <span class="cp-hr-check" title="Verified Atelier">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" width="18" height="18">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                </svg>
-              </span>
-            </h1>
-            <span class="cp-hr-handle-pill cp-desk-only">@<%= current_user.handle %></span>
-          </div>
-          <div class="cp-hr-sub">
-            <span class="cp-hr-sub-desk"><%= current_user.creator_category.presence || "Luxury Drape Atelier" %> • Studio Dashboard &amp; P2P Node</span>
-            <span class="cp-hr-sub-mob">@<%= current_user.handle %> • Mumbai</span>
-          </div>
-        </div>
-
-        <%= link_to profile_path(current_user.handle), class: "cp-meta-pill cp-meta-pill--btn cp-mob-only cp-storefront-btn-mob", target: "_blank", rel: "noopener noreferrer" do %>
-          <span>Storefront</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-            <polyline points="15 3 21 3 21 9"></polyline>
-            <line x1="10" y1="14" x2="21" y2="3"></line>
-          </svg>
-        <% end %>
-      </div>
-
-      <div class="cp-hr-actions">
-        <div class="cp-hr-url-pill">
-          <span class="cp-url-link-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-            </svg>
-          </span>
-          <span class="cp-url-text">wishful.app/@<%= current_user.handle %></span>
-          <button type="button" class="cp-url-copy-btn" data-share-url="<%= profile_url(current_user.handle) %>" data-share-title="<%= current_user.name %> on Wishful" title="Copy Storefront Link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-            <span class="cp-copy-label">Copy</span>
-          </button>
-        </div>
-
-        <%= link_to profile_path(current_user.handle), class: "cp-meta-pill cp-meta-pill--btn cp-desk-only", target: "_blank", rel: "noopener noreferrer" do %>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-            <polyline points="15 3 21 3 21 9"></polyline>
-            <line x1="10" y1="14" x2="21" y2="3"></line>
-          </svg>
-          View Storefront
-        <% end %>
-
-        <% if @airing_live %>
-          <%= link_to live_session_path(@airing_live), class: "cp-btn cp-btn--ruby cp-btn--live-active cp-desk-only" do %>
-            <span class="cp-live-pulse-white"></span> Live Studio
-          <% end %>
-        <% else %>
-          <%= link_to new_live_session_path, class: "cp-btn cp-btn--ruby cp-desk-only" do %>
-            <span class="cp-live-dot-white"></span> Live Studio
-          <% end %>
-        <% end %>
-      </div>
-    </section>
-
-    <!-- 2.3 4-METRIC PERFORMANCE STAT CARDS -->
-    <div class="cp-section-header-row cp-mob-only">
-      <span class="cp-sh-title">PERFORMANCE SNAPSHOT</span>
-      <span class="cp-sh-period">Last 30 Days</span>
-    </div>
-
-    <% approved_upi_display = @paid_media_revenue.to_i > 0 ? money(@paid_media_revenue) : "₹48,500" %>
-    <% drops_count = @paid_posts.size > 0 ? @paid_posts.size : 8 %>
-    <% vip_subs_count = @subscription_plans.sum { |p| p.subscriptions.active.count } > 0 ? @subscription_plans.sum { |p| p.subscriptions.active.count } : 34 %>
-    <% affiliate_taps = @total_clicks.to_i > 0 ? @total_clicks : 184 %>
-    <section class="cp-metrics-grid">
-      <!-- Card 1: Approved UPI Gross -->
-      <div class="cp-metric-card">
-        <div class="cp-mc-head">
-          <span class="cp-mc-label">APPROVED UPI</span>
-          <span class="cp-mc-growth cp-desk-only">+18%</span>
-          <span class="cp-mc-icon cp-mob-only">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
-              <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-              <line x1="2" y1="10" x2="22" y2="10"></line>
-            </svg>
-          </span>
-        </div>
-        <div class="cp-mc-value"><%= approved_upi_display %></div>
-        <div class="cp-mc-sub cp-desk-only">100% P2P settled • 0% fee</div>
-        <div class="cp-mc-foot-mob cp-mob-only">
-          <span class="cp-mc-growth">+18%</span>
-          <span class="cp-mc-sub">0% Fee P2P</span>
-        </div>
-        <div class="cp-sparkline-wrap cp-desk-only">
-          <svg viewBox="0 0 160 32" fill="none" class="cp-sparkline-svg" preserveAspectRatio="none">
-            <path d="M0 26 C 30 26, 45 30, 70 18 C 95 6, 120 20, 160 6" stroke="#C2185B" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-      </div>
-
-      <!-- Card 2: Vault Drops -->
-      <div class="cp-metric-card">
-        <div class="cp-mc-head">
-          <span class="cp-mc-label">VAULT DROPS</span>
-          <span class="cp-mc-icon">🔒</span>
-        </div>
-        <div class="cp-mc-value"><%= drops_count %> <span class="cp-mc-unit cp-desk-only">active drops</span><span class="cp-mc-unit cp-mob-only">Active</span></div>
-        <div class="cp-mc-sub cp-desk-only">142 digital unlocks</div>
-        <div class="cp-mc-foot-mob cp-mob-only">
-          <span class="cp-mc-sub">142 Unlocks</span>
-          <span class="cp-mc-dot cp-mc-dot--ruby"></span>
-        </div>
-        <div class="cp-progress-bar cp-desk-only">
-          <div class="cp-pb-fill cp-pb-fill--ruby" style="width: 65%;"></div>
-        </div>
-      </div>
-
-      <!-- Card 3: VIP Subscribers -->
-      <div class="cp-metric-card">
-        <div class="cp-mc-head">
-          <span class="cp-mc-label cp-desk-only">VIP SUBSCRIBERS</span>
-          <span class="cp-mc-label cp-mob-only">VIP PATRONS</span>
-          <span class="cp-mc-icon">⭐</span>
-        </div>
-        <div class="cp-mc-value"><%= vip_subs_count %> <span class="cp-mc-unit cp-desk-only">members</span><span class="cp-mc-unit cp-mob-only">Active</span></div>
-        <div class="cp-mc-sub cp-desk-only">₹16,966 / mo projected</div>
-        <div class="cp-mc-foot-mob cp-mob-only">
-          <span class="cp-mc-sub cp-mc-sub--ruby">₹16,966/mo</span>
-          <span class="cp-mc-sub">Close Friends</span>
-        </div>
-        <div class="cp-progress-bar cp-desk-only">
-          <div class="cp-pb-fill cp-pb-fill--gold" style="width: 78%;"></div>
-        </div>
-      </div>
-
-      <!-- Card 4: Affiliate Taps -->
-      <div class="cp-metric-card">
-        <div class="cp-mc-head">
-          <span class="cp-mc-label cp-desk-only">AFFILIATE TAPS</span>
-          <span class="cp-mc-label cp-mob-only">AFFILIATE CLICKS</span>
-          <span class="cp-mc-icon">🛍️</span>
-        </div>
-        <div class="cp-mc-value"><%= affiliate_taps %> <span class="cp-mc-unit cp-desk-only">clicks</span><span class="cp-mc-unit cp-mob-only">Taps</span></div>
-        <div class="cp-mc-sub cp-desk-only">Across <%= @links.size > 0 ? @links.size : 6 %> referral links</div>
-        <div class="cp-mc-foot-mob cp-mob-only">
-          <span class="cp-mc-sub"><%= @links.size > 0 ? @links.size : 6 %> Outfits</span>
-          <span class="cp-mc-trend">📈</span>
-        </div>
-        <div class="cp-progress-bar cp-desk-only">
-          <div class="cp-pb-fill cp-pb-fill--rose" style="width: 52%;"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 2.4 UNCLUTTERED QUICK ACTIONS BAR -->
-    <section class="cp-quick-actions">
-      <div class="cp-qa-left">
-        <span class="cp-qa-bolt">⚡</span>
-        <span class="cp-qa-title cp-desk-only">Quick Actions</span>
-        <span class="cp-qa-title cp-mob-only">CREATOR LAUNCHPAD</span>
-        <span class="cp-qa-sub cp-desk-only">— Add items directly to your live page</span>
-      </div>
-      <div class="cp-qa-btns">
-        <%= link_to new_paid_media_post_path, class: "cp-qa-btn cp-qa-btn--primary" do %>
-          <span class="cp-qa-plus">+</span> New Vault Drop
-        <% end %>
-        <%= link_to new_product_link_path, class: "cp-qa-btn" do %>
-          <span class="cp-qa-plus">+</span> Add Curated Fit
-        <% end %>
-        <%= link_to new_subscription_plan_path, class: "cp-qa-btn" do %>
-          <span class="cp-qa-plus">+</span> Create VIP Tier
-        <% end %>
-        <%= link_to new_wishlist_path, class: "cp-qa-btn" do %>
-          <span class="cp-qa-icon">🎁</span> Wishlist Goal
-        <% end %>
-        <%= link_to new_creator_post_path, class: "cp-qa-btn" do %>
-          <span class="cp-qa-icon">📝</span> Write Update
-        <% end %>
-      </div>
-    </section>
-
-    <!-- 2.5 STOREFRONT SYNC TABS ROW -->
-    <div class="cp-storefront-tabs-row">
-      <div class="cp-sf-tabs" role="tablist">
-        <button type="button" class="cp-sf-tab is-active" data-tab-target="drops">
-          <span class="cp-sf-tab-desk">Manage Drops &amp; Vault (<%= drops_count %>)</span>
-          <span class="cp-sf-tab-mob">Vault Drops <span class="cp-sf-badge"><%= drops_count %></span></span>
-        </button>
-        <button type="button" class="cp-sf-tab" data-tab-target="fits">
-          <span class="cp-sf-tab-desk">Curated Outfits &amp; Links (<%= @links.size > 0 ? @links.size : 6 %>)</span>
-          <span class="cp-sf-tab-mob">Curated Fits <span class="cp-sf-badge"><%= @links.size > 0 ? @links.size : 6 %></span></span>
-        </button>
-        <button type="button" class="cp-sf-tab" data-tab-target="vip">
-          <span class="cp-sf-tab-desk">VIP Tiers &amp; Wishlists (<%= (@subscription_plans.size + @wishlists.size) > 0 ? (@subscription_plans.size + @wishlists.size) : 2 %>)</span>
-          <span class="cp-sf-tab-mob">VIP &amp; Goals</span>
-        </button>
-        <button type="button" class="cp-sf-tab cp-desk-only" data-tab-target="stats">
-          Overview &amp; Stats
-        </button>
-      </div>
-      <div class="cp-sf-sync-status cp-desk-only">
-        <span class="cp-sync-dot"></span> LIVE STOREFRONT SYNC
-      </div>
-    </div>
-
-    <!-- 2.6 ACTIVE VAULT DROPS & DIGITAL SETS PANEL -->
-    <section class="cp-vault-panel" id="vault-section">
-      <div class="cp-vp-head">
-        <div class="cp-vp-title-group">
-          <h2 class="cp-vp-title">
-            <span class="cp-vp-title-desk">Active Vault Drops &amp; Digital Sets</span>
-            <span class="cp-vp-title-mob">Vault Drops &amp; Sets (<%= drops_count %>) ✪</span>
-          </h2>
-          <span class="cp-vp-count cp-desk-only"><%= drops_count %> published</span>
-        </div>
-        <div class="cp-vp-actions">
-          <button type="button" class="cp-pill-btn cp-pill-btn--filter" title="Filter drops">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-              <line x1="4" y1="6" x2="20" y2="6"></line>
-              <line x1="8" y1="12" x2="16" y2="12"></line>
-              <line x1="10" y1="18" x2="14" y2="18"></line>
-            </svg>
-            <span class="cp-filter-label cp-desk-only">Filter</span>
-          </button>
-          <%= link_to new_paid_media_post_path, class: "cp-btn cp-btn--ruby cp-btn--publish" do %>
-            <span class="cp-btn-plus">+</span> Publish Drop
-          <% end %>
-        </div>
-      </div>
-
-      <div class="cp-drop-rows">
-        <!-- Drop Row 1: Golden Hour in Goa -->
-        <% drop1 = @paid_posts.first %>
-        <article class="cp-drop-row">
-          <div class="cp-dr-thumb">
-            <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400&q=80&auto=format&fit=crop" alt="Golden Hour in Goa" class="cp-dr-img" loading="lazy">
-            <span class="cp-dr-corner-tag">4K Reel</span>
-          </div>
-          <div class="cp-dr-info">
-            <div class="cp-dr-title-row">
-              <h3 class="cp-dr-name"><%= drop1&.title.presence || "Golden Hour in Goa" %></h3>
-              <span class="cp-dr-status-badge cp-desk-only">Active</span>
-              <button type="button" class="cp-dr-dots-btn cp-mob-only" aria-label="More options">⋮</button>
-            </div>
-            <div class="cp-dr-sub-meta cp-mob-only">4K Reel &amp; 14 Uncut Stills</div>
-            <div class="cp-dr-meta">
-              <span class="cp-dr-status-badge cp-mob-inline">Active</span>
-              88 unlocks • ₹43,912 gross <span class="cp-desk-only">• Locked photo &amp; video archive</span>
-            </div>
-          </div>
-          <div class="cp-dr-pricing">
-            <div class="cp-dr-price"><%= drop1 ? money(drop1.price_cents) : "₹499" %> <span class="cp-dr-instant">Instant UPI</span></div>
-          </div>
-          <div class="cp-dr-actions">
-            <%= link_to (drop1 ? profile_path(current_user.handle, anchor: "post-#{drop1.id}") : profile_path(current_user.handle)), class: "cp-pill-btn" do %>
-              View Live
-            <% end %>
-            <% if drop1 %>
-              <%= link_to "Edit", edit_paid_media_post_path(drop1), class: "cp-pill-btn" %>
-            <% else %>
-              <button type="button" class="cp-pill-btn">Edit</button>
-            <% end %>
-            <button type="button" class="cp-dr-dots-btn cp-desk-only" aria-label="More options">⋮</button>
-          </div>
-        </article>
-
-        <!-- Drop Row 2: Banarasi Heritage BTS Video -->
-        <% drop2 = @paid_posts.second %>
-        <article class="cp-drop-row">
-          <div class="cp-dr-thumb">
-            <img src="https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400&q=80&auto=format&fit=crop" alt="Banarasi Heritage BTS Video" class="cp-dr-img" loading="lazy">
-            <span class="cp-dr-corner-tag">BTS Video</span>
-          </div>
-          <div class="cp-dr-info">
-            <div class="cp-dr-title-row">
-              <h3 class="cp-dr-name"><%= drop2&.title.presence || "Banarasi Heritage BTS" %></h3>
-              <span class="cp-dr-status-badge cp-desk-only">Active</span>
-              <button type="button" class="cp-dr-dots-btn cp-mob-only" aria-label="More options">⋮</button>
-            </div>
-            <div class="cp-dr-sub-meta cp-mob-only">Drape Tutorial &amp; Styling Audio</div>
-            <div class="cp-dr-meta">
-              <span class="cp-dr-status-badge cp-mob-inline">Active</span>
-              54 unlocks • ₹16,146 gross <span class="cp-desk-only">• 1080p Drape Masterclass</span>
-            </div>
-          </div>
-          <div class="cp-dr-pricing">
-            <div class="cp-dr-price"><%= drop2 ? money(drop2.price_cents) : "₹299" %> <span class="cp-dr-instant">Instant UPI</span></div>
-          </div>
-          <div class="cp-dr-actions">
-            <%= link_to (drop2 ? profile_path(current_user.handle, anchor: "post-#{drop2.id}") : profile_path(current_user.handle)), class: "cp-pill-btn" do %>
-              View Live
-            <% end %>
-            <% if drop2 %>
-              <%= link_to "Edit", edit_paid_media_post_path(drop2), class: "cp-pill-btn" %>
-            <% else %>
-              <button type="button" class="cp-pill-btn">Edit</button>
-            <% end %>
-            <button type="button" class="cp-dr-dots-btn cp-desk-only" aria-label="More options">⋮</button>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- 2.7 TWO-COLUMN BALANCED BOTTOM CARDS -->
-    <section class="cp-bottom-grid">
-      <!-- Left: VIP Pass Card -->
-      <% vip_tier = @subscription_plans.first %>
-      <article class="cp-split-card cp-split-card--vip">
-        <div class="cp-sc-head">
-          <div class="cp-sc-title-group">
-            <span class="cp-sc-icon-star">💡</span>
-            <div class="cp-sc-title-wrap">
-              <h3 class="cp-sc-title">VIP Close Friends Pass</h3>
-              <span class="cp-sc-badge cp-mob-inline">Tier 1</span>
-            </div>
-          </div>
-          <div class="cp-sc-price cp-desk-only">
-            <span class="cp-sc-amount"><%= vip_tier ? money(vip_tier.price_cents) : "₹499" %></span><span class="cp-sc-period">/mo</span>
-          </div>
-        </div>
-        <p class="cp-sc-desc">
-          Auto-unlock all Vault drops • Close Friends Story list • Priority DM within 24 hrs
-        </p>
-
-        <!-- Mobile Inner Stats Box -->
-        <div class="cp-sc-inner-stats cp-mob-only">
-          <div class="cp-sc-stat-col">
-            <span class="cp-sc-stat-label">Subscription</span>
-            <span class="cp-sc-stat-val"><strong><%= vip_tier ? money(vip_tier.price_cents) : "₹499" %></strong> <small>/ month</small></span>
-          </div>
-          <div class="cp-sc-stat-col">
-            <span class="cp-sc-stat-label">Patron Roster</span>
-            <span class="cp-sc-stat-val"><strong><%= vip_tier ? vip_tier.subscriptions.active.count : 34 %> Patrons</strong> <small>(₹16,966)</small></span>
-          </div>
-        </div>
-
-        <div class="cp-sc-foot">
-          <div class="cp-sc-meta cp-desk-only">
-            <strong><%= vip_tier ? vip_tier.subscriptions.active.count : 34 %> Patrons</strong> • ₹16,966 / mo projected
-          </div>
-          <div class="cp-sc-btns">
-            <% if vip_tier %>
-              <%= link_to "Edit Tier Rules", edit_subscription_plan_path(vip_tier), class: "cp-pill-btn" %>
-            <% else %>
-              <%= link_to "Edit Tier Rules", new_subscription_plan_path, class: "cp-pill-btn" %>
-            <% end %>
-            <button type="button" class="cp-pill-btn cp-pill-btn--primary">Manage <%= vip_tier ? vip_tier.subscriptions.active.count : 34 %> Members</button>
-          </div>
-        </div>
-      </article>
-
-      <!-- Right: Wishlist Goal Card -->
-      <% wishlist = @wishlists.first %>
-      <article class="cp-split-card cp-split-card--wishlist">
-        <div class="cp-sc-head">
-          <div class="cp-sc-title-group">
-            <span class="cp-sc-icon-gift">🤍</span>
-            <div class="cp-sc-title-wrap">
-              <h3 class="cp-sc-title"><%= wishlist&.title.presence || "Diwali Heritage Silk Saree" %></h3>
-              <p class="cp-sc-subline cp-mob-only">Pledge for bespoke temple zari curation</p>
-            </div>
-          </div>
-          <div class="cp-sc-mob-action cp-mob-only">
-            <% if wishlist %>
-              <%= link_to "Manage", edit_wishlist_path(wishlist), class: "cp-pill-btn" %>
-            <% else %>
-              <%= link_to "Manage", new_wishlist_path, class: "cp-pill-btn" %>
-            <% end %>
-          </div>
-          <span class="cp-funded-pill cp-desk-only">68% funded</span>
-        </div>
-        <div class="cp-progress-bar cp-progress-bar--lg">
-          <div class="cp-pb-fill cp-pb-fill--ruby" style="width: 68%;"></div>
-        </div>
-        <div class="cp-sc-progress-sub">
-          <span class="cp-pledged-val">68% Funded</span>
-          <span class="cp-goal-val">₹10,200 of ₹15,000 • 12 Backers</span>
-        </div>
-        <div class="cp-sc-foot cp-desk-only">
-          <div class="cp-sc-meta">
-            UPI Direct contributions
-          </div>
-          <div class="cp-sc-btns">
-            <% if wishlist %>
-              <%= link_to "Manage Goal", edit_wishlist_path(wishlist), class: "cp-pill-btn" %>
-            <% else %>
-              <%= link_to "Manage Goal", new_wishlist_path, class: "cp-pill-btn" %>
-            <% end %>
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <!-- 2.8 BOTTOM ACTION PILLS & SETTLEMENT ENGINE -->
-    <section class="cp-engine-row">
-      <div class="cp-engine-pills">
-        <%= link_to creator_settings_path, class: "cp-engine-pill" do %>
-          <span class="cp-ep-icon">⚙</span>
-          <span class="cp-desk-only">UPI &amp; Settlement Settings</span>
-          <span class="cp-mob-only">UPI &amp; Settlement Nodes</span>
-        <% end %>
-
-        <%= link_to creator_blocks_path, class: "cp-engine-pill" do %>
-          <span class="cp-ep-icon">🚫</span> Blocked Accounts (4)
-        <% end %>
-
-        <%= link_to "#", class: "cp-engine-pill" do %>
-          <span class="cp-ep-icon">🎧</span>
-          <span class="cp-desk-only">Support Concierge</span>
-          <span class="cp-mob-only">Concierge</span>
-        <% end %>
-      </div>
-
-      <div class="cp-engine-node">
-        <span class="cp-node-dot">●</span> Wishful P2P Settlement Engine v2.4 <span class="cp-node-tag">Direct VPA Node</span>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ============================================================== -->
-  <!-- 3. LUXURY CREATOR FOOTER                                       -->
-  <!-- ============================================================== -->
-  <footer class="cp-footer">
-    <div class="cp-footer-container">
-      <div class="cp-ft-left">
-        <span class="cp-ft-brand">Wishful</span>
-        <span class="cp-ft-sep">—</span>
-        <span>Creator Administrative Suite &amp; Luxury Drape Commerce</span>
-      </div>
-      <div class="cp-ft-right">
-        <a href="/legal/settlements" class="cp-ft-link">Settlements &amp; Payouts</a>
-        <a href="/legal/guidelines" class="cp-ft-link">Creator Guidelines</a>
-        <span class="cp-ft-copy">© <%= Time.current.year %> Wishful Technologies India Pvt. Ltd.</span>
-      </div>
-    </div>
-  </footer>
-
-  <!-- ============================================================== -->
-  <!-- 4. MOBILE BOTTOM FLOATING APP BAR                              -->
-  <!-- ============================================================== -->
-  <nav class="cp-mobile-nav" aria-label="Mobile Navigation">
-    <%= link_to dashboard_path, class: "cp-mn-item is-active" do %>
-      <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-        <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-        <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-        <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-        <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-      </svg>
-      <span>Dashboard</span>
-    <% end %>
-    <a href="#vault-section" class="cp-mn-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-      </svg>
-      <span>The Vault</span>
-    </a>
-    <% if @airing_live %>
-      <%= link_to studio_live_session_path(@airing_live), class: "cp-mn-item" do %>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-          <polygon points="23 7 16 12 23 17 23 7"></polygon>
-          <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-        </svg>
-        <span>Studio</span>
-      <% end %>
-    <% else %>
-      <%= link_to new_live_session_path, class: "cp-mn-item" do %>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-          <polygon points="23 7 16 12 23 17 23 7"></polygon>
-          <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-        </svg>
-        <span>Studio</span>
-      <% end %>
-    <% end %>
-    <%= link_to conversations_path, class: "cp-mn-item" do %>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-      </svg>
-      <span>Messages</span>
-    <% end %>
-    <%= link_to creator_settings_path, class: "cp-mn-item" do %>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
-        <circle cx="12" cy="12" r="3"></circle>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-      </svg>
-      <span>Settings</span>
-    <% end %>
-  </nav>
+<div class="w-page-head">
+  <div>
+    <h1 class="w-page-title">Namaste, <%= current_user.first_name %></h1>
+    <div class="w-page-lede"><%= Date.current.strftime("%A %-d %B") %> · here is what needs you today</div>
+  </div>
+  <div class="w-page-actions">
+    <%= link_to "View my profile ↗", profile_path(current_user.handle), class: "w-btn w-btn--outline" %>
+    <%= link_to "+ New post", creator_posts_path, class: "w-btn w-btn--pink" %>
+  </div>
 </div>
 
-<script>
-  // Simple interactive tab switcher
-  document.addEventListener('turbo:load', function() {
-    initTabs();
-  });
-  if (document.readyState !== 'loading') {
-    initTabs();
-  } else {
-    document.addEventListener('DOMContentLoaded', initTabs);
-  }
+<% unless current_user.accepts_upi_manual? %>
+  <%= link_to creator_settings_path, class: "w-card w-row", style: "padding:14px 16px;border-color:rgba(245,185,66,.45);background:var(--w-gold-bg)" do %>
+    <%= wf_icon(:alert, size: 18, color: "#F5B942") %>
+    <span class="w-grow" style="font-size:13.5px"><strong>Add your UPI ID</strong> so fans can pay you. Until then, unlock buttons are hidden.</span>
+    <span class="w-btn w-btn--sm w-btn--gold">Add UPI</span>
+  <% end %>
+<% end %>
 
-  function initTabs() {
-    const tabs = document.querySelectorAll('.cp-sf-tab');
-    if (!tabs.length) return;
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('is-active'));
-        tab.classList.add('is-active');
-      });
-    });
-  }
-</script>
+<div class="w-stats">
+  <div class="w-stat">
+    <div class="w-stat-label">Earned in <%= Date.current.strftime("%B") %></div>
+    <div class="w-stat-value w-green"><%= money(@earned_month) %></div>
+    <div class="w-stat-note"><%= @earned_change ? "#{@earned_change >= 0 ? "+" : ""}#{@earned_change}% vs #{1.month.ago.strftime("%B")}" : "Approved UPI payments" %></div>
+  </div>
+  <div class="w-stat">
+    <div class="w-stat-label">Collection unlocks</div>
+    <div class="w-stat-value"><%= @unlocks %></div>
+    <div class="w-stat-note"><%= pluralize(@collections.count(&:published?), "collection") %></div>
+  </div>
+  <div class="w-stat">
+    <div class="w-stat-label">Close Friends</div>
+    <div class="w-stat-value"><%= @close_friends.size %></div>
+    <div class="w-stat-note"><%= money(@close_friends_monthly) %> / month</div>
+  </div>
+  <div class="w-stat">
+    <div class="w-stat-label">Link list opens</div>
+    <div class="w-stat-value"><%= number_with_delimiter(@list_opens) %></div>
+    <div class="w-stat-note"><%= number_with_delimiter(@list_taps) %> taps</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px" class="w-two-col">
+  <div class="w-card" style="overflow:hidden">
+    <div class="w-card-head">
+      <span class="w-card-title">Earnings</span>
+      <nav class="w-seg" aria-label="Range">
+        <% DashboardController::RANGES.each_key do |key| %>
+          <%= link_to key.upcase, dashboard_path(range: key), aria: { current: (@range == key ? "page" : nil) } %>
+        <% end %>
+      </nav>
+    </div>
+    <div class="w-row" style="padding:0 18px 10px;gap:18px;font-size:12px;color:var(--w-sub);flex-wrap:wrap">
+      <% { "Collections" => "#E0306A", "Close Friends" => "#F5B942", "Tips & gifts" => "#4ADE80", "Calls & access" => "#60A5FA" }.each do |label, color| %>
+        <% next if label == "Calls & access" && @breakdown[label].zero? %>
+        <span><span style="color:<%= color %>">●</span> <%= label %> <%= money(@breakdown[label]) %></span>
+      <% end %>
+    </div>
+    <svg viewBox="0 0 600 120" preserveAspectRatio="none" style="width:100%;height:120px;display:block" role="img"
+         aria-label="Approved earnings per day over the last <%= @series.size %> days, <%= money(@series.sum) %> in total">
+      <path d="<%= area %>" fill="rgba(224,48,106,.12)"></path>
+      <path d="<%= line %>" fill="none" stroke="#E0306A" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+    </svg>
+  </div>
+
+  <div class="w-card">
+    <div class="w-card-head" style="padding-bottom:10px">
+      <span class="w-card-title">Needs you</span>
+      <% needs = [ @pending.any?, @next_live, @unread.positive?, @next_call ].count(&:itself) %>
+      <span class="w-sub" style="font-size:12px"><%= needs %></span>
+    </div>
+    <% if @pending.any? %>
+      <div class="w-needs-row">
+        <span class="w-dot"></span>
+        <div class="w-grow"><div style="font-size:14px;font-weight:700"><%= pluralize(@pending.size, "payment") %> to confirm</div>
+          <div class="w-sub" style="font-size:12px;margin-top:2px"><%= money(@pending.sum(&:amount_cents)) %><%= " · #{pluralize(mismatches, "amount mismatch", plural: "amount mismatches")}" if mismatches.positive? %></div></div>
+        <%= link_to "Review", payment_claims_path, class: "w-btn w-btn--sm w-btn--pink" %>
+      </div>
+    <% end %>
+    <% if @next_live %>
+      <div class="w-needs-row">
+        <span class="w-dot w-dot--gold"></span>
+        <div class="w-grow"><div style="font-size:14px;font-weight:700"><%= @next_live.live? ? "You're live now" : "Live #{@next_live.scheduled_for.to_date == Date.current ? "tonight" : @next_live.scheduled_for.strftime("%a")} #{wf_time(@next_live.scheduled_for)}" %></div>
+          <div class="w-sub w-ellipsis" style="font-size:12px;margin-top:2px"><%= @next_live.title %><%= " · Close Friends" if @next_live.members_only? %></div></div>
+        <%= link_to "Studio", studio_live_session_path(@next_live), class: "w-btn w-btn--sm" %>
+      </div>
+    <% end %>
+    <% if @unread.positive? %>
+      <div class="w-needs-row">
+        <span class="w-dot w-dot--blue"></span>
+        <div class="w-grow"><div style="font-size:14px;font-weight:700"><%= pluralize(@unread, "unread message") %></div>
+          <div class="w-sub" style="font-size:12px;margin-top:2px"><%= @unread_cf.positive? ? "#{@unread_cf} from Close Friends" : "From fans" %></div></div>
+        <%= link_to "Open", conversations_path, class: "w-btn w-btn--sm" %>
+      </div>
+    <% end %>
+    <% if @next_call %>
+      <div class="w-needs-row">
+        <span class="w-dot w-dot--green"></span>
+        <div class="w-grow"><div style="font-size:14px;font-weight:700">Video call · <%= @next_call.meet_slot.starts_at.to_date == Date.current ? wf_time(@next_call.meet_slot.starts_at) : @next_call.meet_slot.starts_at.strftime("%a %-l:%M %p") %></div>
+          <div class="w-sub" style="font-size:12px;margin-top:2px">@<%= @next_call.attendee.handle %> · <%= money(@next_call.amount_cents, @next_call.currency) %> confirmed</div></div>
+        <%= link_to "Details", schedule_path, class: "w-btn w-btn--sm" %>
+      </div>
+    <% end %>
+    <% if needs.zero? %>
+      <div class="w-needs-row w-sub" style="font-size:13px">You're all caught up.</div>
+    <% end %>
+  </div>
+</div>
+
+<% if @top_collections.any? %>
+  <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px" class="w-two-col">
+    <% @top_collections.each do |c| %>
+      <%= link_to edit_paid_media_collection_path(c), class: "w-list-row", style: "border-radius:12px" do %>
+        <% if (src = wf_collection_cover_src(c)) %><%= image_tag src, alt: "", class: "w-thumb", style: "width:40px;height:50px;border-radius:8px" %><% end %>
+        <div style="min-width:0">
+          <div class="w-ellipsis" style="font-size:13px;font-weight:800"><%= c.title %></div>
+          <div class="w-sub" style="font-size:11.5px"><%= c.unlocks_count %> unlocks · <%= money(c.revenue_cents, c.currency) %></div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% elsif @collections.empty? %>
+  <%= link_to new_paid_media_collection_path, class: "w-card w-row", style: "padding:18px" do %>
+    <span class="w-big-icon w-big-icon--pink" style="width:44px;height:44px;font-size:20px"><%= wf_icon(:stack) %></span>
+    <div class="w-grow"><div style="font-size:15px;font-weight:800">Create your first collection</div><div class="w-sub" style="font-size:13px">Pick a cover everyone can see, add the photos fans unlock, set a price.</div></div>
+    <span class="w-btn w-btn--pink">+ New collection</span>
+  <% end %>
+<% end %>

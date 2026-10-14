@@ -1,0 +1,98 @@
+<%# 4a. What a fan opens from a shared link. %>
+<% content_for :title, "#{@list.title} · #{@user.name} | Wishful" %>
+<% content_for :description, @list.description.presence || "#{@user.name}'s list on Wishful" %>
+<% content_for :chrome, "list" %>
+<% if @cover_src %><% content_for :og_image, @cover_src.start_with?("http") ? @cover_src : "#{request.base_url}#{@cover_src}" %><% end %>
+<% total = @items.size + @blog_items.size %>
+
+<% if @cover_src %><div class="w-ll-backdrop" aria-hidden="true"><%= image_tag @cover_src, alt: "" %></div><% end %>
+
+<div class="w-ll-page">
+  <div class="w-phone w-phone--flush" style="padding-bottom:0;background:transparent;box-shadow:none">
+    <div class="w-ll-hero">
+      <% if @cover_src %><%= image_tag @cover_src, alt: "" %><% end %>
+      <div class="w-ll-hero-bar">
+        <span class="w-pill" style="height:30px;padding:0 10px;font-size:12px;font-weight:700"><%= wf_icon(:link, size: 12) %>List</span>
+        <button type="button" class="w-icon-btn w-icon-btn--glass" style="width:30px;height:30px;font-size:14px" data-share-url="<%= public_link_list_url(@user.handle, @list.slug) %>" data-share-title="<%= @list.title %>" aria-label="Share this list"><%= wf_icon(:share) %></button>
+      </div>
+      <div class="w-ll-hero-text">
+        <%= link_to profile_path(@user.handle), class: "w-row", style: "gap:8px" do %>
+          <%= wf_avatar(@user, size: 26) %><span style="font-size:13px;font-weight:700"><%= @user.name %></span><%= wf_verified(size: 14) if @user.upi_id.present? %>
+        <% end %>
+        <h1 class="w-ll-title" style="margin-bottom:0"><%= @list.title %></h1>
+        <div style="font-size:13.5px;color:var(--w-soft);margin-top:4px"><%= [ @list.description.presence, pluralize(total, "link") ].compact.join(" · ") %></div>
+      </div>
+    </div>
+
+    <% if @socials.any? %>
+      <div class="w-chips" style="padding:14px 14px 0">
+        <% @socials.each do |s| %>
+          <%= link_to s[:url], class: "w-chip w-chip--social", target: "_blank", rel: "noopener me" do %>
+            <%= wf_social_icon(s[:key]) %><%= %w[website].include?(s[:key]) ? s[:display] : s[:label] %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="w-ll-items">
+      <% @items.each do |item| %>
+        <% source = item.image_source %>
+        <%= link_to visit_link_list_item_path(item), class: "w-list-row", target: (item.collection? ? nil : "_blank"), rel: (item.collection? ? nil : "nofollow sponsored noopener") do %>
+          <% if item.collection? %>
+            <span style="position:relative;flex:none">
+              <% if source %><%= image_tag wf_collection_cover_src(item.paid_media_collection), alt: "", class: "w-thumb" %><% else %><span class="w-thumb"></span><% end %>
+              <span style="position:absolute;right:-4px;bottom:-4px;width:22px;height:22px;border-radius:999px;background:var(--w-bg);display:flex;align-items:center;justify-content:center;color:var(--w-gold);font-size:12px"><%= wf_icon(:lock) %></span>
+            </span>
+          <% elsif source.is_a?(String) %>
+            <%= image_tag source, alt: "", class: "w-thumb", loading: "lazy" %>
+          <% elsif item.video? %>
+            <span class="w-thumb w-thumb--video"><%= wf_icon(:play, size: 20) %></span>
+          <% else %>
+            <span class="w-thumb w-center" style="justify-content:center;color:var(--w-dim)"><%= wf_icon(:link, size: 20) %></span>
+          <% end %>
+          <div class="w-grow">
+            <div class="w-row-title"><%= item.title %></div>
+            <div class="w-row-meta"><%= item.subtitle.presence || item.meta_label %></div>
+          </div>
+          <% if item.collection? %>
+            <span class="w-btn w-btn--pink w-btn--sm" style="height:34px;border-radius:999px;font-size:12.5px"><%= item.paid_media_collection.unlocked_for?(current_user) ? "Yours" : item.paid_media_collection.price_label %></span>
+          <% else %>
+            <span class="w-round-btn"><%= wf_icon(:arrow, size: 14) %></span>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% if @blog_items.any? %>
+      <div style="padding:22px 14px 0">
+        <div class="w-row w-row--between" style="align-items:baseline">
+          <span class="w-row" style="gap:8px;font-size:16px;font-weight:800"><%= wf_icon(:pen, size: 15) %>From my blog</span>
+          <% blog = @user.social_links(only: [ "blog" ]).first %>
+          <% if blog %><%= link_to "#{blog[:display].split("/").first} ↗", blog[:url], class: "w-pink", style: "font-size:12.5px;font-weight:700", target: "_blank", rel: "noopener" %><% end %>
+        </div>
+        <div class="w-stack" style="gap:12px;margin-top:12px">
+          <% @blog_items.each do |item| %>
+            <%= link_to visit_link_list_item_path(item), class: "w-row", style: "gap:12px", target: "_blank", rel: "noopener" do %>
+              <% if item.image_url.present? %><%= image_tag item.image_url, alt: "", style: "width:88px;height:66px;border-radius:10px;object-fit:cover;flex:none" %>
+              <% else %><span class="w-center" style="width:88px;height:66px;border-radius:10px;background:var(--w-raise);justify-content:center;flex:none;color:var(--w-dim)"><%= wf_icon(:pen) %></span><% end %>
+              <div class="w-grow"><div style="font-size:14px;font-weight:700;line-height:1.3"><%= item.title %></div><div class="w-sub" style="font-size:12px;margin-top:3px"><%= item.subtitle.presence || item.host %></div></div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= link_to profile_path(@user.handle), class: "w-more-from" do %>
+      <%= wf_avatar(@user, size: 40) %>
+      <div class="w-grow">
+        <div style="font-size:14px;font-weight:800">More from <%= @user.first_name %></div>
+        <div style="font-size:12px;color:var(--w-sub)"><%= pluralize(@posts_count, "post") %> · <%= pluralize(@collections_count, "collection") %></div>
+      </div>
+      <span class="w-btn w-btn--light w-btn--sm" style="height:36px;border-radius:10px;font-size:13px">View profile</span>
+    <% end %>
+
+    <div class="w-credit">
+      <%= "Some links may earn #{@user.first_name} a commission · " if @items.any? { |i| !i.collection? } %>Made with <%= link_to "Wishful", root_path %>
+    </div>
+  </div>
+</div>

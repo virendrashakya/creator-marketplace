@@ -1,0 +1,41 @@
+<% content_for :title, "#{@drop.title} · #{@user.name} | Wishful" %>
+<% content_for :chrome, "fan" %>
+<% plan = @drop.subscription_plan %>
+
+<div class="w-phone" style="padding-bottom:150px">
+  <div class="w-hero">
+    <%= image_tag wf_post_image_src(@drop), alt: "" %>
+    <div class="w-hero-bar">
+      <%= link_to profile_path(@user.handle, tab: "collections"), class: "w-icon-btn w-icon-btn--glass", aria: { label: "Back" } do %><%= wf_icon(:back) %><% end %>
+      <button type="button" class="w-icon-btn w-icon-btn--glass" data-share-url="<%= public_drop_url(@user.handle, @drop) %>" data-share-title="<%= @drop.title %>" aria-label="Share"><%= wf_icon(:share) %></button>
+    </div>
+    <div class="w-hero-text">
+      <div class="w-eyebrow w-eyebrow--gold"><%= @unlocked && !@own ? "Drop · yours" : "Drop · preview" %></div>
+      <h1 class="w-hero-title" style="margin:4px 0 0"><%= @drop.title %></h1>
+    </div>
+  </div>
+  <div style="padding:6px 16px 0">
+    <div class="w-sub" style="font-size:13px">1 <%= @drop.media_type == "video" ? "reel" : "photo" %> · added <%= @drop.created_at.strftime("%-d %b") %></div>
+    <% if @drop.caption.present? %><p style="font-size:14px;line-height:1.5;margin:8px 0 0"><%= @drop.caption %></p><% end %>
+    <p class="w-note" style="padding:14px 0 0;font-size:12px"><%= wf_icon(:shield) %>Your copy is watermarked with your handle</p>
+  </div>
+</div>
+
+<div class="w-dock-bottom">
+  <% if @unlocked %>
+    <%= link_to (@own ? "Open" : "Open · it's yours"), public_drop_path(@user.handle, @drop, view: 1), class: "w-btn w-btn--gold w-btn--lg w-btn--block" %>
+  <% elsif @pending_claim %>
+    <%= link_to payment_claim_path(@pending_claim), class: "w-btn w-btn--lg w-btn--block w-btn-split", style: "background:var(--w-gold-bg);border:1px solid var(--w-gold-line)" do %>
+      <span>Waiting for <%= @user.first_name %> to approve</span><span class="w-gold"><%= wf_icon(:clock) %></span>
+    <% end %>
+  <% elsif @drop.price_cents.present? %>
+    <%= link_to new_payment_claim_path("PaidMediaPost", @drop.id), class: "w-btn w-btn--pink w-btn--lg w-btn--block w-btn--glow w-btn-split" do %>
+      <span>Unlock</span><span style="font-size:17px"><%= @drop.price_label %></span>
+    <% end %>
+  <% end %>
+  <% if !@unlocked && plan&.active? %>
+    <div class="w-sub" style="text-align:center;font-size:12.5px">
+      or included with <%= link_to "Close Friends · #{plan.price_label}/mo", close_friends_path(@user.handle, plan: plan.id), class: "w-gold", style: "font-weight:700" %>
+    </div>
+  <% end %>
+</div>

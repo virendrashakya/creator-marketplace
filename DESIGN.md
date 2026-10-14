@@ -1,5 +1,7 @@
 # Wishful — Design System & Visual Reference
 
+> **Superseded on 13 Oct 2026.** The app now uses the dark "Studio" design system in `public/assets/wf.css` (see `REFERENCE.md` §4 and `docs/screenshots/redesign-2026-10/`). This document describes the previous light theme and is kept for history.
+
 > **Last Updated:** 13 Oct 2026
 >
 > This document captures the complete design system, visual language, page screenshots, and responsive layout specifications for **Wishful** — an Indian creator monetization platform.

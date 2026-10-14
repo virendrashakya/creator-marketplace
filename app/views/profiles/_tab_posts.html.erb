@@ -1,0 +1,33 @@
+<% if @posts.any? %>
+  <div class="w-grid3">
+    <% @posts.each do |post| %>
+      <%= link_to public_post_path(@user.handle, post), class: "w-tile", aria: { label: post.body.truncate(60) } do %>
+        <% if post.media.attached? && post.video? %>
+          <video src="<%= url_for(post.media) %>" muted playsinline preload="metadata"></video>
+          <span class="w-tile-mark"><%= wf_icon(:play) %></span>
+        <% elsif post.media.attached? %>
+          <%= image_tag url_for(post.media), alt: "", loading: "lazy" %>
+        <% else %>
+          <span class="w-tile-text"><span><%= post.body %></span></span>
+        <% end %>
+        <% if post.paid_media_collection_id %>
+          <span class="w-tile-mark w-gold" style="right:auto;left:6px"><%= wf_icon(:lock) %></span>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <div class="w-center" style="padding:48px 40px 0;gap:10px">
+    <div style="display:grid;grid-template-columns:repeat(3,48px);gap:4px;margin-bottom:6px">
+      <span style="height:60px;border-radius:6px;background:var(--w-raise)"></span><span style="height:60px;border-radius:6px;background:var(--w-raise)"></span><span style="height:60px;border-radius:6px;background:var(--w-raise)"></span>
+    </div>
+    <% if @own_page %>
+      <div style="font-size:19px;font-weight:800">Post your first look</div>
+      <div class="w-sub" style="font-size:13.5px;line-height:1.5">Free posts bring fans in. Use them to tease the collections you'll sell.</div>
+      <%= link_to "+ New post", creator_posts_path, class: "w-btn w-btn--pink", style: "margin-top:8px" %>
+    <% else %>
+      <div style="font-size:17px;font-weight:800">No posts yet</div>
+      <div class="w-sub" style="font-size:13.5px">Follow <%= @user.first_name %> to see the first one.</div>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,101 @@
+<%# 5g. Studio's inbox: list, thread, and who this fan is. %>
+<% content_for :title, (@conversation ? "@#{@other.handle} | Messages" : "Messages | Wishful Studio") %>
+<% content_for :main_class, "w-inbox#{" has-thread" if @conversation}" %>
+<% if @conversation %>
+  <% content_for :head do %>
+    <script src="/assets/js/actioncable.js" data-turbo-track="reload" defer></script>
+    <script src="/assets/js/chat.js" data-turbo-track="reload" defer></script>
+  <% end %>
+<% end %>
+
+<div class="w-inbox-list">
+  <div style="padding:20px 14px 12px">
+    <div style="font-size:20px;font-weight:800">Messages</div>
+    <nav class="w-chips" style="margin-top:12px;gap:6px" aria-label="Filter">
+      <% [ [ "all", "All" ], [ "close_friends", "Close Friends" ], [ "unread", "Unread" ] ].each do |key, label| %>
+        <%= link_to label, (@conversation ? conversation_path(@conversation, filter: key) : conversations_path(filter: key)), class: "w-chip", style: "height:28px;padding:0 10px;font-size:11.5px", aria: { current: (@filter == key ? "page" : nil) } %>
+      <% end %>
+    </nav>
+  </div>
+  <% @conversations.each do |c| %>
+    <% other = c.other_party(current_user) %>
+    <% last = @last_messages[c.id] %>
+    <% unread = c.unread_for(current_user).positive? %>
+    <%= link_to conversation_path(c, filter: (@filter unless @filter == "all")), class: "w-inbox-item", aria: { current: (c == @conversation ? "page" : nil) } do %>
+      <%= wf_avatar(other, size: 34) %>
+      <div class="w-grow">
+        <div class="w-row w-row--between" style="gap:6px">
+          <span style="font-size:13.5px;font-weight:800" class="w-ellipsis">@<%= other.handle %>
+            <% if c.creator_id == current_user.id && @close_friend_ids.include?(other.id) %><span class="w-gold" style="font-size:10px;font-weight:800">★ CF</span><% end %>
+          </span>
+          <span class="w-dim" style="font-size:11px;white-space:nowrap"><%= last ? (last.created_at.today? ? last.created_at.strftime("%-H:%M") : last.created_at.strftime("%a")) : "" %></span>
+        </div>
+        <div class="w-ellipsis" style="font-size:12.5px;margin-top:2px;<%= unread ? "font-weight:700;color:var(--w-text)" : "color:var(--w-sub)" %>">
+          <%= last ? last.body.to_s.gsub(/\[(ppv|collection):\d+\]/, "🔒 Paid media").truncate(60) : "No messages yet" %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+  <% if @conversations.empty? %>
+    <div class="w-sub" style="padding:24px 14px;font-size:13px">No conversations<%= " here" unless @filter == "all" %> yet. Fans can message you from your profile.</div>
+  <% end %>
+</div>
+
+<% if @conversation %>
+  <section class="w-inbox-thread" data-chat="dm" data-conversation-id="<%= @conversation.id %>" data-me="<%= current_user.id %>">
+    <div class="w-row" style="height:62px;padding:0 18px;border-bottom:1px solid var(--w-line-soft);flex:none">
+      <%= link_to conversations_path, class: "w-icon-btn", style: "display:none", id: "inbox-back", aria: { label: "Back to messages" } do %><%= wf_icon(:back) %><% end %>
+      <%= wf_avatar(@other, size: 34) %>
+      <div>
+        <div style="font-size:14.5px;font-weight:800">@<%= @other.handle %></div>
+        <% if @close_friend_ids.include?(@other.id) %>
+          <div class="w-gold" style="font-size:11.5px;font-weight:700">★ Close Friends <%= @fan_stats[:close_friends] %> · priority</div>
+        <% else %>
+          <div class="w-sub" style="font-size:11.5px"><%= @other.name %></div>
+        <% end %>
+      </div>
+    </div>
+    <ol class="w-chat-log" data-chat-log>
+      <% @messages.each do |m| %><%= render "conversations/message", message: m %><% end %>
+    </ol>
+    <%= form_with url: conversation_direct_messages_path(@conversation), method: :post, local: true, class: "w-chat-form", data: { chat_form: true } do %>
+      <% if @vault.any? %>
+        <label class="w-btn" style="position:relative;gap:6px;font-size:12.5px;flex:none">
+          <%= wf_icon(:lock, color: "#F5B942") %>Paid media
+          <select name="attach" style="position:absolute;inset:0;opacity:0;cursor:pointer" aria-label="Send paid media"
+                  onchange="if(this.value){var i=this.form.querySelector('.chat-input');i.value=this.value+' '+i.value;i.focus();this.selectedIndex=0;}">
+            <option value="">Send paid media…</option>
+            <% @vault.each do |v| %>
+              <option value="<%= v.is_a?(PaidMediaCollection) ? "[collection:#{v.id}]" : "[ppv:#{v.id}]" %>"><%= v.title %> · <%= v.price_label %></option>
+            <% end %>
+          </select>
+        </label>
+      <% end %>
+      <label class="w-sr" for="dm_body">Reply</label>
+      <input type="text" name="body" id="dm_body" maxlength="2000" placeholder="Reply to @<%= @other.handle %>…" autocomplete="off" class="chat-input" style="border-radius:10px">
+      <button type="submit" class="w-btn w-btn--pink">Send</button>
+    <% end %>
+  </section>
+
+  <aside class="w-inbox-info">
+    <div class="w-eyebrow">About this fan</div>
+    <div class="w-kv"><span>Spent with you</span><span><%= money(@fan_stats[:spent]) %></span></div>
+    <div class="w-kv"><span>Collections</span><span><%= @fan_stats[:collections] %></span></div>
+    <div class="w-kv"><span>Close Friends</span><span><%= @fan_stats[:close_friends] %></span></div>
+    <div class="w-kv"><span>Last gift</span><span><%= @fan_stats[:last_gift] %></span></div>
+    <div style="margin-top:auto">
+      <%= form_with url: creator_blocks_path, method: :post, local: true do %>
+        <%= hidden_field_tag "creator_block[identifier_type]", "username" %>
+        <%= hidden_field_tag "creator_block[identifier_value]", @other.handle %>
+        <button type="submit" class="w-btn w-btn--sm w-btn--block" data-turbo-confirm="Block @<%= @other.handle %>? They won't be able to see your page or message you.">Block fan</button>
+      <% end %>
+    </div>
+  </aside>
+<% else %>
+  <section class="w-inbox-thread w-center" style="justify-content:center;color:var(--w-sub);font-size:13.5px">
+    <div class="w-big-icon w-big-icon--pink" style="margin-bottom:10px"><%= wf_icon(:chat) %></div>
+    Pick a conversation.
+  </section>
+  <aside class="w-inbox-info"></aside>
+<% end %>
+<style>@media (max-width:960px){#inbox-back{display:inline-flex !important}}</style>

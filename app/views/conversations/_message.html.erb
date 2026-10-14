@@ -1,0 +1,42 @@
+<%# One chat row. A message whose body carries [ppv:ID] or [collection:ID]
+    is a paid item sent into the chat, drawn as a locked card. %>
+<% mine = message.sender_id == current_user.id %>
+<% ppv_id = message.body.to_s[/\[ppv:(\d+)\]/, 1] %>
+<% coll_id = message.body.to_s[/\[collection:(\d+)\]/, 1] %>
+<% item = ppv_id ? PaidMediaPost.find_by(id: ppv_id, user_id: message.sender_id) : (coll_id ? PaidMediaCollection.find_by(id: coll_id, user_id: message.sender_id) : nil) %>
+<li class="dm-line<%= " is-mine" if mine %>" data-id="<%= message.id %>">
+  <% if item %>
+    <% unlocked = item.unlocked_for?(current_user) %>
+    <% owner = item.user %>
+    <% href = if item.is_a?(PaidMediaCollection)
+         public_collection_path(owner.handle, item)
+       else
+         unlocked ? public_drop_path(owner.handle, item, view: 1) : public_drop_path(owner.handle, item)
+       end %>
+    <div class="w-ppv">
+      <%= link_to href, class: "w-ppv-media", style: "display:flex" do %>
+        <% if unlocked %>
+          <% src = item.is_a?(PaidMediaCollection) ? wf_collection_cover_src(item) : wf_post_image_src(item) %>
+          <% if src %><%= image_tag src, alt: "", draggable: false %><% end %>
+        <% else %>
+          <span class="w-ppv-lock"><%= wf_icon(:lock) %></span>
+          <span style="position:relative"><%= item.is_a?(PaidMediaCollection) ? item.contents_label : (item.media_type == "video" ? "Reel" : "Photo") %></span>
+        <% end %>
+      <% end %>
+      <div class="w-ppv-foot">
+        <span class="w-ellipsis"><%= item.title %></span>
+        <% if unlocked %>
+          <span class="w-gold" style="font-size:12px;font-weight:800;white-space:nowrap"><%= mine ? "#{item.price_label} · sent" : "Yours" %></span>
+        <% elsif mine %>
+          <span class="w-gold" style="font-size:12px;font-weight:800;white-space:nowrap"><%= item.price_label %> · sent</span>
+        <% else %>
+          <%= link_to "Unlock #{item.price_label}", new_payment_claim_path(item.class.name, item.id), class: "w-btn w-btn--light w-btn--xs", style: "border-radius:999px;font-weight:800" %>
+        <% end %>
+      </div>
+    </div>
+    <% rest = message.body.to_s.gsub(/\[(ppv|collection):\d+\]/, "").strip %>
+    <% if rest.present? && !rest.start_with?("🔒") %><span class="dm-bubble" style="margin-top:4px"><%= rest %></span><% end %>
+  <% else %>
+    <span class="dm-bubble"><%= message.body %></span>
+  <% end %>
+</li>

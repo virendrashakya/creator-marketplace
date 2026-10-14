@@ -48,3 +48,12 @@ group :development, :test do
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
 end
+
+# QR codes for UPI IDs and link-list sharing, rendered as inline SVG.
+gem "rqrcode", "~> 2.2"
+
+# Web Push for the installed PWA: unlock approvals and live reminders.
+gem "web-push", "~> 3.0"
+
+# Payments export. No longer a default gem as of Ruby 3.4.
+gem "csv"

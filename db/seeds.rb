@@ -443,6 +443,99 @@ ananya.product_links.reorder(:id).each_with_index do |link, i|
   end
 end
 
+# ---------------------------------------------------------------------------
+# The October redesign: phone sign-in, collections, link lists.
+# ---------------------------------------------------------------------------
+
+# Phone numbers, so the WhatsApp OTP sign-in can be tried in development (the
+# code is printed in the log and flashed on screen when no provider is set).
+ananya.update!(phone_number: "+ ", phone_verified_at: Time.current, onboarded_at: Time.current,
+               blog_url: "https://ananyarao.example.com/blog", upi_payee_name: "ANANYA RAO",
+               accepts_upi_manual: true)
+fans[0].update!(phone_number: "+919876543210", phone_verified_at: Time.current, notify_whatsapp_claims: true)
+
+cf_plan = ananya.subscription_plans.where(active: true).order(:price_cents).first
+
+COLLECTION_IMAGES = %w[
+  creator-saree.jpg creator-portrait.jpg creators/c3.jpg creators/c7.jpg creators/c11.jpg
+  creators/c15.jpg creators/c19.jpg creators/c23.jpg creators/c27.jpg creators/c31.jpg
+].freeze
+
+def seed_collection!(creator, title:, description:, price_cents:, items:, offset:, plan: nil, published: true, release_at: nil)
+  collection = creator.paid_media_collections.find_or_initialize_by(title: title)
+  collection.assign_attributes(description: description, price_cents: price_cents, currency: "INR",
+                               subscription_plan: plan, published: published, release_at: release_at)
+  collection.save!
+  items.times do |i|
+    post = collection.paid_media_posts.find_or_initialize_by(user: creator, position: i)
+    post.assign_attributes(title: "#{title} · #{i + 1}", media_type: "image", currency: "INR", published: true)
+    attach_image(post, :media, COLLECTION_IMAGES[(offset + i) % COLLECTION_IMAGES.size])
+    post.save!
+  end
+  collection
+end
+
+goa_set = seed_collection!(ananya, title: "Golden Hour in Goa", offset: 0, items: 8, plan: cf_plan, price_cents: 49_900,
+  description: "Full sunset sequence, a wet silk drape experiment and unreleased BTS stills.")
+festive = seed_collection!(ananya, title: "Festive Silk BTS", offset: 1, items: 6, price_cents: 29_900,
+  description: "Archival Mumbai studio shoot. Handloom Banarasi motifs and fitting-room moments.")
+banarasi = seed_collection!(ananya, title: "Banarasi Heritage", offset: 4, items: 6, plan: cf_plan, price_cents: 29_900,
+  description: "Three drapes, one heirloom saree, natural light.")
+seed_collection!(ananya, title: "Diwali shoot", offset: 6, items: 6, plan: cf_plan, price_cents: 49_900,
+  description: "Temple-border silk, three drapes, golden-hour light.", release_at: Date.current.next_occurring(:monday).in_time_zone.change(hour: 19))
+
+# A free post that teases a collection.
+teaser = ananya.creator_posts.order(created_at: :desc).first
+teaser&.update!(paid_media_collection: goa_set)
+
+# Link lists, each with real items and plausible numbers.
+def seed_list!(creator, slug:, title:, description:, opens:, show_on_profile: true, socials:)
+  list = creator.link_lists.find_or_initialize_by(slug: slug)
+  list.assign_attributes(title: title, description: description, opens_count: opens,
+                         show_on_profile: show_on_profile, published: true, socials: socials)
+  list.save!
+  list
+end
+
+products = ananya.product_links.reorder(:id).to_a
+diwali = seed_list!(ananya, slug: "diwali", title: "My Diwali edit", opens: 2_180,
+  description: "Everything I wore and used for the festive shoot", socials: %w[instagram youtube website])
+if diwali.items.empty?
+  products.first(3).each_with_index { |p, i| diwali.items.create!(product_link: p, position: i, clicks_count: [ 312, 188, 96 ][i]) }
+  diwali.items.create!(url: "https://www.youtube.com/@ananyarao", title: "How I draped it: 6 min tutorial", position: 3, clicks_count: 64)
+  diwali.items.create!(paid_media_collection: goa_set, position: 4, clicks_count: 41)
+  diwali.items.create!(url: "https://ananyarao.example.com/blog/silk-saree-diwali", title: "5 ways to drape a silk saree for Diwali nights",
+                       subtitle: "ananyarao.example.com/blog · 6 min read", image_url: REMOTE_IMAGES["rec-saree-silk"], position: 5, clicks_count: 7)
+  diwali.items.create!(url: "https://ananyarao.example.com/blog/festive-shoot-packing", title: "What I pack for a two-day festive shoot",
+                       subtitle: "ananyarao.example.com/blog · 4 min read", image_url: REMOTE_IMAGES["rec-saree-chiffon"], position: 6, clicks_count: 4)
+end
+
+grwm = seed_list!(ananya, slug: "grwm", title: "GRWM: wedding guest", opens: 964,
+  description: "The full wedding-guest look, head to toe", socials: %w[instagram youtube])
+if grwm.items.empty?
+  products.drop(3).first(4).each_with_index { |p, i| grwm.items.create!(product_link: p, position: i, clicks_count: [ 120, 88, 54, 30 ][i]) }
+  grwm.items.create!(paid_media_collection: festive, position: 4, clicks_count: 9)
+end
+
+kit = seed_list!(ananya, slug: "kit", title: "My shoot kit", opens: 268, show_on_profile: false,
+  description: "Camera, light and the little things", socials: %w[instagram])
+if kit.items.empty?
+  products.last(4).each_with_index { |p, i| kit.items.create!(product_link: p, position: i, clicks_count: [ 30, 22, 12, 9 ][i]) }
+end
+
+# A fan who came from the Diwali list and owns Banarasi Heritage, so the
+# viewer, "Yours" covers and the list's earnings all have something to show.
+owned = claim!(creator: ananya, claimant: fans[0], purchasable: banarasi,
+               amount_cents: 29_900, utr: "301122334455")
+if owned
+  owned.update!(link_list: diwali)
+  owned.approve!(ananya)
+end
+claim!(creator: ananya, claimant: fans[4], purchasable: goa_set, amount_cents: 49_900, utr: "412288901734",
+       note: "Paid on GPay")&.update!(link_list: diwali)
+
+puts "  #{ananya.paid_media_collections.count} collections, #{ananya.link_lists.count} link lists"
+puts "  Phone sign-in: +91 98201 44100 (Ananya) or +91 98765 43210 (Priya, a fan)"
 puts "  @#{raya.handle}, @#{dev.handle} created"
 puts "  #{User.count} users, #{CreatorFollow.count} follows, #{GiftContribution.count} gifts"
 puts "  payment queue: #{PaymentClaim.pending.count} pending, #{PaymentClaim.where.not(status: "pending").count} reviewed"

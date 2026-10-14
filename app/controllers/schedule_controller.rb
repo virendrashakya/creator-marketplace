@@ -1,45 +1,38 @@
+# Studio · Book (5f). One week of calls, lives and open slots on a calendar,
+# beside the list of what fans can book.
 class ScheduleController < ApplicationController
   before_action :require_user
 
-  # One calendar for everything a creator has to turn up to: booked meets and
-  # scheduled lives. They live in different tables and mean different things,
-  # so the view gets a single ordered list of plain structs rather than two
-  # collections it has to interleave itself.
-  Entry = Struct.new(:at, :ends_at, :kind, :title, :detail, :path, :state, keyword_init: true)
+  Entry = Struct.new(:at, :ends_at, :kind, :title, :detail, :path, keyword_init: true)
 
   def show
-    @month = parse_month
-    range = @month.beginning_of_month.beginning_of_day..@month.end_of_month.end_of_day
+    @week_start = parse_week.beginning_of_week(:monday)
+    week = @week_start.beginning_of_day..(@week_start + 6.days).end_of_day
+    @entries = (live_entries(week) + meet_entries(week)).sort_by(&:at)
 
-    @entries = (live_entries(range) + meet_entries(range)).sort_by(&:at)
-    @by_day = @entries.group_by { |e| e.at.to_date }
+    hours = @entries.flat_map { |e| [ e.at.hour, (e.ends_at || e.at + 1.hour).hour + ((e.ends_at || e.at + 1.hour).min.positive? ? 1 : 0) ] }
+    @first_hour = [ hours.min || 17, 17 ].min.clamp(0, 22)
+    @last_hour = [ hours.max || 22, 22 ].max.clamp(@first_hour + 1, 24)
 
-    # "What is next" is the question a creator actually opens this for, and it
-    # should not depend on which month they are looking at.
-    @next_up = (live_entries(Time.current..1.year.from_now) +
-                meet_entries(Time.current..1.year.from_now)).sort_by(&:at).first(5)
+    @meet_offers = current_user.meet_offers.order(:created_at)
+    @contact_reveals = current_user.contact_reveals.order(:created_at)
+    @next_up = (live_entries(Time.current..60.days.from_now) + meet_entries(Time.current..60.days.from_now)).sort_by(&:at).first(6)
   end
 
   private
 
-  def parse_month
-    Date.strptime(params[:month].to_s, "%Y-%m")
+  def parse_week
+    Date.strptime(params[:week].to_s, "%Y-%m-%d")
   rescue ArgumentError, TypeError
     Date.current
   end
 
   def live_entries(range)
-    current_user.live_sessions
-                .visible
-                .where(scheduled_for: range)
-                .map do |live|
-      Entry.new(
-        at: live.scheduled_for, ends_at: nil, kind: :live,
-        title: live.title,
-        detail: live.members_only? ? "Members only" : "Open to everyone",
-        path: live_session_path(live),
-        state: live.status
-      )
+    current_user.live_sessions.visible.where(scheduled_for: range).map do |live|
+      Entry.new(at: live.scheduled_for, ends_at: live.scheduled_for + 1.hour, kind: :live,
+                title: "Live · #{live.title}",
+                detail: [ wf_time(live.scheduled_for), (live.members_only? ? "Close Friends" : "Everyone") ].join(" · "),
+                path: studio_live_session_path(live))
     end
   end
 
@@ -50,15 +43,12 @@ class ScheduleController < ApplicationController
             .where(starts_at: range)
             .map do |slot|
       booking = slot.meet_booking
-      Entry.new(
-        at: slot.starts_at, ends_at: slot.ends_at, kind: :meet,
-        title: slot.meet_offer.title,
-        # A booked slot is an appointment with a person; an open one is just
-        # availability, and the difference is the whole point of the row.
-        detail: booking ? "Booked by @#{booking.attendee.handle}" : "Open slot",
-        path: edit_meet_offer_path(slot.meet_offer),
-        state: booking ? booking.status : "open"
-      )
+      Entry.new(at: slot.starts_at, ends_at: slot.ends_at, kind: booking ? :call : :open,
+                title: booking ? "Call · #{booking.attendee.handle}" : "Open slot",
+                detail: booking ? "#{wf_time(slot.starts_at)} · #{helpers.money(booking.amount_cents, booking.currency)}" : slot.meet_offer.title,
+                path: edit_meet_offer_path(slot.meet_offer))
     end
   end
+
+  def wf_time(time) = time.strftime("%-l:%M %p")
 end

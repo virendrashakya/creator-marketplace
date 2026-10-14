@@ -1,0 +1,64 @@
+<%# 5e. %>
+<% content_for :title, "Posts | Wishful Studio" %>
+
+<div class="w-page-head">
+  <div>
+    <h1 class="w-page-title">Posts</h1>
+    <div class="w-page-lede">Free for everyone. Use posts to tease collections and grow followers.</div>
+  </div>
+  <div class="w-page-actions">
+    <a href="#composer" class="w-btn w-btn--pink">+ New post</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start" class="w-two-col">
+  <% if @posts.any? %>
+    <div class="w-posts-grid">
+      <% @posts.each do |post| %>
+        <%= link_to edit_creator_post_path(post), class: "w-post-tile", title: post.body.truncate(80) do %>
+          <% if post.media.attached? && post.video? %>
+            <video src="<%= url_for(post.media) %>" muted playsinline preload="metadata"></video>
+          <% elsif post.media.attached? %>
+            <%= image_tag url_for(post.media), alt: "", loading: "lazy" %>
+          <% else %>
+            <span class="w-tile-text"><span><%= post.body %></span></span>
+          <% end %>
+          <span class="w-post-tile-foot">
+            <span>♥ <%= wf_compact(post.creator_post_likes.size) %></span>
+            <span style="color:var(--w-soft)"><%= post.published? ? (post.video? ? "Reel" : "") : "Draft" %></span>
+          </span>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="w-card w-center" style="padding:48px 24px;gap:8px">
+      <div class="w-big-icon w-big-icon--pink"><%= wf_icon(:grid) %></div>
+      <div style="font-size:17px;font-weight:800">Post your first look</div>
+      <div class="w-sub" style="font-size:13.5px">Free posts bring fans in. Use them to tease the collections you'll sell.</div>
+    </div>
+  <% end %>
+
+  <div class="w-card" style="padding:16px" id="composer">
+    <div style="font-size:15px;font-weight:800">New post</div>
+    <%= form_with model: @creator_post, url: creator_posts_path, local: true, multipart: true, html: { class: "w-stack", style: "margin-top:12px;gap:10px" } do |f| %>
+      <%= render "paid_media_collections/errors", record: @creator_post %>
+      <label class="w-file-drop" style="min-height:180px">
+        <%= f.file_field :media, accept: "image/*,video/*", data: { file_label: "#post-media-label" } %>
+        <strong>+</strong>
+        <span id="post-media-label" data-empty="Drop photo or video">Drop photo or video</span>
+      </label>
+      <%= f.text_area :body, class: "w-textarea", rows: 3, placeholder: "Write a caption…", required: true, maxlength: 2200, style: "background:var(--w-bg)" %>
+      <% if @collections.any? %>
+        <label class="w-row" style="padding:10px 12px;border-radius:10px;background:var(--w-bg);border:1px solid var(--w-line)">
+          <span class="w-grow" style="font-size:12.5px">Link a collection</span>
+          <%= f.select :paid_media_collection_id, @collections.map { |c| [ c.title, c.id ] }, { include_blank: "None" },
+                class: "w-select", style: "width:auto;height:28px;font-size:12px;padding:0 8px" %>
+        </label>
+      <% end %>
+      <div class="w-row" style="gap:8px;margin-top:2px">
+        <button type="submit" name="creator_post[published]" value="0" class="w-btn w-grow">Save draft</button>
+        <button type="submit" name="creator_post[published]" value="1" class="w-btn w-btn--pink w-grow">Post now</button>
+      </div>
+    <% end %>
+  </div>
+</div>

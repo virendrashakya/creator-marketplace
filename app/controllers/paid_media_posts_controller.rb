@@ -2,8 +2,31 @@ require_relative "../services/frosted_preview_service"
 require_relative "../services/forensic_watermark_service"
 
 class PaidMediaPostsController < ApplicationController
-  before_action :require_user, except: %i[media preview]
+  before_action :require_user, except: %i[media preview show]
   before_action :set_post, only: %i[edit update destroy]
+
+  # A drop sold on its own, outside any collection: the same page as a
+  # collection, with one item. ?view=1 opens the viewer once it is yours.
+  def show
+    @user = User.find_by!(handle: params[:handle].to_s.downcase)
+    return head :not_found if @user.blocks?(current_user)
+
+    @drop = @user.paid_media_posts.published.find(params[:id])
+    return redirect_to(public_collection_path(@user.handle, @drop.paid_media_collection)) if @drop.paid_media_collection&.released?
+
+    @unlocked = @drop.unlocked_for?(current_user)
+    @own = current_user == @user
+    @pending_claim = current_user && current_user.payment_claims.pending.find_by(purchasable: @drop)
+
+    if params[:view].present? && @unlocked
+      @items = [ @drop ]
+      @item = @drop
+      @index = 0
+      @title = @drop.title
+      @back_path = public_drop_path(@user.handle, @drop)
+      render "shared/viewer"
+    end
+  end
 
   def new
     @paid_media_post = current_user.paid_media_posts.new(currency: "INR", media_type: "image")
@@ -12,7 +35,7 @@ class PaidMediaPostsController < ApplicationController
   def create
     @paid_media_post = current_user.paid_media_posts.new(post_params)
     if @paid_media_post.save
-      redirect_to dashboard_path, notice: "Paid post published."
+      redirect_to paid_media_collections_path, notice: "Paid post published."
     else
       render :new, status: :unprocessable_entity
     end
@@ -22,7 +45,7 @@ class PaidMediaPostsController < ApplicationController
 
   def update
     if @paid_media_post.update(post_params)
-      redirect_to dashboard_path, notice: "Paid post updated."
+      redirect_to paid_media_collections_path, notice: "Paid post updated."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -30,7 +53,7 @@ class PaidMediaPostsController < ApplicationController
 
   def destroy
     @paid_media_post.destroy
-    redirect_to dashboard_path, notice: "Paid post removed."
+    redirect_to paid_media_collections_path, notice: "Paid post removed."
   end
 
   # Authorized delivery of the paid file. Views must link here rather than to
@@ -40,15 +63,20 @@ class PaidMediaPostsController < ApplicationController
   # to discourage and trace unauthorized redistribution.
   def media
     post = PaidMediaPost.published.find(params[:id])
-    return head :forbidden unless post.unlocked_for?(current_user)
+    # A collection's cover is public by design: it is what sells the rest.
+    return head :forbidden unless post.unlocked_for?(current_user) || post.collection_cover?
     return head :not_found unless post.media.attached?
 
-    # Creators viewing their own content receive the original pristine media
-    if current_user == post.user || post.media_type != "image"
+    # Creators viewing their own content, and anyone looking at a public
+    # cover without an account, receive the original media.
+    if current_user.nil? || current_user == post.user || post.media_type != "image"
       return deliver post.media
     end
 
-    # Authenticated fans/buyers receive personalized forensic watermarked media
+    # Authenticated fans/buyers receive personalized forensic watermarked media.
+    # A download is only offered when the creator switched it on for the
+    # collection, and even then it is the watermarked copy.
+    downloadable = params[:download].present? && post.paid_media_collection&.allow_downloads?
     watermarked_bytes = ForensicWatermarkService.call(post.media, current_user)
     if watermarked_bytes.present?
       response.headers["Cache-Control"] = "private, no-cache, no-store, must-revalidate"
@@ -56,7 +84,7 @@ class PaidMediaPostsController < ApplicationController
       response.headers["Expires"] = "0"
       send_data watermarked_bytes,
                 type: "image/jpeg",
-                disposition: "inline",
+                disposition: downloadable ? "attachment" : "inline",
                 filename: "#{post.user.handle}-drop-#{post.id}-licensed-to-#{current_user.handle}.jpg"
     else
       deliver post.media

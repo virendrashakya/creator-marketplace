@@ -1,0 +1,53 @@
+<%# 6c. %>
+<% content_for :title, "Claim your handle | Wishful" %>
+<% content_for :chrome, "fan" %>
+<% picked = [ @user.creator_category, *@user.creator_subcategory.to_s.split(" · ") ].compact_blank %>
+<% picked = Array(params[:categories]) if params[:categories].present? %>
+
+<div class="w-screen">
+  <div class="w-step-head">
+    <%= link_to start_path, class: "w-icon-btn", aria: { label: "Back" } do %><%= wf_icon(:back) %><% end %>
+    <span>Step 2 of 4</span><span style="width:18px"></span>
+  </div>
+  <div class="w-steps"><span class="is-done"></span><span class="is-done"></span><span></span><span></span></div>
+  <h1 class="w-screen-title">Claim your handle</h1>
+  <p class="w-screen-lede">This is your profile link. Put it in your Instagram bio.</p>
+
+  <%= form_with model: @user, url: onboarding_profile_path, method: :patch, local: true, html: { style: "display:flex;flex-direction:column;flex:1" } do |f| %>
+    <% handle_error = @user.errors[:handle].first %>
+    <label class="w-input-wrap<%= " is-invalid" if handle_error %>" style="margin-top:24px">
+      <span class="w-prefix" style="color:var(--w-dim)">wishful.app/</span>
+      <%= f.text_field :handle, autocapitalize: "off", autocomplete: "username", spellcheck: false, required: true,
+            pattern: "[a-z0-9_]{2,30}", placeholder: "yourname", aria: { label: "Handle", invalid: handle_error.present? } %>
+    </label>
+    <% if handle_error %>
+      <div class="w-error"><%= wf_icon(:alert, size: 16) %><span>That handle <%= handle_error %>.</span></div>
+    <% else %>
+      <div class="w-help">Lowercase letters, numbers and underscores.</div>
+    <% end %>
+
+    <label class="w-field" style="margin-top:16px">
+      <span class="w-label">Display name</span>
+      <%= f.text_field :name, class: "w-input w-input--big", required: true, placeholder: "Your name", autocomplete: "name" %>
+    </label>
+    <% if @user.errors[:name].any? %><div class="w-error"><%= wf_icon(:alert, size: 16) %><span>Name <%= @user.errors[:name].first %>.</span></div><% end %>
+
+    <div class="w-label" style="margin:16px 0 8px">What do you create?</div>
+    <div class="w-chips">
+      <% OnboardingController::CATEGORIES.each do |cat| %>
+        <label class="w-chip" style="position:relative">
+          <input type="checkbox" name="categories[]" value="<%= cat %>" <%= "checked" if picked.include?(cat) %> style="position:absolute;opacity:0;inset:0;cursor:pointer">
+          <%= cat %>
+        </label>
+      <% end %>
+    </div>
+    <style>.w-chip:has(input:checked){background:var(--w-text);color:var(--w-bg)}</style>
+    <% (@user.errors.full_messages - @user.errors.full_messages_for(:handle) - @user.errors.full_messages_for(:name)).each do |m| %>
+      <div class="w-error"><%= wf_icon(:alert, size: 16) %><span><%= m %></span></div>
+    <% end %>
+
+    <div class="w-screen-foot">
+      <button type="submit" class="w-btn w-btn--pink w-btn--lg w-btn--block">Continue</button>
+    </div>
+  <% end %>
+</div>

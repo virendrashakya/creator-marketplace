@@ -1,0 +1,95 @@
+<div class="w-book">
+  <% @meet_offers.each do |offer| %>
+    <% slots = offer.meet_slots.select { |s| s.starts_at > Time.current && !s.booked? }.sort_by(&:starts_at).first(6) %>
+    <div class="w-card w-card--r16" style="padding:16px">
+      <div class="w-row w-row--between" style="align-items:flex-start">
+        <div>
+          <div style="font-size:15.5px;font-weight:800"><%= offer.title %></div>
+          <div class="w-sub" style="font-size:12.5px;margin-top:2px"><%= offer.duration_minutes %> min<%= " · #{offer.description.truncate(60)}" if offer.description.present? %></div>
+        </div>
+        <span style="font-size:17px;font-weight:800"><%= offer.price_label %></span>
+      </div>
+      <% if slots.any? %>
+        <div class="w-slots" data-slots>
+          <% slots.each_with_index do |slot, i| %>
+            <% label = "#{slot.starts_at.strftime("%a")} #{wf_time(slot.starts_at)}" %>
+            <button type="button" class="w-slot<%= " is-on" if i.zero? %>" data-slot data-label="<%= label %>" data-href="<%= new_payment_claim_path("MeetSlot", slot.id) %>">
+              <%= slot.starts_at.strftime("%a %-d") %><strong><%= wf_time(slot.starts_at) %></strong>
+            </button>
+          <% end %>
+        </div>
+        <% first = slots.first %>
+        <% if @own_page %>
+          <%= link_to "Manage slots", edit_meet_offer_path(offer), class: "w-btn w-btn--block", style: "margin-top:12px;height:46px" %>
+        <% else %>
+          <%= link_to "Book #{first.starts_at.strftime("%a")} #{wf_time(first.starts_at)}", new_payment_claim_path("MeetSlot", first.id),
+                class: "w-btn w-btn--pink w-btn--block", style: "margin-top:12px;height:46px", data: { slot_cta: true } %>
+        <% end %>
+      <% else %>
+        <p class="w-sub" style="font-size:12.5px;margin:12px 0 0">No open times right now. <%= @own_page ? link_to("Open slots", edit_meet_offer_path(offer), class: "w-pink") : "Check back soon." %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% @lives.each do |live| %>
+    <%= link_to live_session_path(live), class: "w-live-card" do %>
+      <% if (src = wf_banner_src(@user)) %><%= image_tag src, alt: "" %><% end %>
+      <div class="w-live-card-body">
+        <div class="w-row" style="gap:6px">
+          <% if live.live? %>
+            <span class="w-pill w-pill--live">LIVE NOW</span>
+          <% elsif live.scheduled_for.to_date == Date.current %>
+            <span class="w-pill w-pill--live">LIVE TONIGHT</span>
+          <% else %>
+            <span class="w-pill"><%= live.scheduled_for.strftime("%a %-d %b").upcase %></span>
+          <% end %>
+          <% if live.members_only? %><span class="w-pill w-pill--gold-outline" style="height:22px">★ CLOSE FRIENDS</span><% end %>
+        </div>
+        <div class="w-row w-row--between" style="align-items:flex-end">
+          <div class="w-grow">
+            <div style="font-size:16px;font-weight:800"><%= live.title %></div>
+            <div style="font-size:12.5px;color:var(--w-soft);margin-top:2px"><%= wf_time(live.scheduled_for) %></div>
+          </div>
+          <span class="w-btn w-btn--light w-btn--sm" style="height:36px;font-size:13px"><%= live.live? ? "Join" : "Remind me" %></span>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% @contact_reveals.each do |reveal| %>
+    <% revealed = reveal.revealed_for?(current_user) %>
+    <% whatsapp = reveal.label.downcase.match?(/whatsapp|telegram|circle|group|channel/) %>
+    <div class="w-card w-card--r16 w-offer">
+      <span class="w-offer-icon <%= "w-offer-icon--green" if whatsapp %>"><%= wf_icon(whatsapp ? :users : :chat) %></span>
+      <div class="w-grow">
+        <div style="font-size:15px;font-weight:800"><%= reveal.label %></div>
+        <% if revealed %>
+          <div class="w-green" style="font-size:12.5px;font-weight:700;overflow-wrap:anywhere" translate="no"><%= reveal.secret_value %></div>
+        <% else %>
+          <div class="w-sub" style="font-size:12.5px"><%= whatsapp ? "Invite link shared after approval" : "Shared once #{@user.first_name} approves" %></div>
+        <% end %>
+      </div>
+      <% if revealed %>
+        <span class="w-status w-status--ok">Yours</span>
+      <% elsif @own_page %>
+        <span style="font-size:15px;font-weight:800"><%= reveal.price_label %></span>
+      <% else %>
+        <%= link_to reveal.price_label, new_payment_claim_path("ContactReveal", reveal.id), class: "w-btn w-btn--sm", style: "font-size:13px" %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @meet_offers.empty? && @lives.empty? && @contact_reveals.empty? %>
+    <div class="w-center" style="padding:36px 24px 0;gap:10px">
+      <div class="w-big-icon w-big-icon--pink"><%= wf_icon(:calendar) %></div>
+      <div style="font-size:17px;font-weight:800"><%= @own_page ? "Sell your time" : "Nothing to book yet" %></div>
+      <% if @own_page %>
+        <div class="w-sub" style="font-size:13.5px;line-height:1.5">Open video-call slots, schedule a live, or sell access to a private circle.</div>
+        <div class="w-row" style="margin-top:8px">
+          <%= link_to "+ Video calls", new_meet_offer_path, class: "w-btn w-btn--pink" %>
+          <%= link_to "+ Live", new_live_session_path, class: "w-btn" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

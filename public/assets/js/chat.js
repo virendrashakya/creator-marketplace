@@ -89,6 +89,12 @@
     }
 
     function renderDm(m) {
+      /* A paid item sent into the chat is drawn server-side as a locked
+         card (price, unlock button, whether this viewer owns it). Rather
+         than duplicate that here, fetch the page again. */
+      if (/\[(ppv|collection):\d+\]/.test(m.body || "") && window.Turbo) {
+        setTimeout(function () { window.Turbo.visit(window.location.href, { action: "replace" }); }, 50);
+      }
       var mine = String(m.sender_id) === String(me);
       var li = el("li", "dm-line" + (mine ? " is-mine" : ""));
       li.dataset.id = m.id;

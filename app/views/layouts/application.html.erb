@@ -1,14 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<% theme_pref = wf_theme_pref %>
+<html lang="en" data-theme="<%= theme_pref == "light" ? "light" : "dark" %>" data-theme-pref="<%= theme_pref %>">
   <head>
+    <%# "System" can only be resolved in the browser. Done before anything
+        paints, so a light-mode phone never flashes the dark page first. %>
+    <script>
+      (function () {
+        var html = document.documentElement;
+        if (html.getAttribute("data-theme-pref") !== "system") return;
+        var mq = window.matchMedia("(prefers-color-scheme: light)");
+        html.setAttribute("data-theme", mq.matches ? "light" : "dark");
+      })();
+    </script>
     <title><%= content_for(:title).presence || "Wishful: Exclusive Vault Drops & Direct UPI Creator Monetization" %></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="description" content="<%= content_for(:description).presence || "Wishful gives Indian glamour and lifestyle creators direct UPI monetization for exclusive photo & 4K video sets, Close Friends VIP passes, and private contact channels with forensic leak protection." %>">
-    <meta name="theme-color" content="#E9EAE5">
+    <%#
+      Chrome comes in a handful of modes, because the app has genuinely
+      different kinds of page and one nav cannot serve them.
+
+        :marketing  the landing page. Full nav, full footer.
+        :bare       the old full-bleed auth screens.
+        :fan        anything a fan sees: a storefront, a collection, paying,
+                    waiting, chatting. Dark, phone-width, no Wishful nav,
+                    because a creator's page is theirs, not ours.
+        :list       a public link list. Like :fan, but on desktop it floats
+                    over a blurred copy of its own cover.
+        :studio     the creator's web app, with the sidebar.
+
+      A view opts in with `content_for :chrome, "fan"`. Signed-in creators
+      default to :studio and signed-in fans to :fan, so a new screen gets
+      working navigation without having to ask for it.
+    %>
+    <% chrome = content_for(:chrome).to_s.strip.presence %>
+    <% chrome ||= content_for?(:bare) ? "bare" : (signed_in? ? (current_user.creator? ? "studio" : "fan") : "marketing") %>
+    <% dark = %w[fan list studio].include?(chrome) %>
+    <meta name="theme-color" content="<%= !dark ? "#E9EAE5" : (theme_pref == "light" ? "#F6F5F2" : "#0E0E10") %>">
     <%= csrf_meta_tags %>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="manifest" href="<%= pwa_manifest_path %>">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Wishful">
+    <% if WebPushNotifier.enabled? %>
+      <meta name="vapid-public-key" content="<%= WebPushNotifier.public_key %>">
+    <% end %>
     <meta property="og:site_name" content="Wishful">
     <meta property="og:type" content="website">
     <meta property="og:title" content="<%= content_for(:title).presence || "Wishful: Exclusive Vault Drops & Direct UPI Creator Monetization" %>">
@@ -16,53 +55,26 @@
     <% if content_for?(:og_image) %>
       <meta property="og:image" content="<%= content_for(:og_image) %>">
       <meta name="twitter:image" content="<%= content_for(:og_image) %>">
-      <meta property="og:image:width" content="480">
-      <meta property="og:image:height" content="380">
     <% end %>
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
     <link rel="stylesheet" href="/assets/wishful.css" data-turbo-track="reload">
+    <% if dark %>
+      <link rel="stylesheet" href="/assets/wf.css" data-turbo-track="reload">
+    <% end %>
     <%#
       Turbo Drive, vendored rather than pipelined because this app serves
       everything from public/ and has no bundler. It is an ES module and
       self-starts on import, so there is nothing to call.
-
-      It loads before :head so a page's own scripts can rely on Turbo's
-      events already being wired. Every custom script in this app listens
-      for turbo:load as well as DOMContentLoaded, because Turbo fires the
-      latter only once per full load.
     %>
     <script type="module" src="/assets/js/turbo.min.js" data-turbo-track="reload"></script>
     <script src="/assets/js/share.js" data-turbo-track="reload" defer></script>
+    <script src="/assets/js/wf.js" data-turbo-track="reload" defer></script>
     <%= yield :head %>
   </head>
-  <%#
-    Chrome comes in four modes, because this app has four genuinely different
-    kinds of page and one nav cannot serve them.
-
-      :marketing  the landing page. Full nav, full footer. Selling to a
-                  stranger is the whole job, so the brand belongs everywhere.
-      :creator    a public /@handle page. NO top nav: this is the link a
-                  creator puts in their Instagram bio, and putting our logo
-                  and a "Start your page" button above their name advertises
-                  to their audience on their page. One quiet credit at the
-                  very bottom instead.
-      :app        signed-in creator surfaces. A compact app bar to get back
-                  to the dashboard and sign out, and no marketing footer:
-                  "Wishful, made in Mumbai" is copy for visitors, not for
-                  someone who already signed up.
-      :bare       auth screens. Full-bleed split layouts that fill the
-                  viewport; they carry their own small wordmark.
-
-    A view opts in with `content_for :chrome, "creator"`. The default is
-    :app when signed in and :marketing when not, so a new signed-in screen
-    gets working navigation without having to remember to ask for it.
-  %>
-  <% chrome = content_for(:chrome).to_s.strip.presence %>
-  <% chrome ||= content_for?(:bare) ? "bare" : (signed_in? ? "app" : "marketing") %>
-  <body class="chrome-<%= chrome %><%= " body--bare" if chrome == "bare" %>">
+  <body class="chrome-<%= chrome %><%= " body--bare" if chrome == "bare" %><%= " wf" if dark %> <%= content_for(:body_class) %>">
     <a class="skip" href="#main">Skip to content</a>
 
     <% case chrome %>
@@ -71,57 +83,37 @@
         <nav class="nav" aria-label="Primary">
           <%= link_to "Wishful", root_path, class: "brand" %>
           <div class="nav-links">
-            <%# Never offer the page you are already on. %>
             <%= link_to "Sign in", sign_in_path, class: "btn btn--ghost" unless current_page?(sign_in_path) %>
-            <%= link_to "Start your page", sign_up_path, class: "btn" unless current_page?(sign_up_path) %>
+            <%= link_to "Start your page", start_path, class: "btn" unless current_page?(start_path) %>
           </div>
         </nav>
       </header>
-
-    <% when "app" %>
-      <header class="appbar-wrap">
-        <nav class="appbar" aria-label="Primary">
-          <%= link_to "Wishful", dashboard_path, class: "appbar-brand" %>
-          <div class="appbar-links">
-            <%= link_to dashboard_path, class: "appbar-link" do %>Dashboard<% end unless current_page?(dashboard_path) %>
-            <%= link_to profile_path(current_user.handle), class: "appbar-handle" do %>
-              <span class="mono" translate="no">@<%= current_user.handle %></span>
-            <% end %>
-            <%= button_to "Sign out", sign_out_path, method: :delete,
-                  class: "appbar-signout", form_class: "appbar-signout-form" %>
-          </div>
-        </nav>
-      </header>
-    <% when "portal" %>
-      <%# Self-contained creator portal suite with integrated topbar and footer %>
     <% end %>
 
     <div class="flash-region" aria-live="polite">
       <% flash.each do |kind, message| %>
+        <% next unless message.is_a?(String) %>
         <div class="flash <%= "alert" if kind.to_s.in?(%w[alert error]) %>"><%= message %></div>
       <% end %>
     </div>
 
-    <main id="main">
-      <%= yield %>
-    </main>
+    <% if chrome == "studio" %>
+      <div class="w-studio">
+        <%= render "studio/side" %>
+        <main id="main" class="<%= content_for(:main_class).presence || "w-main" %>">
+          <%= yield %>
+        </main>
+      </div>
+    <% else %>
+      <main id="main">
+        <%= yield %>
+      </main>
+    <% end %>
 
     <% if chrome == "marketing" %>
       <footer class="footer">
         <span>Wishful, made in Mumbai</span>
         <span class="mono" style="font-size: 12.5px">All times IST</span>
-      </footer>
-    <% elsif chrome == "creator" %>
-      <%#
-        The only trace of us on a creator's page, and it is a credit rather
-        than an advert. It links to the marketing home so a fan who likes
-        what they see can find out what this is, but it does not compete with
-        anything the creator put above it.
-      %>
-      <footer class="credit">
-        <%= link_to root_path, class: "credit-link" do %>
-          Made with <span class="credit-brand">Wishful</span>
-        <% end %>
       </footer>
     <% end %>
   </body>

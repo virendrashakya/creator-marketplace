@@ -1,0 +1,52 @@
+<%# 4b. %>
+<% content_for :title, "Link lists | Wishful Studio" %>
+<% cols = "grid-template-columns:minmax(0,2fr) minmax(0,1.6fr) 90px 90px 100px 90px 150px" %>
+
+<div class="w-page-head">
+  <div>
+    <h1 class="w-page-title">Link lists</h1>
+    <div class="w-page-lede">Share a list of links from one URL, in bios, Stories or WhatsApp.</div>
+  </div>
+  <div class="w-page-actions"><%= link_to "+ New list", new_link_list_path, class: "w-btn w-btn--pink" %></div>
+</div>
+
+<div class="w-stats">
+  <div class="w-stat"><div class="w-stat-label">Opens · all time</div><div class="w-stat-value"><%= number_with_delimiter(@opens) %></div><div class="w-stat-note">across <%= pluralize(@lists.size, "list") %></div></div>
+  <div class="w-stat"><div class="w-stat-label">Link taps</div><div class="w-stat-value"><%= number_with_delimiter(@taps) %></div><div class="w-stat-note"><%= @opens.positive? ? "#{(@taps * 100.0 / @opens).round}% tap rate" : "no opens yet" %></div></div>
+  <div class="w-stat"><div class="w-stat-label">Earned from lists</div><div class="w-stat-value"><%= money(@earned) %></div><div class="w-stat-note">collections sold via a list</div></div>
+  <div class="w-stat"><div class="w-stat-label">Live lists</div><div class="w-stat-value"><%= @live %> of <%= @lists.size %></div><div class="w-stat-note"><%= pluralize(@lists.size - @live, "hidden or off", plural: "hidden or off") %></div></div>
+</div>
+
+<div class="w-table">
+  <div class="w-table-head" style="<%= cols %>"><span>List</span><span>Public link</span><span>Opens</span><span>Taps</span><span>Earned</span><span>Status</span><span></span></div>
+  <% @lists.each do |list| %>
+    <% url = public_link_list_url(current_user.handle, list.slug) %>
+    <div class="w-table-row" style="<%= cols %>">
+      <%= link_to edit_link_list_path(list), class: "w-row", style: "min-width:0;gap:12px" do %>
+        <% item = list.fallback_image_item %>
+        <% src = list.cover.attached? ? url_for(list.cover) : (item && (item.image_source.is_a?(String) ? item.image_source : wf_post_image_src(item.image_source, viewer_can_see: true))) %>
+        <% if src %><%= image_tag src, alt: "", class: "w-thumb w-thumb--portrait" %><% else %><span class="w-thumb w-thumb--portrait w-center" style="justify-content:center;color:var(--w-dim)"><%= wf_icon(:link) %></span><% end %>
+        <div style="min-width:0">
+          <div style="font-size:14px;font-weight:800" class="w-ellipsis"><%= list.title %></div>
+          <div class="w-sub" style="font-size:12px;margin-top:2px"><%= pluralize(list.items.size, "link") %> · updated <%= list.updated_at.today? ? "today" : wf_ago(list.updated_at) %></div>
+        </div>
+      <% end %>
+      <span class="w-row w-ellipsis" style="gap:6px;font-size:12.5px;color:var(--w-soft)"><%= wf_icon(:link, size: 12, color: "#71717A") %><span class="w-ellipsis" translate="no">/<%= current_user.handle %>/<%= list.slug %></span></span>
+      <span style="font-size:14px;font-weight:800"><%= number_with_delimiter(list.opens_count) %></span>
+      <span style="font-size:14px;font-weight:800"><%= number_with_delimiter(list.taps_count) %></span>
+      <span class="w-green" style="font-size:14px;font-weight:800"><%= money(list.earned_cents) %></span>
+      <span><span class="w-status <%= "w-status--live" if list.status_label == "Live" %>"><%= list.status_label %></span></span>
+      <div class="w-table-actions">
+        <button type="button" class="w-btn w-btn--sm" data-copy="<%= url %>">Copy link</button>
+        <%= link_to "Edit", edit_link_list_path(list), class: "w-btn w-btn--sm" %>
+      </div>
+    </div>
+  <% end %>
+  <% if @lists.empty? %>
+    <div class="w-table-empty">
+      No lists yet. A list is one link holding your socials, products, videos and collections. <%= link_to "Make your first", new_link_list_path, class: "w-pink" %>.
+    </div>
+  <% end %>
+</div>
+
+<div class="w-row w-sub" style="font-size:12.5px"><%= wf_icon(:link, size: 14, color: "#71717A") %>Hidden lists still open for anyone with the link. They just don't appear on your profile.</div>

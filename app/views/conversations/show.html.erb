@@ -1,99 +1,40 @@
+<%# 3k. The fan's side of a thread. %>
 <% content_for :title, "#{@other.name} | Messages | Wishful" %>
+<% content_for :chrome, "fan" %>
 <% content_for :head do %>
-  <link rel="stylesheet" href="/assets/live.css" data-turbo-track="reload">
   <script src="/assets/js/actioncable.js" data-turbo-track="reload" defer></script>
-    <script src="/assets/js/chat.js" data-turbo-track="reload" defer></script>
+  <script src="/assets/js/chat.js" data-turbo-track="reload" defer></script>
 <% end %>
 
-<div class="page dm-page">
-  <header class="dm-head">
-    <%= link_to "← Messages", conversations_path, class: "dm-back" %>
-    <h1 class="dm-who">
-      <%= link_to profile_path(@other.handle) do %>
-        <%= @other.name %>
-        <span class="mono dm-handle" translate="no">@<%= @other.handle %></span>
-      <% end %>
-    </h1>
-  </header>
-
-  <%# Private to two people: the gate is participation, not a subscription. %>
-  <section class="dm-thread"
-           data-chat="dm"
-           data-conversation-id="<%= @conversation.id %>"
-           data-me="<%= current_user.id %>">
-    <ol class="chat-log chat-log--dm" data-chat-log>
-      <% @messages.each do |m| %>
-        <li class="dm-line<%= m.sender_id == current_user.id ? " is-mine" : "" %>" data-id="<%= m.id %>">
-          <% ppv_id = m.body.to_s[/\[ppv:(\d+)\]/, 1] %>
-          <% ppv_drop = ppv_id.present? ? PaidMediaPost.find_by(id: ppv_id) : nil %>
-          <% if ppv_drop %>
-            <% unlocked = ppv_drop.unlocked_for?(current_user) %>
-            <div class="dm-ppv-card" style="margin-top: 4px; max-width: 290px; border-radius: var(--r-lg); overflow: hidden; border: 1.5px solid <%= unlocked ? 'rgba(16,185,129,0.4)' : 'rgba(233,30,99,0.4)' %>; background: var(--p-card); box-shadow: var(--p-raised); text-align: left;">
-              <div style="position: relative; height: 160px; background: #14161A; overflow: hidden;">
-                <div class="media-shield" aria-hidden="true" oncontextmenu="return false;"></div>
-                <% if unlocked && ppv_drop.media.attached? && ppv_drop.media_type == "image" %>
-                  <%= image_tag media_paid_media_post_path(ppv_drop), style: "width: 100%; height: 100%; object-fit: cover; pointer-events: none;", loading: "lazy", draggable: false, oncontextmenu: "return false;" %>
-                <% elsif ppv_drop.preview.attached? || (ppv_drop.media.attached? && ppv_drop.media_type == "image") %>
-                  <%= image_tag preview_paid_media_post_path(ppv_drop), style: "width: 100%; height: 100%; object-fit: cover; pointer-events: none; #{unlocked ? '' : 'filter: blur(12px); transform: scale(1.08);'}", loading: "lazy", draggable: false, oncontextmenu: "return false;" %>
-                <% end %>
-
-                <% if unlocked %>
-                  <span class="media-unlocked" style="background: #0B5B42; color: #fff; font-size: 11px; padding: 4px 8px;">
-                    ✨ Unlocked
-                  </span>
-                <% else %>
-                  <div style="position: absolute; inset: 0; background: rgba(12,13,16,0.45); backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;">
-                    <span style="font-size: 11px; font-weight: 700; background: var(--p-accent); color: #fff; padding: 4px 10px; border-radius: 999px; box-shadow: 0 0 12px rgba(233,30,99,0.5);">
-                      🔒 Locked Drop
-                    </span>
-                    <span style="font-size: 13px; font-weight: 700; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.8);">
-                      <%= ppv_drop.price_label %>
-                    </span>
-                  </div>
-                <% end %>
-              </div>
-              <div style="padding: 12px;">
-                <div style="font-weight: 700; font-size: 14px; margin-bottom: 3px; color: var(--p-ink);"><%= ppv_drop.title %></div>
-                <div style="font-size: 12px; color: var(--p-sub); margin-bottom: 10px;"><%= ppv_drop.caption.presence || "Exclusive media drop by #{ppv_drop.user.name.split.first}" %></div>
-                <% if unlocked %>
-                  <% if ppv_drop.media_type == "video" && ppv_drop.media.attached? %>
-                    <%= link_to media_paid_media_post_path(ppv_drop), class: "btn btn--small btn--accent btn--block", target: "_blank", rel: "noopener noreferrer" do %>
-                      Watch 4K Video
-                    <% end %>
-                  <% else %>
-                    <span class="badge badge--ok" style="display: block; text-align: center;">Unlocked & Saved</span>
-                  <% end %>
-                <% else %>
-                  <%= link_to "Unlock with UPI (#{ppv_drop.price_label})", new_payment_claim_path("PaidMediaPost", ppv_drop.id), class: "btn btn--accent btn--small btn--block" %>
-                <% end %>
-              </div>
-            </div>
-          <% else %>
-            <span class="dm-bubble"><%= m.body %></span>
-          <% end %>
-        </li>
-      <% end %>
-    </ol>
-
-    <% if @vault_drops.present? && @vault_drops.any? %>
-      <div style="padding: 6px 14px; background: var(--p-card); border-top: 1px solid var(--p-line); display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 12px; font-weight: 600; color: var(--p-sub);">Send PPV:</span>
-        <select id="dm_vault_selector" style="font-size: 12px; padding: 4px 8px; border-radius: var(--r-md); border: 1px solid var(--p-line); background: var(--bg); color: var(--p-ink);"
-                onchange="if(this.value){ var input = document.getElementById('dm_body'); input.value = this.value; input.focus(); this.value = ''; }">
-          <option value="">Choose a Vault drop to lock in chat…</option>
-          <% @vault_drops.each do |drop| %>
-            <option value="[ppv:<%= drop.id %>] 🔒 Exclusive drop: <%= drop.title %> (<%= drop.price_label %>)"><%= drop.title %> (<%= drop.price_label %>)</option>
-          <% end %>
-        </select>
+<section class="w-chat" data-chat="dm" data-conversation-id="<%= @conversation.id %>" data-me="<%= current_user.id %>">
+  <header class="w-chat-head">
+    <%= link_to conversations_path, class: "w-icon-btn", aria: { label: "Back to messages" } do %><%= wf_icon(:back) %><% end %>
+    <%= link_to profile_path(@other.handle), class: "w-row w-grow", style: "gap:12px" do %>
+      <%= wf_avatar(@other, size: 36) %>
+      <div>
+        <div style="font-size:15px;font-weight:800"><%= @other.name %></div>
+        <% if @close_friend %>
+          <div class="w-gold" style="font-size:11.5px;font-weight:700">★ Close Friends · priority</div>
+        <% else %>
+          <div class="w-sub" style="font-size:11.5px">@<%= @other.handle %></div>
+        <% end %>
       </div>
     <% end %>
+  </header>
 
-    <%= form_with url: conversation_direct_messages_path(@conversation), method: :post,
-          class: "chat-form", data: { chat_form: true } do %>
-      <label class="visually-hidden" for="dm_body">Your message</label>
-      <input type="text" name="body" id="dm_body" maxlength="2000"
-             placeholder="Write a message…" autocomplete="off" class="chat-input">
-      <button type="submit" class="button accent chat-send">Send</button>
+  <ol class="w-chat-log" data-chat-log>
+    <% if @messages.any? %>
+      <li class="w-chat-day"><%= @messages.first.created_at.today? ? "Today #{wf_time(@messages.first.created_at)}" : @messages.first.created_at.strftime("%-d %b, %-l:%M %p") %></li>
     <% end %>
-  </section>
-</div>
+    <% @messages.each do |m| %><%= render "conversations/message", message: m %><% end %>
+  </ol>
+
+  <%= form_with url: conversation_direct_messages_path(@conversation), method: :post, local: true, class: "w-chat-form", data: { chat_form: true } do %>
+    <% if @other.wishlists.any? %>
+      <%= link_to spoil_me_path(@other.handle), class: "w-round-btn w-gold", style: "width:42px;height:42px;font-weight:800;font-size:15px", title: "Send a gift", aria: { label: "Send #{@other.first_name} a gift" } do %>₹<% end %>
+    <% end %>
+    <label class="w-sr" for="dm_body">Message</label>
+    <input type="text" name="body" id="dm_body" maxlength="2000" placeholder="Message…" autocomplete="off" class="chat-input">
+    <button type="submit" class="w-chat-send" aria-label="Send"><%= wf_icon(:send) %></button>
+  <% end %>
+</section>

@@ -12,8 +12,15 @@ class PaidMediaPost < ApplicationRecord
 
   validates :title, presence: true
   validates :media_type, inclusion: { in: %w[image video] }
-  validates :price_cents, numericality: { only_integer: true, greater_than: 0 }, unless: :subscription_plan_id?
-  validates :subscription_plan, presence: true, if: -> { price_cents.blank? }
+  # The order items sit in inside a collection; the first one is the cover.
+  scope :ordered, -> { order(:position, :id) }
+  # Drops sold on their own, outside any collection.
+  scope :standalone, -> { where(paid_media_collection_id: nil) }
+
+  # An item inside a collection is sold by the collection, so it needs no
+  # price of its own. A loose drop needs a price or a plan.
+  validates :price_cents, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  validate :sellable
   validates :currency, inclusion: { in: %w[INR USD] }
   validate :media_attached
   validate :associations_belong_to_owner
@@ -27,16 +34,31 @@ class PaidMediaPost < ApplicationRecord
     return false if self.user.blocks?(user)
 
     media_purchases.paid.exists?(buyer: user) ||
-      (subscription_plan.present? && user.subscribed_to?(subscription_plan))
+      (subscription_plan.present? && user.subscribed_to?(subscription_plan)) ||
+      (paid_media_collection.present? && paid_media_collection.unlocked_for?(user))
+  end
+
+  # The cover of a collection is public, so it may be served unblurred.
+  # Only once the collection is out: a draft's cover is still private.
+  def collection_cover?
+    paid_media_collection.present? && paid_media_collection.released? &&
+      paid_media_collection.cover_post&.id == id
   end
 
   def price_label
-    return subscription_plan&.name.presence || "Members only" if price_cents.blank?
+    return money_label_for(price_cents) if price_cents.present?
+    return paid_media_collection.price_label if paid_media_collection.present?
 
-    money_label_for(price_cents)
+    subscription_plan&.name.presence || "Members only"
   end
 
   private
+
+  def sellable
+    return if price_cents.present? || subscription_plan_id.present? || paid_media_collection_id.present?
+
+    errors.add(:price_cents, "or a plan is needed for a drop sold on its own")
+  end
 
   def media_attached
     errors.add(:media, "must be uploaded") unless media.attached?

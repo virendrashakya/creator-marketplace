@@ -1,0 +1,17 @@
+<% content_for :title, "You're offline | Wishful" %>
+<% content_for :chrome, "fan" %>
+
+<div class="w-screen">
+  <div class="w-row w-banner-warn" style="padding:10px 14px;border-radius:12px;font-size:13px;gap:10px;margin-top:6px">
+    <%= wf_icon(:wifi_off, size: 16) %>You're offline. Payments are paused.
+  </div>
+  <div class="w-center" style="margin-top:60px;gap:10px">
+    <span class="w-app-icon" style="width:72px;height:72px;border-radius:20px;font-size:34px">W</span>
+    <h1 class="w-screen-title" style="margin-top:12px">No connection</h1>
+    <p class="w-screen-lede">Anything you've unlocked and opened on this phone is saved in <strong style="color:var(--w-text)">Your unlocks</strong> and still opens without a connection.</p>
+  </div>
+  <div class="w-screen-foot">
+    <a href="/unlocks" class="w-btn w-btn--gold w-btn--lg w-btn--block">Your unlocks</a>
+    <a href="javascript:location.reload()" class="w-btn w-btn--lg w-btn--block">Try again</a>
+  </div>
+</div>

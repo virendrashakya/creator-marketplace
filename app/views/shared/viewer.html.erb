@@ -1,0 +1,69 @@
+<%# 3h. The full-screen viewer for something a fan owns. The image itself is
+    stamped server-side with the buyer's handle and ID (see
+    ForensicWatermarkService); the diagonal text here is the visible half of
+    that, so a screenshot carries it too. %>
+<% content_for :title, "#{@title} | Wishful" %>
+<% content_for :chrome, "fan" %>
+<% own = current_user == @user %>
+<% base = ->(i) { @collection ? collection_viewer_path(@user.handle, @collection, i: i) : public_drop_path(@user.handle, @item, view: 1) } %>
+
+<div class="w-viewer" data-viewer>
+  <div class="w-viewer-media">
+    <% if @item.media_type == "video" %>
+      <video src="<%= media_paid_media_post_path(@item) %>" controls playsinline controlslist="nodownload noremoteplayback" disablepictureinpicture
+             <%= "poster=#{url_for(@item.preview)}" if @item.preview.attached? %>></video>
+    <% else %>
+      <%= image_tag media_paid_media_post_path(@item), alt: @item.title, draggable: false %>
+    <% end %>
+    <% unless own %>
+      <div class="w-watermark" aria-hidden="true">
+        <% 7.times do %><span><%= wf_watermark_line(current_user) %></span><% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @index.positive? %>
+    <%= link_to "", base.call(@index - 1), class: "w-viewer-nav w-viewer-nav--prev", data: { prev: true, turbo_action: "replace" }, aria: { label: "Previous" } %>
+  <% end %>
+  <% if @index < @items.size - 1 %>
+    <%= link_to "", base.call(@index + 1), class: "w-viewer-nav w-viewer-nav--next", data: { next: true, turbo_action: "replace" }, aria: { label: "Next" } %>
+  <% end %>
+
+  <div class="w-viewer-top">
+    <%= link_to @back_path, class: "w-icon-btn", aria: { label: "Close viewer" } do %><%= wf_icon(:back) %><% end %>
+    <div class="w-grow">
+      <div style="font-size:14.5px;font-weight:800" class="w-ellipsis"><%= @title %></div>
+      <div style="font-size:11.5px;color:var(--w-soft)"><%= @index + 1 %> of <%= @items.size %></div>
+    </div>
+    <% if !own && @item.media_type == "image" && @collection&.allow_downloads? %>
+      <%= link_to media_paid_media_post_path(@item, download: 1), class: "w-icon-btn w-icon-btn--glass", title: "Download your watermarked copy", aria: { label: "Download" } do %><%= wf_icon(:download) %><% end %>
+    <% end %>
+    <% unless own %><span class="w-pill w-pill--gold" style="height:26px"><%= wf_icon(:check) %>Yours</span><% end %>
+  </div>
+
+  <% if @items.size > 1 %>
+    <div class="w-viewer-progress" aria-hidden="true">
+      <% @items.size.clamp(0, 40).times do |i| %><span class="<%= "is-seen" if i <= @index %>"></span><% end %>
+    </div>
+  <% end %>
+
+  <div class="w-viewer-bottom">
+    <% unless own %>
+      <div class="w-glass-note"><%= wf_icon(:shield) %><span>This copy carries your handle and buyer ID. Screenshots are traceable.</span></div>
+    <% end %>
+    <% if @items.size > 1 %>
+      <div class="w-thumbs">
+        <% window_start = [ @index - 2, 0 ].max %>
+        <% @items.each_with_index.to_a[window_start, 7].each do |thumb, i| %>
+          <%= link_to base.call(i), class: ("is-on" if i == @index), data: { turbo_action: "replace" }, aria: { label: "Item #{i + 1}" } do %>
+            <% if thumb.media_type == "video" %>
+              <span class="w-thumb--video w-center" style="height:100%;justify-content:center"><%= wf_icon(:play) %></span>
+            <% else %>
+              <%= image_tag media_paid_media_post_path(thumb), alt: "", loading: "lazy", draggable: false %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
