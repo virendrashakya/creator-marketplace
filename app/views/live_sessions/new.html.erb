@@ -1,5 +1,568 @@
-<div class="page page--form"><section class="card">
-  <h1>Schedule a live</h1>
-  <p class="muted">Members get a link they can open when you go on.</p>
-  <%= render "form" %>
-</section></div>
+<% content_for :bare, true %>
+<% content_for :title, "Schedule Live Broadcast & Incentive Goal | Wishful Studio" %>
+
+<% content_for :head do %>
+  <%= render "layouts/studio_head" %>
+<% end %>
+
+<%= render "layouts/studio_sidebar" %>
+
+<div class="pl-[260px]">
+  <%= render "layouts/studio_header", current_page_name: "Console" %>
+
+  <main class="relative pt-16 bg-surface-container-lowest min-h-screen w-full px-6 lg:px-8 py-7">
+    <div class="flex flex-col w-full max-w-[1440px] mx-auto gap-6">
+
+      <!-- Breadcrumbs & Studio Header -->
+      <div class="flex flex-col gap-1.5">
+        <div class="flex items-center gap-2 text-[11px] font-mono font-bold tracking-wider uppercase">
+          <span class="text-outline">STUDIO</span>
+          <span class="text-outline/40">›</span>
+          <span class="text-primary">LIVE BROADCAST</span>
+          <span class="text-outline/40">›</span>
+          <span class="text-white">SCHEDULE</span>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mt-1">
+          <div>
+            <div class="flex items-center gap-3 flex-wrap">
+              <h1 class="text-2xl md:text-[32px] font-extrabold text-white tracking-tight leading-tight">
+                Schedule Live Broadcast &amp; Incentive Goal
+              </h1>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/20 border border-primary/40 text-primary text-[10.5px] font-mono font-bold uppercase tracking-wider">
+                DIRECT RTMP/UPI
+              </span>
+            </div>
+            <p class="text-on-surface-variant text-[13px] md:text-[13.5px] mt-1 max-w-2xl leading-normal">
+              Configure upcoming broadcast date, attendee admission rules, RTMP/WebRTC stream link, and real-time incentive target goals.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3 shrink-0">
+            <button type="button" onclick="document.getElementById('pastBroadcastsModal').classList.remove('hidden')" class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-high/80 border border-white/[0.08] text-white hover:bg-surface-container-highest transition-colors text-[12.5px] font-semibold cursor-pointer">
+              <span class="material-symbols-outlined text-[17px] text-outline">history</span>
+              <span>View Past Broadcasts</span>
+            </button>
+            <button type="button" onclick="document.getElementById('scheduleLiveForm').submit()" class="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-[12.5px] font-bold shadow-[0_4px_20px_rgba(255,23,103,0.35)] hover:opacity-95 transition-all cursor-pointer">
+              <span class="material-symbols-outlined text-[17px]">sensors</span>
+              <span>Schedule Broadcast</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Form -->
+      <%= form_with model: @live, url: live_sessions_path, method: :post, id: "scheduleLiveForm", local: true, class: "w-full" do |f| %>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+          <!-- Left Column (Step 1, Step 2, Step 3) -->
+          <div class="lg:col-span-7 flex flex-col gap-6">
+
+            <!-- STEP 01: Broadcast Session Details -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-6 shadow-sm">
+              <div class="flex items-center justify-between pb-4 border-b border-white/[0.04]">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[20px]">video_camera_front</span>
+                  </div>
+                  <div>
+                    <h2 class="text-white text-[16px] font-extrabold tracking-tight">Broadcast Session Details</h2>
+                    <p class="text-outline text-[12px] mt-0.5">Key metadata and timeline for your exclusive audience</p>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded bg-surface-container-high border border-white/[0.06] text-[10px] font-mono font-bold tracking-wider text-outline uppercase">
+                  STEP 01
+                </span>
+              </div>
+
+              <div class="flex flex-col gap-4 mt-5">
+                <!-- Stream Title -->
+                <div>
+                  <div class="flex items-center justify-between text-[12px] mb-1.5">
+                    <label class="text-white/90 font-semibold">Stream Title</label>
+                    <span class="text-outline text-[11px] font-mono">Max 80 chars</span>
+                  </div>
+                  <div class="relative flex items-center">
+                    <%= f.text_field :title, class: "w-full bg-surface-container/70 border border-white/[0.08] focus:border-primary/50 focus:ring-1 focus:ring-primary/25 rounded-xl px-4 py-2.5 pr-10 text-[13.5px] text-white placeholder:text-outline/60 transition-all", placeholder: "e.g. Midnight Drape & GRWM Q&A", maxlength: 80, required: true %>
+                    <span class="material-symbols-outlined absolute right-3 text-outline text-[18px]">videocam</span>
+                  </div>
+                </div>
+
+                <!-- Session Overview & VIP Teaser -->
+                <div>
+                  <div class="flex items-center justify-between text-[12px] mb-1.5">
+                    <label class="text-white/90 font-semibold">Session Overview &amp; VIP Teaser</label>
+                    <span class="text-outline text-[11px] font-mono">Markdown supported</span>
+                  </div>
+                  <%= f.text_area :description, rows: 4, class: "w-full bg-surface-container/70 border border-white/[0.08] focus:border-primary/50 focus:ring-1 focus:ring-primary/25 rounded-xl p-4 text-[13px] text-white placeholder:text-outline/60 leading-relaxed transition-all", placeholder: "Write what patrons can expect, VIP reveal milestones, and wardrobe highlights..." %>
+                </div>
+
+                <!-- Schedule Date & Time + Estimated Duration Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <!-- Date & Time -->
+                  <div class="p-3.5 rounded-xl bg-surface-container/50 border border-white/[0.05] flex flex-col gap-2">
+                    <div class="flex items-center justify-between text-[11.5px]">
+                      <div class="flex items-center gap-1.5 text-outline">
+                        <span class="material-symbols-outlined text-[15px]">calendar_today</span>
+                        <span class="font-semibold uppercase tracking-wider text-[10px]">Scheduled Date &amp; Time</span>
+                      </div>
+                      <span class="px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-[9.5px] font-bold uppercase tracking-wider">
+                        PEAK FAN SLOT
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1">
+                      <input type="datetime-local" name="live_session[scheduled_for]" value="<%= (@live.scheduled_for || (Time.current + 3.days).change(hour: 23, min: 30)).strftime("%Y-%m-%dT%H:%M") %>" class="bg-surface-container-high/80 border border-white/[0.08] text-white text-[12.5px] font-semibold px-3 py-1.5 rounded-lg w-full focus:outline-none focus:border-primary/50" />
+                    </div>
+                  </div>
+
+                  <!-- Duration Pills -->
+                  <div class="p-3.5 rounded-xl bg-surface-container/50 border border-white/[0.05] flex flex-col justify-between gap-2">
+                    <div class="flex items-center gap-1.5 text-outline text-[11.5px]">
+                      <span class="material-symbols-outlined text-[15px]">schedule</span>
+                      <span class="font-semibold uppercase tracking-wider text-[10px]">Estimated Duration</span>
+                    </div>
+                    <%= f.hidden_field :duration_minutes, id: "liveDurationInput", value: (@live.duration_minutes || 60) %>
+                    <div class="flex items-center gap-1.5 mt-1" id="durationPillsContainer">
+                      <button type="button" data-duration="30" class="duration-pill flex-1 py-1 px-2 rounded-lg text-[11.5px] font-semibold text-center border border-white/[0.06] bg-surface-container-high/60 text-outline hover:text-white transition-all cursor-pointer">
+                        30m
+                      </button>
+                      <button type="button" data-duration="45" class="duration-pill flex-1 py-1 px-2 rounded-lg text-[11.5px] font-semibold text-center border border-white/[0.06] bg-surface-container-high/60 text-outline hover:text-white transition-all cursor-pointer">
+                        45m
+                      </button>
+                      <button type="button" data-duration="60" class="duration-pill flex-1 py-1 px-2 rounded-lg text-[11.5px] font-bold text-center border border-primary/40 bg-primary/20 text-primary transition-all cursor-pointer active">
+                        60m
+                      </button>
+                      <button type="button" data-duration="0" class="duration-pill flex-1 py-1 px-2 rounded-lg text-[11.5px] font-semibold text-center border border-white/[0.06] bg-surface-container-high/60 text-outline hover:text-white transition-all cursor-pointer">
+                        Open
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- STEP 02: Admission & Audience Access -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-6 shadow-sm">
+              <div class="flex items-center justify-between pb-4 border-b border-white/[0.04]">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[20px]">vpn_key</span>
+                  </div>
+                  <div>
+                    <h2 class="text-white text-[16px] font-extrabold tracking-tight">Admission &amp; Audience Access</h2>
+                    <p class="text-outline text-[12px] mt-0.5">Gatekeeper protocols for monetisation tiers</p>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded bg-surface-container-high border border-white/[0.06] text-[10px] font-mono font-bold tracking-wider text-outline uppercase">
+                  STEP 02
+                </span>
+              </div>
+
+              <%= f.hidden_field :admission_mode, id: "admissionModeInput", value: (@live.admission_mode || "vip_only") %>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-5" id="admissionCardsContainer">
+                <!-- Card 1: Public Teaser -->
+                <div data-mode="public_teaser" class="admission-card p-4 rounded-xl border border-white/[0.06] bg-surface-container/50 hover:bg-surface-container/80 transition-all flex flex-col justify-between gap-3 cursor-pointer group">
+                  <div class="flex items-start justify-between">
+                    <div class="w-8 h-8 rounded-lg bg-surface-container-highest border border-white/[0.06] flex items-center justify-center text-outline group-hover:text-primary transition-colors">
+                      <span class="material-symbols-outlined text-[17px]">public</span>
+                    </div>
+                    <span class="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center radio-circle"></span>
+                  </div>
+                  <div>
+                    <h3 class="text-white text-[13px] font-bold leading-tight">Public Teaser + VIP Transition</h3>
+                    <p class="text-outline text-[11px] mt-1 leading-snug">First 5 mins open for all; subsequent session locks strictly to subscribers.</p>
+                  </div>
+                  <div class="pt-2 border-t border-white/[0.04]">
+                    <span class="text-[9.5px] font-mono font-bold uppercase tracking-wider text-outline">VIRAL CONVERSION</span>
+                  </div>
+                </div>
+
+                <!-- Card 2: VIP Patrons Only (Selected default) -->
+                <div data-mode="vip_only" class="admission-card p-4 rounded-xl border border-primary/50 bg-primary/10 shadow-[0_0_20px_rgba(255,23,103,0.15)] transition-all flex flex-col justify-between gap-3 cursor-pointer group active">
+                  <div class="flex items-start justify-between">
+                    <div class="w-8 h-8 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center text-primary">
+                      <span class="material-symbols-outlined text-[17px]">diamond</span>
+                    </div>
+                    <span class="w-4 h-4 rounded-full border-2 border-primary bg-primary flex items-center justify-center radio-circle">
+                      <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                    </span>
+                  </div>
+                  <div>
+                    <h3 class="text-white text-[13px] font-bold leading-tight">VIP Patrons Only</h3>
+                    <p class="text-outline text-[11px] mt-1 leading-snug">Included for active Close Friends, Inner Circle, and Tier-3 Patrons.</p>
+                  </div>
+                  <div class="pt-2 border-t border-primary/20">
+                    <span class="px-2 py-0.5 rounded-full bg-primary text-white text-[9.5px] font-bold uppercase tracking-wider">SELECTED MODEL</span>
+                  </div>
+                </div>
+
+                <!-- Card 3: Ticketed PPV Live -->
+                <div data-mode="ticketed_ppv" class="admission-card p-4 rounded-xl border border-white/[0.06] bg-surface-container/50 hover:bg-surface-container/80 transition-all flex flex-col justify-between gap-3 cursor-pointer group">
+                  <div class="flex items-start justify-between">
+                    <div class="w-8 h-8 rounded-lg bg-surface-container-highest border border-white/[0.06] flex items-center justify-center text-outline group-hover:text-primary transition-colors">
+                      <span class="material-symbols-outlined text-[17px]">confirmation_number</span>
+                    </div>
+                    <span class="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center radio-circle"></span>
+                  </div>
+                  <div>
+                    <h3 class="text-white text-[13px] font-bold leading-tight">Ticketed PPV Live</h3>
+                    <p class="text-outline text-[11px] mt-1 leading-snug">One-time entry fee via one-click UPI checkout (e.g. ₹299 pass).</p>
+                  </div>
+                  <div class="pt-2 border-t border-white/[0.04]">
+                    <span class="text-[10px] font-bold text-white font-mono">₹299 Per Ticket</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 03: Direct Stream Ingest & OBS Setup -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-6 shadow-sm">
+              <div class="flex items-center justify-between pb-4 border-b border-white/[0.04]">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[20px]">podcasts</span>
+                  </div>
+                  <div>
+                    <h2 class="text-white text-[16px] font-extrabold tracking-tight">Direct Stream Ingest &amp; OBS Setup</h2>
+                    <p class="text-outline text-[12px] mt-0.5">Low-latency RTMP credentials &amp; storage defaults</p>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded bg-surface-container-high border border-white/[0.06] text-[10px] font-mono font-bold tracking-wider text-outline uppercase">
+                  STEP 03
+                </span>
+              </div>
+
+              <div class="flex flex-col gap-4 mt-5">
+                <!-- Mode Switcher -->
+                <div class="flex items-center gap-2 p-1 rounded-xl bg-surface-container/70 border border-white/[0.05] max-w-xs">
+                  <button type="button" class="flex-1 py-1.5 px-3 rounded-lg text-[12px] font-semibold text-outline hover:text-white flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                    <span class="material-symbols-outlined text-[15px]">videocam</span>
+                    <span>Browser Cam</span>
+                  </button>
+                  <button type="button" class="flex-1 py-1.5 px-3 rounded-lg text-[12px] font-bold bg-primary/20 border border-primary/30 text-white flex items-center justify-center gap-1.5 shadow-sm transition-colors cursor-pointer">
+                    <span class="material-symbols-outlined text-[15px] text-primary">sensors</span>
+                    <span>OBS / RTMP Pro</span>
+                  </button>
+                </div>
+
+                <!-- Endpoint & Key Fields -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <!-- RTMP Ingest Endpoint -->
+                  <div>
+                    <label class="block text-[11px] font-mono text-outline uppercase font-semibold mb-1.5">RTMP Server Ingest Endpoint</label>
+                    <div class="relative flex items-center">
+                      <input type="text" readonly value="rtmps://live.wishful.app/live" id="rtmpEndpointInput" class="w-full bg-surface-container/70 border border-white/[0.08] rounded-xl px-3.5 py-2 pr-9 font-mono text-[12px] text-white/90 focus:outline-none" />
+                      <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('rtmpEndpointInput').value); this.innerText='done'; setTimeout(()=>this.innerText='content_copy', 1500)" class="material-symbols-outlined absolute right-2.5 text-outline hover:text-white text-[16px] cursor-pointer" title="Copy Endpoint">
+                        content_copy
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Stream Key -->
+                  <div>
+                    <label class="block text-[11px] font-mono text-outline uppercase font-semibold mb-1.5">Stream Key (Keep Confidential)</label>
+                    <div class="relative flex items-center">
+                      <%= f.password_field :stream_key, value: (@live.stream_key || "live_sec_789412a0f89b142"), id: "streamKeyInput", class: "w-full bg-surface-container/70 border border-white/[0.08] rounded-xl px-3.5 py-2 pr-16 font-mono text-[12px] text-white/90 focus:outline-none" %>
+                      <div class="absolute right-2.5 flex items-center gap-1">
+                        <button type="button" onclick="const el=document.getElementById('streamKeyInput'); el.type = el.type === 'password' ? 'text' : 'password';" class="material-symbols-outlined text-outline hover:text-white text-[16px] cursor-pointer" title="Toggle visibility">
+                          visibility
+                        </button>
+                        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('streamKeyInput').value); this.innerText='done'; setTimeout(()=>this.innerText='content_copy', 1500)" class="material-symbols-outlined text-outline hover:text-white text-[16px] cursor-pointer" title="Copy Key">
+                          content_copy
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Auto-save Toggle -->
+                <div class="p-3.5 rounded-xl bg-surface-container/60 border border-white/[0.05] flex items-center justify-between mt-1">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-surface-container-highest border border-white/[0.06] flex items-center justify-center text-outline shrink-0">
+                      <span class="material-symbols-outlined text-[16px]">lock</span>
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="text-white font-bold text-[13px] leading-tight">Auto-save high bitrate replay to Vault</span>
+                      <span class="text-outline text-[11.5px] mt-0.5 leading-snug">Post-broadcast master recording automatically transcode to an unlockable paywalled set.</span>
+                    </div>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
+                    <%= f.check_box :auto_save_vault, class: "sr-only peer", checked: true %>
+                    <div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column (Incentive Goal, Controls & Moderation, CTAs) -->
+          <div class="lg:col-span-5 flex flex-col gap-6">
+
+            <!-- Card 1: Live Incentive Goal -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-6 shadow-sm">
+              <div class="flex items-center justify-between pb-4 border-b border-white/[0.04]">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[20px]">military_tech</span>
+                  </div>
+                  <div>
+                    <h2 class="text-white text-[16px] font-extrabold tracking-tight">Live Incentive Goal</h2>
+                    <p class="text-outline text-[12px] mt-0.5">Real-time fan crowd-funding meter</p>
+                  </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                  <%= f.check_box :incentive_goal_enabled, class: "sr-only peer", checked: true %>
+                  <div class="w-10 h-5 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+
+              <div class="flex flex-col gap-4 mt-5">
+                <!-- Target Amount -->
+                <div>
+                  <div class="flex items-center justify-between text-[12px] mb-1.5">
+                    <label class="text-white/90 font-semibold">Goal Target Amount</label>
+                    <span class="text-primary font-mono text-[10px] font-bold uppercase tracking-wider">DIRECT UPI DEPOSIT</span>
+                  </div>
+                  <div class="relative flex items-center">
+                    <span class="absolute left-4 text-white font-extrabold text-[18px]">₹</span>
+                    <input type="text" id="goalAmountInput" name="live_session[incentive_goal_cents]" value="10000" class="w-full bg-surface-container/70 border border-white/[0.08] focus:border-primary/50 focus:ring-1 focus:ring-primary/25 rounded-xl pl-9 pr-4 py-2.5 font-extrabold text-[20px] text-white transition-all font-mono" />
+                  </div>
+                  <div class="flex items-center gap-2 mt-2" id="presetPillsContainer">
+                    <button type="button" data-amount="2500" class="preset-pill flex-1 py-1 rounded-lg text-[11px] font-mono font-bold text-center border border-white/[0.06] bg-surface-container-high/60 text-outline hover:text-white transition-all cursor-pointer">₹2,500</button>
+                    <button type="button" data-amount="5000" class="preset-pill flex-1 py-1 rounded-lg text-[11px] font-mono font-bold text-center border border-white/[0.06] bg-surface-container-high/60 text-outline hover:text-white transition-all cursor-pointer">₹5,000</button>
+                    <button type="button" data-amount="10000" class="preset-pill flex-1 py-1 rounded-lg text-[11px] font-mono font-bold text-center border border-primary/40 bg-primary/20 text-primary transition-all cursor-pointer active">₹10,000</button>
+                    <button type="button" data-amount="25000" class="preset-pill flex-1 py-1 rounded-lg text-[11px] font-mono font-bold text-center border border-white/[0.06] bg-surface-container-high/60 text-outline hover:text-white transition-all cursor-pointer">₹25,000</button>
+                  </div>
+                </div>
+
+                <!-- Goal Milestone Action Reward -->
+                <div>
+                  <label class="block text-[12px] text-white/90 font-semibold mb-1.5">Goal Milestone Action Reward</label>
+                  <%= f.text_field :incentive_reward_title, value: (@live.incentive_reward_title || "Midnight drape styling reveal & behind-the-scenes"), class: "w-full bg-surface-container/70 border border-white/[0.08] focus:border-primary/50 rounded-xl px-3.5 py-2 text-[12.5px] text-white transition-all" %>
+                </div>
+
+                <!-- Multi-Tier Milestone Triggers -->
+                <div class="p-3.5 rounded-xl bg-surface-container/50 border border-white/[0.05] flex flex-col gap-2.5">
+                  <div class="flex items-center justify-between text-[11px]">
+                    <span class="font-mono text-outline font-bold uppercase tracking-wider">MULTI-TIER MILESTONE TRIGGERS</span>
+                    <span class="text-primary font-mono text-[9.5px] font-bold uppercase">3 Steps Configured</span>
+                  </div>
+                  <div class="flex flex-col gap-2 mt-1">
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-high/50 text-[12px]">
+                      <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-white/10 text-[10px] font-mono font-bold flex items-center justify-center text-white">1</span>
+                        <span class="text-white/90 font-medium">Unmute Exclusive VIP Audio Channel</span>
+                      </div>
+                      <span class="font-mono text-white font-bold">₹3,000</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-high/50 text-[12px]">
+                      <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-white/10 text-[10px] font-mono font-bold flex items-center justify-center text-white">2</span>
+                        <span class="text-white/90 font-medium">Live Silhouette Costume Swap</span>
+                      </div>
+                      <span class="font-mono text-white font-bold">₹6,000</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-primary/10 border border-primary/20 text-[12px]">
+                      <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-primary text-white text-[10px] font-mono font-bold flex items-center justify-center">★</span>
+                        <span class="text-white font-bold">Main Reveal: Penthouse Drape</span>
+                      </div>
+                      <span class="font-mono text-primary font-bold">₹10,000</span>
+                    </div>
+                  </div>
+
+                  <!-- Simulated Momentum Bar -->
+                  <div class="pt-2 mt-1">
+                    <div class="flex items-center justify-between text-[10px] font-mono text-outline mb-1.5">
+                      <span>AUDIENCE BROADCAST HUD DISPLAY</span>
+                      <span class="text-white font-bold">64% SIMULATED MOMENTUM</span>
+                    </div>
+                    <div class="w-full bg-surface-container-highest/60 rounded-full h-1.5 overflow-hidden">
+                      <div class="bg-gradient-to-r from-primary to-secondary h-full rounded-full w-[64%]"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Interactive Controls & Moderation -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-6 shadow-sm">
+              <div class="flex items-center justify-between pb-4 border-b border-white/[0.04]">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[20px]">tune</span>
+                  </div>
+                  <div>
+                    <h2 class="text-white text-[16px] font-extrabold tracking-tight">Interactive Controls &amp; Moderation</h2>
+                    <p class="text-outline text-[12px] mt-0.5">Live chat protection &amp; anti-piracy leak prevention</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-3.5 mt-5">
+                <!-- Setting 1: Pay-to-Chat -->
+                <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container/50 border border-white/[0.04]">
+                  <div>
+                    <span class="text-white font-bold text-[12.5px] block">Pay-to-Chat Tip Gate</span>
+                    <span class="text-outline text-[11px]">Filters troll comments during peak rush</span>
+                  </div>
+                  <span class="px-2.5 py-1 rounded-full bg-surface-container-high border border-white/[0.08] text-white text-[11px] font-bold font-mono">
+                    Min ₹50
+                  </span>
+                </div>
+
+                <!-- Setting 2: Chat Pace -->
+                <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container/50 border border-white/[0.04]">
+                  <div>
+                    <span class="text-white font-bold text-[12.5px] block">Chat Pace Regulation</span>
+                    <span class="text-outline text-[11px]">Prevents high-velocity screen scroll</span>
+                  </div>
+                  <span class="px-2.5 py-1 rounded-full bg-surface-container-high border border-white/[0.08] text-white text-[11px] font-bold font-mono">
+                    10s Delay
+                  </span>
+                </div>
+
+                <!-- Setting 3: Watermark Toggle -->
+                <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container/50 border border-white/[0.04]">
+                  <div>
+                    <span class="text-white font-bold text-[12.5px] flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-[15px] text-emerald-400">verified</span>
+                      <span>Discreet Fan Watermark</span>
+                    </span>
+                    <span class="text-outline text-[11px] mt-0.5 block">Overlays dynamic micro-hash ID to pinpoint stream recorders</span>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
+                    <%= f.check_box :forensic_watermark_enabled, class: "sr-only peer", checked: true %>
+                    <div class="w-10 h-5 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+
+                <!-- Setting 4: VIP Alert -->
+                <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container/50 border border-white/[0.04]">
+                  <div>
+                    <span class="text-white font-bold text-[12.5px] flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-[15px] text-primary">notifications_active</span>
+                      <span>VIP Alert Dispatch</span>
+                    </span>
+                    <span class="text-outline text-[11px] mt-0.5 block">Auto-notify Telegram VIP bot &amp; WhatsApp 15m prior</span>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
+                    <%= f.check_box :vip_alert_dispatch, class: "sr-only peer", checked: true %>
+                    <div class="w-10 h-5 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Action Row -->
+            <div class="flex items-center gap-3">
+              <button type="button" class="py-2.5 px-4 rounded-xl bg-surface-container-high/80 border border-white/[0.08] text-white hover:bg-surface-container-highest transition-colors text-[12.5px] font-semibold text-center cursor-pointer">
+                Save Draft
+              </button>
+              <button type="button" class="py-2.5 px-4 rounded-xl bg-surface-container-high/80 border border-white/[0.08] text-white hover:bg-surface-container-highest transition-colors text-[12.5px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer">
+                <span class="material-symbols-outlined text-[16px] text-outline">badge</span>
+                <span>Fan Card</span>
+              </button>
+              <button type="submit" class="flex-1 py-3 px-5 rounded-xl bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_auto] hover:bg-right transition-all duration-300 text-white font-bold text-[13px] shadow-[0_4px_24px_rgba(255,23,103,0.4)] flex items-center justify-center gap-2 cursor-pointer">
+                <span class="material-symbols-outlined text-[18px]">sensors</span>
+                <span>Confirm &amp; Schedule Broadcast</span>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      <% end %>
+
+    </div>
+  </main>
+</div>
+
+<!-- Past Broadcasts Modal Drawer -->
+<div id="pastBroadcastsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+  <div class="bg-surface-container-low border border-white/[0.08] rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6 shadow-2xl flex flex-col gap-4">
+    <div class="flex items-center justify-between pb-3 border-b border-white/[0.06]">
+      <div>
+        <h3 class="text-white text-[17px] font-extrabold tracking-tight">Past Broadcast Archives</h3>
+        <p class="text-outline text-[12px]">Previously completed and recorded live sessions</p>
+      </div>
+      <button type="button" onclick="document.getElementById('pastBroadcastsModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-white transition-colors cursor-pointer">
+        <span class="material-symbols-outlined text-[18px]">close</span>
+      </button>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <% if @past_lives && @past_lives.any? %>
+        <% @past_lives.each do |pl| %>
+          <div class="p-4 rounded-xl bg-surface-container/70 border border-white/[0.05] flex items-center justify-between">
+            <div class="flex flex-col">
+              <span class="text-white font-bold text-[13.5px]"><%= pl.title %></span>
+              <span class="text-outline text-[11.5px] mt-0.5"><%= pl.scheduled_for.strftime("%b %d, %Y • %I:%M %p") %> • <%= pl.status.upcase %></span>
+            </div>
+            <%= link_to studio_live_session_path(pl), class: "px-3.5 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-[11.5px] font-semibold hover:bg-primary/30 transition-colors cursor-pointer" do %>
+              Open Studio
+            <% end %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="p-4 rounded-xl bg-surface-container/70 border border-white/[0.05] flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-white font-bold text-[13.5px]">Midnight Drape &amp; Studio GRWM</span>
+            <span class="text-outline text-[11.5px] mt-0.5">Oct 12, 2026 • 11:30 PM • 1,842 VIPs • ₹18,450 Direct UPI</span>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-white/10 text-outline text-[11px] font-semibold">Completed</span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Duration Pills
+  document.querySelectorAll('.duration-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.duration-pill').forEach(b => {
+        b.classList.remove('border-primary/40', 'bg-primary/20', 'text-primary', 'active');
+        b.classList.add('border-white/[0.06]', 'bg-surface-container-high/60', 'text-outline');
+      });
+      btn.classList.remove('border-white/[0.06]', 'bg-surface-container-high/60', 'text-outline');
+      btn.classList.add('border-primary/40', 'bg-primary/20', 'text-primary', 'active');
+      document.getElementById('liveDurationInput').value = btn.dataset.duration;
+    });
+  });
+
+  // Admission Cards
+  document.querySelectorAll('.admission-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.admission-card').forEach(c => {
+        c.classList.remove('border-primary/50', 'bg-primary/10', 'shadow-[0_0_20px_rgba(255,23,103,0.15)]', 'active');
+        c.classList.add('border-white/[0.06]', 'bg-surface-container/50');
+        const circle = c.querySelector('.radio-circle');
+        circle.className = 'w-4 h-4 rounded-full border border-white/20 flex items-center justify-center radio-circle';
+        circle.innerHTML = '';
+      });
+      card.classList.remove('border-white/[0.06]', 'bg-surface-container/50');
+      card.classList.add('border-primary/50', 'bg-primary/10', 'shadow-[0_0_20px_rgba(255,23,103,0.15)]', 'active');
+      const circle = card.querySelector('.radio-circle');
+      circle.className = 'w-4 h-4 rounded-full border-2 border-primary bg-primary flex items-center justify-center radio-circle';
+      circle.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-white"></span>';
+      document.getElementById('admissionModeInput').value = card.dataset.mode;
+    });
+  });
+
+  // Goal Presets
+  document.querySelectorAll('.preset-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.preset-pill').forEach(b => {
+        b.classList.remove('border-primary/40', 'bg-primary/20', 'text-primary', 'active');
+        b.classList.add('border-white/[0.06]', 'bg-surface-container-high/60', 'text-outline');
+      });
+      btn.classList.remove('border-white/[0.06]', 'bg-surface-container-high/60', 'text-outline');
+      btn.classList.add('border-primary/40', 'bg-primary/20', 'text-primary', 'active');
+      document.getElementById('goalAmountInput').value = btn.dataset.amount;
+    });
+  });
+</script>

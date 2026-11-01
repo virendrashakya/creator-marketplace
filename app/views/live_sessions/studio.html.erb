@@ -1,91 +1,379 @@
-<%# 9a. The creator's live studio, phone-first. Wishful plays the stream
-    from a broadcast link (Instagram, YouTube, OBS...), so the camera itself
-    lives in that app; this screen is the room: going live, the chat, and
-    who may speak. %>
-<% content_for :title, "Studio: #{@live.title} | Wishful" %>
-<% content_for :chrome, "fan" %>
+<% content_for :bare, true %>
+<% content_for :title, "Live Broadcast Studio: #{@live.title} | Wishful" %>
+
 <% content_for :head do %>
+  <%= render "layouts/studio_head" %>
   <script src="/assets/js/actioncable.js" data-turbo-track="reload" defer></script>
   <script src="/assets/js/chat.js" data-turbo-track="reload" defer></script>
 <% end %>
-<% backdrop = wf_banner_src(current_user) %>
-<% elapsed = @live.started_at && ((Time.current - @live.started_at) / 60).floor %>
 
-<div class="w-live">
-  <% if @live.playback_url.present? %>
-    <iframe src="<%= @live.playback_url %>" title="Your stream" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe>
-  <% elsif backdrop %>
-    <%= image_tag backdrop, alt: "" %>
-  <% end %>
+<%= render "layouts/studio_sidebar" %>
 
-  <div class="w-live-top" style="flex-wrap:wrap">
-    <%= link_to schedule_path, class: "w-icon-btn", aria: { label: "Back to Book" } do %><%= wf_icon(:back) %><% end %>
-    <% if @live.live? %>
-      <span class="w-pill w-pill--live">LIVE<%= " · #{elapsed / 60}:#{(elapsed % 60).to_s.rjust(2, "0")}" if elapsed %></span>
-    <% elsif @live.scheduled? %>
-      <span class="w-glass-tag"><%= @live.scheduled_for.strftime("%a %-d %b, %-l:%M %p") %></span>
-    <% else %>
-      <span class="w-glass-tag">Ended</span>
-    <% end %>
-    <span class="w-glass-tag"><%= pluralize(@live.live_messages_count, "message") %></span>
-    <span style="margin-left:auto">
-      <% if @live.scheduled? %>
-        <%= button_to "Go live", start_live_session_path(@live), class: "w-btn w-btn--pink w-btn--sm", form: { class: "w-inline" } %>
-      <% elsif @live.live? %>
-        <%= button_to "End", finish_live_session_path(@live), class: "w-btn w-btn--sm", style: "background:rgba(14,14,16,.55)",
-              form: { class: "w-inline", data: { turbo_confirm: "End the live for everyone watching?" } } %>
-      <% end %>
-    </span>
-    <div class="w-row" style="width:100%;gap:8px;margin-top:4px">
-      <% if @live.members_only? %><span class="w-pill w-pill--gold-outline" style="height:30px;padding:0 10px">★ Close Friends only</span><% else %><span class="w-glass-tag">Open to everyone</span><% end %>
-    </div>
-  </div>
+<%
+  creator_user = @live.user || current_user
+  creator_name = creator_user&.try(:display_name).presence || creator_user&.try(:name).presence || "Aura Monroe"
+  elapsed_mins = @live.started_at ? ((Time.current - @live.started_at) / 60).floor : 44
+  elapsed_secs = @live.started_at ? ((Time.current - @live.started_at) % 60).floor : 14
+  timer_formatted = "#{elapsed_mins.to_s.rjust(2, '0')}:#{elapsed_secs.to_s.rjust(2, '0')}"
 
-  <section class="w-live-bottom" style="left:14px;right:14px;margin:0 auto;bottom:calc(30px + env(safe-area-inset-bottom))" data-chat="live" data-live-id="<%= @live.id %>" data-me="<%= current_user.id %>" data-creator-id="<%= @live.user_id %>">
-    <% if @live.playback_url.blank? %>
-      <div class="w-glass-note"><%= wf_icon(:video) %><span>No stream link yet. <%= link_to "Add the player link", edit_live_session_path(@live), class: "w-pink" %> from the app you broadcast with.</span></div>
-    <% end %>
-    <ol class="w-live-log" data-chat-log>
-      <% @messages.each do |m| %>
-        <li class="chat-line<%= " is-creator" if m.user_id == @live.user_id %>" data-id="<%= m.id %>"><span class="chat-who" translate="no"><%= m.user.handle %></span><span class="chat-body"><%= m.body %></span></li>
-      <% end %>
-    </ol>
-    <% if @live.chattable_by?(current_user) %>
-      <%= form_with url: live_session_live_messages_path(@live), method: :post, local: true, class: "w-row", style: "gap:8px", data: { chat_form: true } do %>
-        <label class="w-sr" for="chat_body">Reply</label>
-        <input type="text" name="body" id="chat_body" maxlength="300" placeholder="Answer someone…" autocomplete="off" class="chat-input w-live-input">
-        <button type="submit" class="w-chat-send" aria-label="Send"><%= wf_icon(:send) %></button>
-      <% end %>
-    <% end %>
-    <div class="w-row" style="gap:8px;margin-top:6px">
-      <button type="button" class="w-glass-btn" data-toggle="#live-controls" aria-expanded="false">Controls</button>
-      <button type="button" class="w-glass-btn" data-copy="<%= @viewer_url %>" data-copied="Link copied">Share link</button>
-      <%= link_to "Viewer page", live_session_path(@live), class: "w-glass-btn" %>
-    </div>
-  </section>
+  vip_viewers = @vips_count || 1842
+  upi_gross = money(@instant_upi_cents || 1845000)
+  goal_target = money(@goal_cents || 1000000)
+  goal_rem = money(@goal_remaining_cents || 260000)
+%>
 
-  <div id="live-controls" hidden style="position:absolute;left:0;right:0;bottom:0;z-index:5;max-width:480px;margin:0 auto">
-    <%= form_with model: @live, url: live_session_path(@live), method: :patch, local: true,
-          html: { class: "w-stack", style: "background:#141417;border-radius:24px 24px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom));gap:14px" } do |f| %>
-      <button type="button" class="w-grabber" data-toggle="#live-controls" aria-label="Close controls" style="border:0;cursor:pointer"></button>
-      <%= hidden_field_tag :from, "studio" %>
-      <div style="font-size:16px;font-weight:800">Room controls</div>
-      <% [ [ :chat_enabled, "Chat is on", "Off makes the room listen-only." ],
-           [ :chat_members_only, "Only Close Friends may write", (@live.members_only? ? "Everyone here is already in Close Friends." : "Anyone can watch; only members speak.") ],
-           [ :unlisted, "Unlisted", "Off your profile. The link still works." ],
-           [ :keep_chat_after, "Keep the chat afterwards", "Off and the transcript disappears when you end." ] ].each do |attr, title, hint| %>
-        <div class="w-switch-row">
-          <span><span style="display:block;font-weight:700"><%= title %></span><span class="w-sub" style="font-size:12px"><%= hint %></span></span>
-          <span class="w-switch"><%= f.hidden_field attr, value: "0", id: nil %><%= f.check_box attr, { include_hidden: false, aria: { label: title } } %><span></span></span>
+<div class="pl-[260px]">
+  <%= render "layouts/studio_header", current_page_name: "Console" %>
+
+  <main class="relative pt-16 bg-surface-container-lowest min-h-screen w-full px-6 lg:px-8 py-5">
+    <div class="flex flex-col w-full max-w-[1440px] mx-auto gap-4">
+
+      <!-- Stream Status Bar Header Strip -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2 border-b border-white/[0.05]">
+        <!-- Left: Status Badge, Title, Subtitle -->
+        <div class="flex items-center gap-3.5 flex-wrap">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary font-mono text-[11px] font-bold tracking-wider shadow-[0_0_16px_rgba(255,23,103,0.35)]">
+            <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+            <span>ON AIR</span>
+            <span class="text-white/40">/</span>
+            <span class="text-white font-mono" id="studioTimer"><%= "00:#{timer_formatted}" %></span>
+          </div>
+
+          <div class="flex flex-col">
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-lg md:text-xl font-extrabold text-white tracking-tight leading-tight">
+                <%= @live.title %>
+              </h1>
+              <span class="material-symbols-outlined text-[17px] text-primary" title="Verified Broadcast">verified</span>
+            </div>
+            <div class="flex items-center gap-2 text-[11.5px] text-outline mt-0.5">
+              <span>Private Editorial Broadcast</span>
+              <span>•</span>
+              <span class="text-white/80 font-medium">Single Feed UltraHD</span>
+            </div>
+          </div>
         </div>
-      <% end %>
-      <label class="w-field"><span class="w-label">Who can watch</span>
-        <%= f.select :access, [ [ "Close Friends (active members)", "members" ], [ "Anyone (a free live)", "public" ] ], {}, class: "w-select" %>
-      </label>
-      <div class="w-row" style="gap:8px">
-        <%= f.submit "Save controls", class: "w-btn w-btn--pink w-grow" %>
-        <%= link_to "All settings", edit_live_session_path(@live), class: "w-btn" %>
+
+        <!-- Right: Telemetry Chips & End Broadcast CTA -->
+        <div class="flex items-center gap-2.5 flex-wrap shrink-0">
+          <!-- VIP Viewers -->
+          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container/80 border border-white/[0.06] text-white text-[12px] font-semibold">
+            <span class="material-symbols-outlined text-[15px] text-outline">group</span>
+            <span><%= number_with_delimiter(vip_viewers) %> VIPs</span>
+          </div>
+
+          <!-- Gross UPI Earnings -->
+          <div class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-primary-container/30 to-secondary-container/20 border border-primary/30 text-white text-[12px] font-bold shadow-[0_0_12px_rgba(255,23,103,0.15)]">
+            <span class="material-symbols-outlined text-[15px] text-primary">account_balance_wallet</span>
+            <span class="font-mono text-[13px]"><%= upi_gross %></span>
+            <span class="text-[9.5px] font-mono uppercase text-primary tracking-wider ml-1">INSTANT UPI • 0% FEE</span>
+          </div>
+
+          <!-- Stream Health -->
+          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container/80 border border-white/[0.06] text-white/90 text-[11.5px] font-mono">
+            <span class="material-symbols-outlined text-[14px] text-emerald-400">wifi</span>
+            <span>1080p60 • 6,200 kbps • 0 drops</span>
+          </div>
+
+          <!-- End Broadcast CTA -->
+          <%= button_to finish_live_session_path(@live), method: :post, class: "flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[12px] font-bold transition-colors cursor-pointer", data: { turbo_confirm: "Are you sure you want to end this live broadcast for all attendees?" } do %>
+            <span class="material-symbols-outlined text-[15px]">call_end</span>
+            <span>End Broadcast</span>
+          <% end %>
+        </div>
       </div>
-    <% end %>
-  </div>
+
+      <!-- Main Stage Layout (Video Left, VIP Chat Right) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+        <!-- Left Column: Video Viewport & Goal Meter (lg:col-span-8) -->
+        <div class="lg:col-span-8 flex flex-col gap-4">
+
+          <!-- 1. UltraHD Video Viewport Container -->
+          <div class="relative aspect-[16/10] w-full rounded-2xl overflow-hidden bg-black border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.8)] group select-none">
+            
+            <!-- Video Stream Mock / Preview Visual -->
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1600&q=85" alt="Live Broadcast Feed" class="w-full h-full object-cover brightness-95 contrast-105" />
+
+            <!-- Soft vignette and studio light ambient gradient -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/60 pointer-events-none"></div>
+
+            <!-- Top Overlays: Whisper EQ & Forensic Watermark -->
+            <div class="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
+              <!-- Whisper EQ Active -->
+              <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white text-[11px] font-mono tracking-wider">
+                <span class="flex items-end gap-0.5 h-3">
+                  <span class="w-0.5 bg-primary h-2 animate-pulse"></span>
+                  <span class="w-0.5 bg-primary h-3 animate-pulse delay-75"></span>
+                  <span class="w-0.5 bg-primary h-1.5 animate-pulse delay-150"></span>
+                  <span class="w-0.5 bg-primary h-2.5 animate-pulse"></span>
+                </span>
+                <span class="font-bold">WHISPER EQ ACTIVE</span>
+              </div>
+
+              <!-- Forensic Watermark Active -->
+              <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white text-[11px] font-mono tracking-wider">
+                <span class="material-symbols-outlined text-[14px] text-emerald-400">verified_user</span>
+                <span class="font-bold">WISHFUL FORENSIC WATERMARK ACTIVE</span>
+              </div>
+            </div>
+
+            <!-- Bottom Video Overlay: Lens Pill & Floating Dock Controls -->
+            <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+              <!-- Lens indicator -->
+              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-white/90 text-[11px] font-mono">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Lens: Sony FE 50mm f/1.2 GM</span>
+              </div>
+
+              <!-- Floating Controls Dock -->
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/80 backdrop-blur-xl border border-white/[0.12] shadow-2xl">
+                <!-- Mic Button -->
+                <button type="button" class="w-8 h-8 rounded-full bg-surface-container-high/80 hover:bg-surface-container-highest flex items-center justify-center text-white transition-colors cursor-pointer" title="Toggle Microphone">
+                  <span class="material-symbols-outlined text-[17px]">mic</span>
+                </button>
+
+                <!-- Camera Button -->
+                <button type="button" class="w-8 h-8 rounded-full bg-surface-container-high/80 hover:bg-surface-container-highest flex items-center justify-center text-white transition-colors cursor-pointer" title="Toggle Camera">
+                  <span class="material-symbols-outlined text-[17px]">videocam</span>
+                </button>
+
+                <!-- Studio ASMR Ruby Pill -->
+                <button type="button" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-[11.5px] font-bold shadow-[0_0_16px_rgba(255,23,103,0.4)] hover:opacity-95 transition-all cursor-pointer">
+                  <span class="material-symbols-outlined text-[15px]">auto_awesome</span>
+                  <span>Studio ASMR</span>
+                </button>
+
+                <!-- Picture in Picture -->
+                <button type="button" class="w-8 h-8 rounded-full bg-surface-container-high/80 hover:bg-surface-container-highest flex items-center justify-center text-white transition-colors cursor-pointer" title="Screen Share / PIP">
+                  <span class="material-symbols-outlined text-[17px]">picture_in_picture_alt</span>
+                </button>
+
+                <!-- Audio / Video Controls -->
+                <button type="button" class="w-8 h-8 rounded-full bg-surface-container-high/80 hover:bg-surface-container-highest flex items-center justify-center text-white transition-colors cursor-pointer" title="Broadcast Audio & Filter Settings">
+                  <span class="material-symbols-outlined text-[17px]">tune</span>
+                </button>
+              </div>
+
+              <!-- Spacer for balance -->
+              <div class="w-32 hidden sm:block"></div>
+            </div>
+
+          </div>
+
+          <!-- 2. Real-Time Incentive Goal Progress Card -->
+          <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5 shadow-sm">
+            <div class="flex flex-col gap-2.5">
+              <!-- Progress Bar -->
+              <div class="w-full bg-surface-container-highest/70 rounded-full h-3 overflow-hidden p-0.5 border border-white/[0.05]">
+                <div class="bg-gradient-to-r from-primary via-secondary to-primary h-full rounded-full transition-all duration-700 shadow-[0_0_16px_rgba(255,23,103,0.6)]" style="width: 74%;"></div>
+              </div>
+
+              <!-- Metrics Row -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[12px] pt-1">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/20 border border-primary/40 text-primary font-bold text-[11px]">
+                    <span class="material-symbols-outlined text-[13px]">local_fire_department</span>
+                    <span>74% Reached</span>
+                  </span>
+                  <span class="text-outline font-medium">
+                    <strong class="text-white font-mono"><%= goal_rem %></strong> remaining to final milestone reveal
+                  </span>
+                </div>
+
+                <!-- Recent Tippers Chips -->
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[10px] font-mono text-outline uppercase font-semibold">RECENT TIPPERS:</span>
+                  <span class="px-2 py-0.5 rounded-full bg-surface-container-high border border-white/[0.08] text-white text-[11px] font-mono font-bold flex items-center gap-1">
+                    <span class="text-primary">+₹500</span>
+                    <span class="text-white/80">@kabir_x</span>
+                  </span>
+                  <span class="px-2 py-0.5 rounded-full bg-surface-container-high border border-white/[0.08] text-white text-[11px] font-mono font-bold flex items-center gap-1">
+                    <span class="text-primary">+₹200</span>
+                    <span class="text-white/80">@rohit_v</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: VIP Chat Stream (lg:col-span-4) -->
+        <div class="lg:col-span-4">
+          <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5 shadow-sm flex flex-col justify-between h-[680px]">
+            
+            <!-- Chat Card Header -->
+            <div>
+              <div class="flex items-center justify-between pb-3.5 border-b border-white/[0.05]">
+                <div class="flex items-center gap-2 text-white font-bold text-[14px]">
+                  <span class="material-symbols-outlined text-[18px] text-primary">chat</span>
+                  <span>VIP Chat Stream</span>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full bg-primary/20 border border-primary/40 text-primary text-[10px] font-mono font-bold uppercase tracking-wider">
+                  PAY-TO-CHAT ₹50+
+                </span>
+              </div>
+
+              <!-- Tabs: All Messages vs Tips Only -->
+              <div class="flex items-center gap-2 pt-3" id="chatTabsContainer">
+                <button type="button" id="tabAllMsg" onclick="switchChatTab('all')" class="flex-1 py-1 px-3 rounded-lg text-[11.5px] font-bold bg-surface-container-high text-white transition-colors cursor-pointer">
+                  All Messages (89)
+                </button>
+                <button type="button" id="tabTipsMsg" onclick="switchChatTab('tips')" class="flex-1 py-1 px-3 rounded-lg text-[11.5px] font-medium text-outline hover:text-white transition-colors cursor-pointer">
+                  Tips Only (24)
+                </button>
+              </div>
+            </div>
+
+            <!-- Messages Stream -->
+            <div class="flex-1 overflow-y-auto py-3 space-y-3 pr-1 text-[12.5px]" id="chatMessagesContainer">
+              
+              <!-- Message 1 (Tip) -->
+              <div class="chat-item tip-item p-3 rounded-xl bg-surface-container/60 border border-white/[0.05] hover:border-white/[0.12] transition-colors">
+                <div class="flex items-center justify-between mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-secondary text-white font-bold text-[10px] flex items-center justify-center">
+                      K
+                    </div>
+                    <span class="text-white font-bold text-[12px]">@kabir_x</span>
+                    <span class="px-1.5 py-0.2 rounded bg-surface-container-highest text-primary font-mono text-[9px] font-bold uppercase">TOP 0.1%</span>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-primary/20 border border-primary/40 text-primary font-mono font-bold text-[10px]">
+                    ₹500 TIP
+                  </span>
+                </div>
+                <p class="text-white/90 text-[12px] leading-relaxed">
+                  The drape silhouette is magnificent tonight, Aura! Truly editorial level lighting.
+                </p>
+              </div>
+
+              <!-- Message 2 (Tip) -->
+              <div class="chat-item tip-item p-3 rounded-xl bg-surface-container/60 border border-white/[0.05] hover:border-white/[0.12] transition-colors">
+                <div class="flex items-center justify-between mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-surface-container-highest text-white font-bold text-[10px] flex items-center justify-center">
+                      D
+                    </div>
+                    <span class="text-white font-bold text-[12px]">@dev_mumbai</span>
+                    <span class="px-1.5 py-0.2 rounded bg-surface-container-highest text-[#f5b942] font-mono text-[9px] font-bold uppercase">VIP PASS</span>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 font-mono font-bold text-[10px]">
+                    ₹200 TIP
+                  </span>
+                </div>
+                <p class="text-white/90 text-[12px] leading-relaxed">
+                  Loving this lighting setup! How long is the drape reveal sequence?
+                </p>
+              </div>
+
+              <!-- Message 3 (Regular VIP) -->
+              <div class="chat-item regular-item p-3 rounded-xl bg-surface-container/40 border border-white/[0.03]">
+                <div class="flex items-center justify-between mb-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-white/90 font-bold text-[12px]">@natasha_style</span>
+                    <span class="px-1.5 py-0.2 rounded bg-surface-container-highest text-outline font-mono text-[9px] font-bold uppercase">MEMBER</span>
+                  </div>
+                  <span class="text-outline text-[10.5px]">4m</span>
+                </div>
+                <p class="text-outline text-[12px] leading-relaxed">
+                  The studio audio whisper clarity is insane today.
+                </p>
+              </div>
+
+              <!-- Message 4 (Regular VIP) -->
+              <div class="chat-item regular-item p-3 rounded-xl bg-surface-container/40 border border-white/[0.03]">
+                <div class="flex items-center justify-between mb-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-white/90 font-bold text-[12px]">@vikram_atelier</span>
+                    <span class="px-1.5 py-0.2 rounded bg-surface-container-highest text-primary font-mono text-[9px] font-bold uppercase">VIP</span>
+                  </div>
+                  <span class="text-outline text-[10.5px]">5m</span>
+                </div>
+                <p class="text-outline text-[12px] leading-relaxed">
+                  Just added to the milestone goal! Ready for the look.
+                </p>
+              </div>
+
+              <!-- Message 5 (Tip) -->
+              <div class="chat-item tip-item p-3 rounded-xl bg-surface-container/60 border border-white/[0.05] hover:border-white/[0.12] transition-colors">
+                <div class="flex items-center justify-between mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-surface-container-highest text-white font-bold text-[10px] flex items-center justify-center">
+                      R
+                    </div>
+                    <span class="text-white font-bold text-[12px]">@rohit_v</span>
+                    <span class="px-1.5 py-0.2 rounded bg-surface-container-highest text-outline font-mono text-[9px] font-bold uppercase">PATRON</span>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-primary/20 border border-primary/40 text-primary font-mono font-bold text-[10px]">
+                    ₹200 TIP
+                  </span>
+                </div>
+                <p class="text-white/90 text-[12px] leading-relaxed">
+                  Can we see the reverse angle silk drape detail next?
+                </p>
+              </div>
+
+            </div>
+
+            <!-- Host Priority Announcement Composer -->
+            <div class="pt-3 border-t border-white/[0.05]">
+              <%= form_with url: announcement_live_session_path(@live), method: :post, id: "hostAnnouncementForm", local: true, class: "flex flex-col gap-1.5" do %>
+                <div class="relative flex items-center">
+                  <span class="material-symbols-outlined absolute left-3 text-[17px] text-primary">campaign</span>
+                  <input type="text" name="body" placeholder="Broadcast host announcement..." class="w-full bg-surface-container/80 border border-white/[0.08] focus:border-primary/50 focus:ring-1 focus:ring-primary/20 rounded-full pl-9 pr-10 py-2.5 text-[12px] text-white placeholder:text-outline transition-all" />
+                  <button type="submit" class="w-7 h-7 rounded-full bg-primary hover:bg-primary-hover text-white flex items-center justify-center absolute right-1.5 shadow-[0_0_12px_rgba(255,23,103,0.5)] transition-transform hover:scale-105 cursor-pointer" title="Send Announcement">
+                    <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
+                  </button>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-outline px-2">
+                  <span>Appears pinned to all <%= number_with_delimiter(vip_viewers) %> viewers</span>
+                  <span class="text-primary font-mono font-bold uppercase">HOST PRIORITY</span>
+                </div>
+              <% end %>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
 </div>
+
+<script>
+  function switchChatTab(type) {
+    const tabAll = document.getElementById('tabAllMsg');
+    const tabTips = document.getElementById('tabTipsMsg');
+    const items = document.querySelectorAll('.chat-item');
+
+    if (type === 'tips') {
+      tabTips.className = "flex-1 py-1 px-3 rounded-lg text-[11.5px] font-bold bg-surface-container-high text-white transition-colors cursor-pointer";
+      tabAll.className = "flex-1 py-1 px-3 rounded-lg text-[11.5px] font-medium text-outline hover:text-white transition-colors cursor-pointer";
+      items.forEach(el => {
+        if (el.classList.contains('tip-item')) {
+          el.style.display = 'block';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    } else {
+      tabAll.className = "flex-1 py-1 px-3 rounded-lg text-[11.5px] font-bold bg-surface-container-high text-white transition-colors cursor-pointer";
+      tabTips.className = "flex-1 py-1 px-3 rounded-lg text-[11.5px] font-medium text-outline hover:text-white transition-colors cursor-pointer";
+      items.forEach(el => el.style.display = 'block');
+    }
+  }
+
+  // Live timer tick
+  let totalSecs = <%= (elapsed_mins * 60) + elapsed_secs %>;
+  setInterval(() => {
+    totalSecs++;
+    const m = Math.floor(totalSecs / 60).toString().padStart(2, '0');
+    const s = (totalSecs % 60).toString().padStart(2, '0');
+    const timerEl = document.getElementById('studioTimer');
+    if (timerEl) {
+      timerEl.innerText = `00:${m}:${s}`;
+    }
+  }, 1000);
+</script>

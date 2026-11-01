@@ -1,64 +1,680 @@
-<% content_for :title, "Collections | Wishful Studio" %>
+<% content_for :bare, true %>
+<% content_for :title, "Creator Studio — Collections & Vault | Wishful" %>
 
-<div class="w-page-head">
-  <div>
-    <h1 class="w-page-title">Collections</h1>
-    <div class="w-page-lede">The cover is public. Everything inside stays hidden until a fan unlocks it.</div>
-  </div>
-  <div class="w-page-actions">
-    <%= link_to "+ New collection", new_paid_media_collection_path, class: "w-btn w-btn--pink" %>
-  </div>
-</div>
-
-<div class="w-coll-grid">
-  <% @collections.each do |c| %>
-    <%= link_to edit_paid_media_collection_path(c), class: "w-coll-card" do %>
-      <div class="w-coll-card-img">
-        <% if (post = c.cover_post) %>
-          <% if post.media_type == "image" %>
-            <%= image_tag media_paid_media_post_path(post), alt: "", loading: "lazy" %>
-          <% elsif post.preview.attached? %>
-            <%= image_tag url_for(post.preview), alt: "", loading: "lazy" %>
-          <% end %>
-        <% else %>
-          <span class="w-center w-dim" style="height:100%;justify-content:center;font-size:12px;gap:6px"><%= wf_icon(:upload, size: 20) %>Add photos</span>
-        <% end %>
-        <span class="w-status w-status--<%= c.status_label.downcase %>"><%= c.status_label %></span>
-        <span class="w-pill"><%= wf_icon(:lock, color: "#F5B942") %><%= c.items_count %></span>
-      </div>
-      <div class="w-coll-card-body">
-        <div class="w-row w-row--between" style="gap:8px">
-          <span class="w-ellipsis" style="font-size:14px;font-weight:800"><%= c.title %></span>
-          <span style="font-size:14px;font-weight:800;white-space:nowrap"><%= c.price_label %></span>
-        </div>
-        <div class="w-sub" style="font-size:12px;margin-top:3px">
-          <% if c.scheduled? %>Scheduled for <%= c.release_at.strftime("%-d %b") %>
-          <% elsif !c.published? %>Draft · <%= c.contents_label %>
-          <% else %><%= c.unlocks_count %> unlocks · <%= money(c.revenue_cents, c.currency) %><% end %>
-        </div>
-      </div>
-    <% end %>
-  <% end %>
-  <%= link_to new_paid_media_collection_path, class: "w-coll-new" do %>
-    <span style="font-size:24px;font-weight:400">+</span>New collection
-  <% end %>
-</div>
-
-<% if @drops.any? %>
-  <div>
-    <div class="w-eyebrow" style="margin-bottom:10px">Single drops · sold on their own</div>
-    <div class="w-stack" style="gap:8px">
-      <% @drops.each do |drop| %>
-        <div class="w-list-row w-list-row--compact">
-          <%= image_tag wf_post_image_src(drop, viewer_can_see: true), alt: "", class: "w-thumb w-thumb--40" %>
-          <div class="w-grow">
-            <div class="w-row-title" style="font-size:13.5px"><%= drop.title %></div>
-            <div class="w-row-meta"><%= drop.media_purchases.count { |p| p.status == "paid" } %> unlocks · <%= drop.published? ? "Live" : "Hidden" %></div>
-          </div>
-          <span style="font-size:13px;font-weight:800"><%= drop.price_label %></span>
-          <%= link_to "Edit", edit_paid_media_post_path(drop), class: "w-btn w-btn--xs" %>
-        </div>
-      <% end %>
-    </div>
-  </div>
+<% content_for :head do %>
+  <%= render "layouts/studio_head" %>
 <% end %>
+
+<%= render "layouts/studio_sidebar" %>
+
+<div class="pl-[260px]">
+  <%= render "layouts/studio_header", current_page_name: "Collections & Vault" %>
+
+  <main class="relative pt-16 bg-surface-container-lowest min-h-screen w-full px-gutter-desktop py-space-lg">
+    <div class="flex flex-col w-full gap-space-xl">
+      <!-- Subtle Ambient Glow Orbs -->
+      <div class="relative w-full">
+        <div class="absolute -top-12 left-1/4 w-96 h-96 bg-primary-container/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute top-20 right-10 w-80 h-80 bg-secondary-container/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Header Section with Breadcrumbs and Global Actions -->
+        <div class="relative flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg">
+          <div class="flex flex-col gap-space-xs max-w-2xl">
+            <div class="flex items-center gap-space-sm">
+              <span class="px-space-sm py-0.5 rounded-full bg-surface-container font-label-vip text-label-vip text-primary tracking-widest uppercase">Vault Engine 4.2</span>
+              <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+              <span class="font-label-sm text-label-sm text-outline">Direct P2P Settlement</span>
+            </div>
+            <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Collections &amp; Vault</h1>
+            <p class="font-body-md text-body-md text-on-surface-variant">Manage exclusive PPV media vault drops, tiered bundles, and paywalled photo sets.</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-space-md">
+            <!-- Search Input -->
+            <div class="relative flex items-center min-w-[240px]">
+              <span class="material-symbols-outlined absolute left-space-md text-[18px] text-outline">search</span>
+              <input class="w-full pl-10 pr-4 py-2.5 bg-surface-container/80 border border-white/[0.06] focus:border-primary/40 rounded-full font-body-sm text-body-sm text-on-surface placeholder:text-outline/50 focus:outline-none shadow-sm transition-all" id="vaultSearchInput" placeholder="Search drops, tags..." type="text"/>
+            </div>
+            <!-- Filter Dropdown Trigger -->
+            <button class="flex items-center gap-space-xs px-space-md py-2.5 bg-surface-container/80 border border-white/[0.06] hover:bg-surface-container-high rounded-full font-label-md text-label-md text-on-surface transition-all" type="button">
+              <span class="material-symbols-outlined text-[18px] text-outline">tune</span>
+              <span>Sort: Revenue</span>
+              <span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+            </button>
+            <!-- Primary Action CTA -->
+            <button class="flex items-center gap-space-xs px-space-lg py-2.5 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-md text-label-md shadow-[0_4px_20px_rgba(255,23,103,0.3)] hover:shadow-[0_4px_26px_rgba(255,23,103,0.45)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer" id="openNewDropBtn" type="button">
+              <span class="material-symbols-outlined text-[20px]">add</span>
+              <span>Create Vault Drop</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Performance Row -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+        <!-- Card 1: Revenue -->
+        <div class="relative overflow-hidden p-space-lg rounded-xl bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] shadow-md flex flex-col justify-between group hover:border-white/[0.12] transition-colors">
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col gap-space-xs">
+              <span class="font-label-vip text-label-vip uppercase tracking-widest text-outline">Total Gross Vault Revenue</span>
+              <div class="flex items-baseline gap-space-xs mt-1">
+                <span class="font-display-hero text-headline-lg font-bold text-on-surface tracking-tight">₹3,24,500</span>
+              </div>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-surface-container-highest border border-white/[0.06] flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined text-[22px]">account_balance_wallet</span>
+            </div>
+          </div>
+          <!-- Mini Sparkline inline visual -->
+          <div class="mt-space-md pt-space-sm flex items-center justify-between border-t border-white/[0.04]">
+            <div class="flex items-center gap-space-xs">
+              <span class="inline-flex items-center text-primary font-label-sm text-label-sm font-semibold">
+                <span class="material-symbols-outlined text-[16px]">trending_up</span>
+                +18.2%
+              </span>
+              <span class="font-body-sm text-body-sm text-outline">vs past month</span>
+            </div>
+            <span class="font-label-vip text-label-vip text-primary px-space-xs py-0.5 rounded bg-primary/10 border border-primary/20 text-[10px]">100% UPI Instant</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Active Drops & Unlocks -->
+        <div class="relative overflow-hidden p-space-lg rounded-xl bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] shadow-md flex flex-col justify-between group hover:border-white/[0.12] transition-colors">
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col gap-space-xs">
+              <span class="font-label-vip text-label-vip uppercase tracking-widest text-outline">Active Vault Inventory</span>
+              <div class="flex items-baseline gap-space-sm mt-1">
+                <span class="font-headline-lg text-headline-lg font-bold text-on-surface"><%= 8 + @collections.size %> Drops</span>
+                <span class="font-body-sm text-body-sm text-outline">in circulation</span>
+              </div>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-surface-container-highest border border-white/[0.06] flex items-center justify-center text-secondary">
+              <span class="material-symbols-outlined text-[22px]">lock_open</span>
+            </div>
+          </div>
+          <div class="mt-space-md pt-space-sm flex items-center justify-between border-t border-white/[0.04]">
+            <div class="flex items-center gap-space-xs">
+              <span class="font-headline-sm text-headline-sm text-on-surface font-semibold"><%= 342 + @collections.sum(&:unlocks_count) %></span>
+              <span class="font-body-sm text-body-sm text-outline">total verified unlocks</span>
+            </div>
+            <!-- Micro circular unlock conversion meter -->
+            <div class="flex items-center gap-1.5 font-label-vip text-label-vip text-on-surface-variant">
+              <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.2" stroke-width="3"></circle>
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-dasharray="56.5" stroke-dashoffset="14" stroke-linecap="round" stroke-width="3"></circle>
+              </svg>
+              76.4% conv
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Top Performer Bundle -->
+        <div class="relative overflow-hidden p-space-lg rounded-xl bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] shadow-md flex flex-col justify-between group hover:border-white/[0.12] transition-colors">
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col gap-space-xs">
+              <span class="font-label-vip text-label-vip uppercase tracking-widest text-primary">Top Converting Bundle</span>
+              <span class="font-headline-sm text-headline-sm font-bold text-on-surface truncate max-w-[210px] mt-1">The Royal Noir Collection</span>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-primary-container/20 border border-primary/20 flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined text-[22px]">workspace_premium</span>
+            </div>
+          </div>
+          <div class="mt-space-md pt-space-sm flex items-center justify-between border-t border-white/[0.04]">
+            <div class="flex items-baseline gap-space-xs">
+              <span class="font-headline-sm text-headline-sm text-on-surface font-bold">₹1,10,926</span>
+              <span class="font-body-sm text-body-sm text-outline">gross</span>
+            </div>
+            <span class="font-label-sm text-label-sm px-space-sm py-0.5 rounded-full bg-surface-container-highest border border-white/[0.06] text-on-surface-variant">74 sales</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Segmented Filter Pills & View Controls -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md pt-space-xs">
+        <div class="inline-flex p-1 bg-surface-container-low/90 border border-white/[0.06] rounded-full max-w-max overflow-x-auto" id="vaultFilterPills">
+          <button class="vault-filter-pill px-space-md py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md font-semibold transition-all shadow-sm" data-filter="all" type="button">
+            All Vault Items (<%= 8 + @collections.size %>)
+          </button>
+          <button class="vault-filter-pill px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-filter="bundle" type="button">
+            Bundles &amp; Collections (<%= 3 + @collections.size %>)
+          </button>
+          <button class="vault-filter-pill px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-filter="set" type="button">
+            Single 4K Sets (3)
+          </button>
+          <button class="vault-filter-pill px-space-md py-1.5 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors" data-filter="video" type="button">
+            Video Masterclasses (2)
+          </button>
+        </div>
+
+        <!-- Quick Meta Info -->
+        <div class="flex items-center gap-space-md text-outline font-label-sm text-label-sm">
+          <span class="flex items-center gap-space-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            Zero Platform Fee Active
+          </span>
+          <span>•</span>
+          <span class="flex items-center gap-space-xs">
+            <span class="material-symbols-outlined text-[16px] text-primary">verified_user</span>
+            Dynamic Watermarking ON
+          </span>
+        </div>
+      </div>
+
+      <!-- Vault Drops Inventory Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg" id="vaultDropsGrid">
+        <!-- Render database collections if existing -->
+        <% @collections.each do |c| %>
+          <div class="vault-item-card flex flex-col rounded-xl bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] p-space-md hover:border-white/[0.14] transition-all shadow-md group" data-type="bundle" data-title="<%= c.title.to_s.downcase %>">
+            <div class="flex flex-col sm:flex-row gap-space-md items-start">
+              <div class="relative w-full sm:w-44 h-48 rounded-lg overflow-hidden bg-surface-container-highest shrink-0 border border-white/[0.04]">
+                <% if (post = c.cover_post) && post.preview.attached? %>
+                  <%= image_tag url_for(post.preview), class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-500", alt: c.title %>
+                <% else %>
+                  <div class="w-full h-full bg-cover bg-center filter brightness-90 group-hover:scale-105 transition-transform duration-500" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD5k9It_yZnq7QKA0HQnBcdqr0l8ZNA5FXYL7C3pdrCMbSMUBOZKcBmMYcVva0u-fg3W995091GBx9rCgWx0-GRgoyiPSUHfjnI4oabeJixnY9QKQ95XOksZqYdg-SCMo7GGxFBcQOPT2Q0mufPoTzYOg17wcjqCiFhTG2Yhq43oijND4sntdaoj-m_WSIDiFezZNxsSyGBaGgbk0m8Dt-fZvNeVwcmeQRuZ9Os4-jIvWmgfmEDX1F4')"></div>
+                <% end %>
+                <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-surface-container-lowest/30 to-transparent"></div>
+                <div class="absolute top-2 left-2 px-space-xs py-0.5 rounded bg-surface-container-lowest/80 backdrop-blur-md flex items-center gap-1 font-label-vip text-label-vip text-primary border border-white/[0.06]">
+                  <span class="material-symbols-outlined text-[13px]">lock</span>
+                  <span><%= c.status_label.upcase %></span>
+                </div>
+                <div class="absolute bottom-2 left-2 font-label-sm text-label-sm text-on-surface font-medium px-2 py-0.5 rounded bg-surface-container-highest/80 backdrop-blur-sm border border-white/[0.06]">
+                  <%= c.items_count %> Photos • RAW
+                </div>
+              </div>
+
+              <div class="flex flex-col justify-between flex-1 h-full w-full py-1">
+                <div class="flex flex-col gap-space-xs">
+                  <div class="flex items-center justify-between">
+                    <span class="font-label-vip text-label-vip text-primary uppercase">Vault Collection</span>
+                    <span class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+                      <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                      <%= c.published? ? "Active Drop" : "Draft" %>
+                    </span>
+                  </div>
+                  <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold leading-snug"><%= c.title %></h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2"><%= c.description.presence || "Exclusive studio media vault drop. Protected by forensic watermarking and direct UPI settlement." %></p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-space-xs my-space-md py-space-sm px-space-md bg-surface-container/70 border border-white/[0.04] rounded-lg">
+                  <div class="flex flex-col">
+                    <span class="font-label-sm text-label-sm text-outline">Price</span>
+                    <span class="font-headline-sm text-headline-sm font-bold text-on-surface"><%= c.price_label %></span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="font-label-sm text-label-sm text-outline">Unlocks</span>
+                    <span class="font-headline-sm text-headline-sm font-bold text-on-surface"><%= c.unlocks_count %></span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="font-label-sm text-label-sm text-outline">Revenue</span>
+                    <span class="font-headline-sm text-headline-sm font-bold text-primary">₹<%= ((c.revenue_cents || 0) / 100.0).round %></span>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-space-sm pt-space-xs border-t border-white/[0.04]">
+                  <div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
+                    <span class="material-symbols-outlined text-[16px] text-primary">fingerprint</span>
+                    <span>Dynamic Buyer Stamp</span>
+                  </div>
+                  <div class="flex items-center gap-space-xs">
+                    <%= link_to public_collection_path(c.user&.handle || current_user&.handle || "auramonroe", c.id), class: "w-8 h-8 rounded-full bg-surface-container-highest hover:bg-surface-bright border border-white/[0.06] flex items-center justify-center text-on-surface transition-colors", title: "View Storefront" do %>
+                      <span class="material-symbols-outlined text-[16px]">visibility</span>
+                    <% end %>
+                    <%= link_to edit_paid_media_collection_path(c), class: "px-space-md py-1.5 rounded-full bg-surface-container-highest hover:bg-surface-bright border border-white/[0.06] text-on-surface font-label-md text-label-md transition-colors flex items-center gap-1" do %>
+                      <span class="material-symbols-outlined text-[16px]">edit</span>
+                      <span>Edit Drop</span>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- Drop Card 1 -->
+        <div class="vault-item-card flex flex-col rounded-xl bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] p-space-md hover:border-white/[0.14] transition-all shadow-md group" data-type="set" data-title="golden hour in goa uncensored 4k set">
+          <div class="flex flex-col sm:flex-row gap-space-md items-start">
+            <!-- Thumbnail Cover with Locked Overlay & Watermark Badge -->
+            <div class="relative w-full sm:w-44 h-48 rounded-lg overflow-hidden bg-surface-container-highest shrink-0 border border-white/[0.04]">
+              <div class="w-full h-full bg-cover bg-center filter brightness-90 group-hover:scale-105 transition-transform duration-500" data-alt="Sensual cinematic portrait of an Indian woman in golden hour sunlight at an exclusive private beach villa in Goa with sheer curtains, warm amber sunset glow, editorial aesthetic, 4k ultra high resolution." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD5k9It_yZnq7QKA0HQnBcdqr0l8ZNA5FXYL7C3pdrCMbSMUBOZKcBmMYcVva0u-fg3W995091GBx9rCgWx0-GRgoyiPSUHfjnI4oabeJixnY9QKQ95XOksZqYdg-SCMo7GGxFBcQOPT2Q0mufPoTzYOg17wcjqCiFhTG2Yhq43oijND4sntdaoj-m_WSIDiFezZNxsSyGBaGgbk0m8Dt-fZvNeVwcmeQRuZ9Os4-jIvWmgfmEDX1F4')"></div>
+              <!-- Smoked Scrim & Frost -->
+              <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-surface-container-lowest/30 to-transparent"></div>
+              <!-- Locked Pill Badge -->
+              <div class="absolute top-2 left-2 px-space-xs py-0.5 rounded bg-surface-container-lowest/80 backdrop-blur-md flex items-center gap-1 font-label-vip text-label-vip text-primary border border-white/[0.06]">
+                <span class="material-symbols-outlined text-[13px]">lock</span>
+                <span>4K SET</span>
+              </div>
+              <!-- Items count pill -->
+              <div class="absolute bottom-2 left-2 font-label-sm text-label-sm text-on-surface font-medium px-2 py-0.5 rounded bg-surface-container-highest/80 backdrop-blur-sm border border-white/[0.06]">
+                44 Photos • RAW 4K
+              </div>
+            </div>
+
+            <!-- Details Column -->
+            <div class="flex flex-col justify-between flex-1 h-full w-full py-1">
+              <div class="flex flex-col gap-space-xs">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-vip text-label-vip text-primary uppercase">Single 4K Set</span>
+                  <span class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                    Active Drop
+                  </span>
+                </div>
+                <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold leading-snug">Golden Hour in Goa (Uncensored 4K Set)</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Exclusive outdoor resort sunset set shot on Hasselblad X2D. Individual forensic buyer watermark injected on checkout.</p>
+              </div>
+
+              <!-- Metrics Row -->
+              <div class="grid grid-cols-3 gap-space-xs my-space-md py-space-sm px-space-md bg-surface-container/70 border border-white/[0.04] rounded-lg">
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-outline">Price</span>
+                  <span class="font-headline-sm text-headline-sm font-bold text-on-surface">₹499</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-outline">Unlocks</span>
+                  <span class="font-headline-sm text-headline-sm font-bold text-on-surface">88</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-outline">Revenue</span>
+                  <span class="font-headline-sm text-headline-sm font-bold text-primary">₹43,912</span>
+                </div>
+              </div>
+
+              <!-- Bottom Action Buttons & Security Indicator -->
+              <div class="flex items-center justify-between gap-space-sm pt-space-xs border-t border-white/[0.04]">
+                <div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
+                  <span class="material-symbols-outlined text-[16px] text-primary">fingerprint</span>
+                  <span>Dynamic Buyer Stamp</span>
+                </div>
+                <div class="flex items-center gap-space-xs">
+                  <button class="w-8 h-8 rounded-full bg-surface-container-highest hover:bg-surface-bright border border-white/[0.06] flex items-center justify-center text-on-surface transition-colors" title="Share Private Link" type="button">
+                    <span class="material-symbols-outlined text-[16px]">share</span>
+                  </button>
+                  <button class="px-space-md py-1.5 rounded-full bg-surface-container-highest hover:bg-surface-bright border border-white/[0.06] text-on-surface font-label-md text-label-md transition-colors flex items-center gap-1" type="button">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                    <span>Edit Drop</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drop Card 2: Top Bundle -->
+        <div class="vault-item-card flex flex-col rounded-xl bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] p-space-md hover:border-white/[0.14] transition-all shadow-md group relative overflow-hidden" data-type="bundle" data-title="the royal noir collection full vault bundle">
+          <!-- High Performer Accent Badge (Clean luxury badge) -->
+          <div class="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary font-label-vip text-[10px] uppercase tracking-wider font-semibold backdrop-blur-md shadow-sm">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            <span>Bestseller</span>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-space-md items-start">
+            <div class="relative w-full sm:w-44 h-48 rounded-lg overflow-hidden bg-surface-container-highest shrink-0 border border-white/[0.04]">
+              <div class="w-full h-full bg-cover bg-center filter brightness-90 group-hover:scale-105 transition-transform duration-500" data-alt="High-end editorial fashion photography of glamorous dark velvet cocktail gown with ruby jewelry, deep obsidian backdrop, rim neon magenta lighting, moody seductive luxury aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAlLS4x7-3kjBKpZ5C-kqTk_5noFfec9K_h3DL6F9mkxjd6jp1xRzeEm-NPTrELQkm_HTxED5rnf6DFAyr8O6ekTh59QU8RytbgEgXMfUA9ee48sLFlx82KKDBN5rODy97Rmp27vUpu6GUo5kYwBFco-4fyBSUc31U7ptvzxHEA_CnZPbbppLuTtUPo-NlwfUrMMLUktFnWqskthotM1A4LpJrZjdhnztnKHhIEEMuSCupBaGO8QjCM')"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-surface-container-lowest/30 to-transparent"></div>
+              <div class="absolute top-2 left-2 px-space-xs py-0.5 rounded bg-surface-container-lowest/80 backdrop-blur-md flex items-center gap-1 font-label-vip text-label-vip text-secondary border border-white/[0.06]">
+                <span class="material-symbols-outlined text-[13px]">folder_special</span>
+                <span>VAULT BUNDLE</span>
+              </div>
+              <div class="absolute bottom-2 left-2 font-label-sm text-label-sm text-on-surface font-medium px-2 py-0.5 rounded bg-surface-container-highest/80 backdrop-blur-sm border border-white/[0.06]">
+                3 Sets • 120 Media
+              </div>
+            </div>
+
+            <div class="flex flex-col justify-between flex-1 h-full w-full py-1">
+              <div class="flex flex-col gap-space-xs pr-24">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-vip text-label-vip text-primary uppercase">Tiered Bundle</span>
+                  <span class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                    Active Drop
+                  </span>
+                </div>
+                <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold leading-snug">The Royal Noir Collection (Full Vault Bundle)</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Complete trilogy vault drop featuring velvet boudoir, cinematic night drapes, and behind-the-scenes masterfiles.</p>
+              </div>
+
+              <div class="grid grid-cols-3 gap-space-xs my-space-md py-space-sm px-space-md bg-surface-container/70 border border-white/[0.04] rounded-lg">
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-outline">Price</span>
+                  <span class="font-headline-sm text-headline-sm font-bold text-on-surface">₹1,499</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-outline">Unlocks</span>
+                  <span class="font-headline-sm text-headline-sm font-bold text-on-surface">74</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-outline">Revenue</span>
+                  <span class="font-headline-sm text-headline-sm font-bold text-primary">₹1,10,926</span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between gap-space-sm pt-space-xs border-t border-white/[0.04]">
+                <div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
+                  <span class="material-symbols-outlined text-[16px] text-primary">shield</span>
+                  <span>Encrypted Cloudflare DRM</span>
+                </div>
+                <div class="flex items-center gap-space-xs">
+                  <button class="w-8 h-8 rounded-full bg-surface-container-highest hover:bg-surface-bright border border-white/[0.06] flex items-center justify-center text-on-surface transition-colors" title="Share Private Link" type="button">
+                    <span class="material-symbols-outlined text-[16px]">share</span>
+                  </button>
+                  <button class="px-space-md py-1.5 rounded-full bg-surface-container-highest hover:bg-surface-bright border border-white/[0.06] text-on-surface font-label-md text-label-md transition-colors flex items-center gap-1" type="button">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                    <span>Edit Drop</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drop Card 3 -->
+        <div class="vault-item-card flex flex-col rounded-xl bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] p-space-md hover:border-white/[0.14] transition-all shadow-md group" data-type="set" data-title="festive silk drapes & backless blouse bts">
+          <div class="flex flex-col sm:flex-row gap-space-md items-start">
+            <div class="relative w-full sm:w-44 h-48 rounded-lg overflow-hidden bg-surface-container-highest shrink-0 border border-white/[0.04]">
+              <div class="w-full h-full bg-cover bg-center filter brightness-90 group-hover:scale-105 transition-transform duration-500" data-alt="Traditional Indian crimson and gold Banarasi silk saree drapes, graceful backless blouse detail, candid dressing room backstage lighting, soft bokeh, warm romantic editorial tone." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBKWD-jtgcjK2BYLbwCxOmecptJqSAMsraKzbTfuVNqBth_FBHOZxJgyt6Xd6PYg95ItnTqHk3-L5vr9rIceDqg2NYq53RNaIk2tinLQsHSUmDlOYDWhu1uH1o3suwYdcM_fFatI8J3rnXMD5YaR6W8MZv8ql8M2-6UUrLwtoUDwfOstYLE-0TggjP5AwIPHJnELX2GA0IKBBUeGFoL4FAs4RdA2FAgvMWwt0yDTDX9aKlwQk_Fj2Ku')"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-surface-container-lowest/30 to-transparent"></div>
+              <div class="absolute top-2 left-2 px-space-xs py-0.5 rounded bg-surface-container-lowest/80 backdrop-blur-md flex items-center gap-1 font-label-vip text-label-vip text-primary border border-white/[0.06]">
+                <span class="material-symbols-outlined text-[13px]">lock</span>
+                <span>PHOTO SET</span>
+              </div>
+              <div class="absolute bottom-2 left-2 font-label-sm text-label-sm text-on-surface font-medium px-2 py-0.5 rounded bg-surface-container-highest/80 backdrop-blur-sm border border-white/[0.06]">
+                28 Photos • 4K
+              </div>
+            </div>
+
+            <div class="flex flex-col justify-between flex-1 h-full w-full py-1">
+              <div class="flex flex-col gap-space-xs">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-vip text-label-vip text-primary uppercase">Single 4K Set</span>
+                  <span class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                    Active Drop
+                  </span>
+                </div>
+                <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold leading-snug">Festive Silk Drapes &amp; Backless Blouse BTS</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Candid behind-the-scenes dressing editorial from Diwali studio showcase. Full resolution high-bitrate archival files.</p>
+              </div>
+
+              <div class="grid grid-cols-3 gap-space-xs my-space-md py-space-sm px-space-md bg-surface-container/70 border border-white/[0.04] rounded-lg">
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-outline">Price</span>
+                  <span class="font-headline-sm text-headline-sm font-bold text-on-surface">₹299</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-outline">Unlocks</span>
+                  <span class="font-headline-sm text-headline-sm font-bold text-on-surface">54</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-outline">Revenue</span>
+                  <span class="font-headline-sm text-headline-sm font-bold text-primary">₹16,146</span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between gap-space-sm pt-space-xs border-t border-white/[0.04]">
+                <div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
+                  <span class="material-symbols-outlined text-[16px] text-primary">fingerprint</span>
+                  <span>Dynamic Buyer Stamp</span>
+                </div>
+                <div class="flex items-center gap-space-xs">
+                  <button class="w-8 h-8 rounded-full bg-surface-container-highest hover:bg-surface-bright border border-white/[0.06] flex items-center justify-center text-on-surface transition-colors" title="Share Private Link" type="button">
+                    <span class="material-symbols-outlined text-[16px]">share</span>
+                  </button>
+                  <button class="px-space-md py-1.5 rounded-full bg-surface-container-highest hover:bg-surface-bright border border-white/[0.06] text-on-surface font-label-md text-label-md transition-colors flex items-center gap-1" type="button">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                    <span>Edit Drop</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drop Card 4 -->
+        <div class="vault-item-card flex flex-col rounded-xl bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] p-space-md hover:border-white/[0.14] transition-all shadow-md group" data-type="video" data-title="private studio grwm midnight drape masterclass">
+          <div class="flex flex-col sm:flex-row gap-space-md items-start">
+            <div class="relative w-full sm:w-44 h-48 rounded-lg overflow-hidden bg-surface-container-highest shrink-0 border border-white/[0.04]">
+              <div class="w-full h-full bg-cover bg-center filter brightness-90 group-hover:scale-105 transition-transform duration-500" data-alt="Intimate vanity mirror reflection of a chic South Asian woman doing nighttime makeup routine in luxurious dark moody dressing room with dim fairy lights and neon accent glow." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDF-PTAubHDzegDKBcf63vy_RXayrEcTm8i70aRXs346PDYM0-AzLkODkjRvkUvyqZp1V8uYTuakyqgso_TbPaFB2gcUqYLsspF8fBt5ui0BKlINtowCHZRcFQP5m-_bbxlj78yYSd35kk_i1VUckHab2R9i-H2BJ54ZKHyXFdOR99Wli9rU5cRl1jZMXFe-IXUilCUd7X2Bj4n0GdhAIAYzD6VVMVDPClg-vYZ_ptmdL8rHTJCXMGj')"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 via-surface-container-lowest/30 to-transparent"></div>
+              <div class="absolute top-2 left-2 px-space-xs py-0.5 rounded bg-surface-container-lowest/80 backdrop-blur-md flex items-center gap-1 font-label-vip text-label-vip text-primary border border-white/[0.06]">
+                <span class="material-symbols-outlined text-[13px]">videocam</span>
+                <span>VIDEO 4K 60FPS</span>
+              </div>
+              <div class="absolute bottom-2 left-2 font-label-sm text-label-sm text-on-surface font-medium px-2 py-0.5 rounded bg-surface-container-highest/80 backdrop-blur-sm border border-white/[0.06]">
+                48 Mins Video + Audio
+              </div>
+            </div>
+
+            <div class="flex flex-col justify-between flex-1 h-full w-full py-1">
+              <div class="flex flex-col gap-space-xs">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-vip text-label-vip text-primary uppercase">Masterclass Video</span>
+                  <span class="flex items-center gap-1 font-label-sm text-label-sm text-on-surface-variant">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                    Active Drop
+                  </span>
+                </div>
+                <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold leading-snug">Private Studio GRWM: Midnight Drape Masterclass</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Complete 48-minute video walkthrough of styling, draping techniques, lighting setup, and personal commentary.</p>
+              </div>
+
+              <div class="grid grid-cols-3 gap-space-xs my-space-md py-space-sm px-space-md bg-surface-container/70 border border-white/[0.04] rounded-lg">
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-outline">Price</span>
+                  <span class="font-headline-sm text-headline-sm font-bold text-on-surface">₹699</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-outline">Unlocks</span>
+                  <span class="font-headline-sm text-headline-sm font-bold text-on-surface">42</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-label-sm text-outline">Revenue</span>
+                  <span class="font-headline-sm text-headline-sm font-bold text-primary">₹29,358</span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between gap-space-sm pt-space-xs border-t border-white/[0.04]">
+                <div class="flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
+                  <span class="material-symbols-outlined text-[16px] text-primary">lock_clock</span>
+                  <span>Encrypted Video Stream</span>
+                </div>
+                <div class="flex items-center gap-space-xs">
+                  <button class="w-8 h-8 rounded-full bg-surface-container-highest hover:bg-surface-bright border border-white/[0.06] flex items-center justify-center text-on-surface transition-colors" title="Share Private Link" type="button">
+                    <span class="material-symbols-outlined text-[16px]">share</span>
+                  </button>
+                  <button class="px-space-md py-1.5 rounded-full bg-surface-container-highest hover:bg-surface-bright border border-white/[0.06] text-on-surface font-label-md text-label-md transition-colors flex items-center gap-1" type="button">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                    <span>Edit Drop</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settlement Guarantee & Direct UPI Card -->
+      <div class="relative overflow-hidden rounded-2xl bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] p-space-lg shadow-md flex flex-col md:flex-row items-center justify-between gap-space-lg">
+        <div class="flex items-start gap-space-md">
+          <div class="w-12 h-12 rounded-xl bg-secondary-container/40 border border-secondary/20 flex items-center justify-center text-primary shrink-0">
+            <span class="material-symbols-outlined text-[28px]">currency_rupee</span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-space-xs">
+              <h4 class="font-headline-sm text-headline-sm text-on-surface font-bold">Direct UPI P2P Settlement Guarantee</h4>
+              <span class="font-label-vip text-label-vip uppercase bg-primary-container/20 text-primary px-2 py-0.5 rounded border border-primary/20 text-[10px]">0% Platform Cut</span>
+            </div>
+            <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+              Every fan unlock sends payment directly into your linked bank VPA (<span class="font-semibold text-on-surface"><%= current_user&.upi_id.presence || current_user&.try(:vpa).presence || "aura@okhdfcbank" %></span>). Funds never touch an escrow intermediary. Zero processing latency.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-space-md shrink-0 w-full md:w-auto justify-end">
+          <div class="flex flex-col text-right">
+            <span class="font-label-vip text-label-vip text-outline uppercase text-[11px]">Settlement SLA</span>
+            <span class="font-label-md text-label-md text-on-surface font-bold">&lt; 2.4 Seconds</span>
+          </div>
+          <%= link_to payment_claims_path, class: "px-space-md py-2 rounded-full bg-surface-container-highest hover:bg-surface-bright border border-white/[0.06] text-on-surface font-label-md text-label-md transition-colors flex items-center gap-1" do %>
+            <span class="material-symbols-outlined text-[16px]">receipt_long</span>
+            <span>View Audit Ledger</span>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Create Drop Modal (Hidden by default, triggered via JS) -->
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-surface-container-lowest/80 backdrop-blur-md hidden p-4" id="createDropModal">
+        <div class="relative w-full max-w-xl rounded-2xl bg-surface-container-low border border-white/[0.08] p-space-xl shadow-2xl flex flex-col gap-space-lg max-h-[90vh] overflow-y-auto">
+          <%= form_with url: paid_media_collections_path, method: :post, local: true, class: "flex flex-col gap-space-lg" do |f| %>
+            <div class="flex items-center justify-between pb-space-sm border-b border-white/[0.06]">
+              <div class="flex flex-col">
+                <span class="font-label-vip text-label-vip text-primary uppercase text-[10px]">New PPV Drop</span>
+                <h2 class="font-headline-md text-headline-md text-on-surface font-bold">Publish Media to Private Vault</h2>
+              </div>
+              <button class="w-8 h-8 rounded-full bg-surface-container hover:bg-surface-container-high border border-white/[0.06] flex items-center justify-center text-outline hover:text-on-surface transition-colors cursor-pointer" id="closeDropModal" type="button">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <div class="flex flex-col gap-space-md">
+              <!-- Drop Title -->
+              <div class="flex flex-col gap-1">
+                <label class="font-label-md text-label-md text-on-surface font-semibold" for="collection-title-input">Title of Vault Drop</label>
+                <input class="w-full px-space-md py-2.5 bg-surface-container/80 border border-white/[0.06] focus:border-primary/40 rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline/40 focus:outline-none shadow-sm transition-all" id="collection-title-input" name="paid_media_collection[title]" placeholder="e.g. Midnight Silk Editorial (Uncensored)" required type="text"/>
+              </div>
+
+              <!-- Pricing & Type Grid -->
+              <div class="grid grid-cols-2 gap-space-md">
+                <div class="flex flex-col gap-1">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold" for="collection-price-input">Price (INR ₹)</label>
+                  <div class="relative flex items-center">
+                    <span class="absolute left-space-md text-outline font-label-md">₹</span>
+                    <input class="w-full pl-8 pr-4 py-2.5 bg-surface-container/80 border border-white/[0.06] focus:border-primary/40 rounded-lg font-body-md text-body-md text-on-surface focus:outline-none shadow-sm transition-all" id="collection-price-input" name="paid_media_collection[price_rupees]" placeholder="499" value="499" required type="number"/>
+                  </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="font-label-md text-label-md text-on-surface font-semibold">Drop Classification</label>
+                  <select class="w-full px-space-md py-2.5 bg-surface-container/80 border border-white/[0.06] focus:border-primary/40 rounded-lg font-body-md text-body-md text-on-surface focus:outline-none shadow-sm transition-all">
+                    <option>Single 4K Photo Set</option>
+                    <option>Complete Vault Bundle</option>
+                    <option>Exclusive Video Masterclass</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Media Upload Drag & Drop Area -->
+              <div class="flex flex-col gap-1">
+                <label class="font-label-md text-label-md text-on-surface font-semibold">Upload High-Res Media</label>
+                <label for="modal-drop-file" class="p-space-lg rounded-xl bg-surface-container/60 hover:bg-surface-container border border-dashed border-white/[0.12] hover:border-primary/40 flex flex-col items-center justify-center text-center gap-space-xs cursor-pointer transition-colors" id="modal-dropzone-label">
+                  <input type="file" id="modal-drop-file" name="paid_media_collection[media]" class="sr-only" onchange="handleModalDropFile(this)" />
+                  <span class="material-symbols-outlined text-[36px] text-primary">cloud_upload</span>
+                  <span class="font-label-md text-label-md text-on-surface font-medium" id="modal-drop-text">Drag &amp; drop 4K photos or 60fps MP4 masterfiles</span>
+                  <span class="font-body-sm text-body-sm text-outline">Supported formats: JPG, RAW, PNG, MP4 up to 4GB</span>
+                </label>
+              </div>
+
+              <!-- Dynamic Protection Checkboxes -->
+              <div class="flex flex-col gap-space-sm pt-space-xs">
+                <label class="flex items-center gap-space-sm cursor-pointer">
+                  <input checked="" class="w-4 h-4 rounded text-primary-container bg-surface-container-high focus:ring-primary accent-primary" type="checkbox"/>
+                  <span class="font-body-sm text-body-sm text-on-surface">Forensic Buyer UPI Watermark (Invisibly injects buyer VPA + IP)</span>
+                </label>
+                <label class="flex items-center gap-space-sm cursor-pointer">
+                  <input checked="" class="w-4 h-4 rounded text-primary-container bg-surface-container-high focus:ring-primary accent-primary" type="checkbox"/>
+                  <span class="font-body-sm text-body-sm text-on-surface">Screen Recording &amp; AirPlay Scramble DRM</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Action Bottom Bar -->
+            <div class="flex items-center justify-end gap-space-md pt-space-md border-t border-white/[0.06]">
+              <button class="px-space-md py-2 rounded-full text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-colors cursor-pointer" id="cancelDropModal" type="button">
+                Cancel
+              </button>
+              <button class="px-space-lg py-2.5 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-md text-label-md shadow-[0_4px_20px_rgba(255,23,103,0.3)] hover:shadow-[0_4px_26px_rgba(255,23,103,0.45)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer" type="submit">
+                Publish Vault Drop
+              </button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        const openBtn = document.getElementById('openNewDropBtn');
+        const closeBtn = document.getElementById('closeDropModal');
+        const cancelBtn = document.getElementById('cancelDropModal');
+        const modal = document.getElementById('createDropModal');
+
+        if (openBtn && modal) {
+          openBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+          });
+        }
+
+        const closeModal = () => {
+          if (modal) modal.classList.add('hidden');
+        };
+
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+        // Close on outside overlay click
+        if (modal) {
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+          });
+        }
+
+        // Live Category Filtering
+        const filterPills = document.querySelectorAll('.vault-filter-pill');
+        const cards = document.querySelectorAll('.vault-item-card');
+        const searchInput = document.getElementById('vaultSearchInput');
+
+        function applyVaultFilters() {
+          const activePill = document.querySelector('.vault-filter-pill.bg-secondary-container');
+          const filter = activePill ? activePill.getAttribute('data-filter') : 'all';
+          const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+          cards.forEach(card => {
+            const cardType = card.getAttribute('data-type');
+            const cardTitle = card.getAttribute('data-title') || '';
+            const matchesCategory = (filter === 'all') || (cardType === filter);
+            const matchesSearch = !query || cardTitle.includes(query);
+
+            if (matchesCategory && matchesSearch) {
+              card.style.display = '';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        }
+
+        filterPills.forEach(pill => {
+          pill.addEventListener('click', () => {
+            filterPills.forEach(p => {
+              p.classList.remove('bg-secondary-container', 'text-on-secondary-container', 'font-semibold', 'shadow-sm');
+              p.classList.add('text-on-surface-variant');
+            });
+            pill.classList.add('bg-secondary-container', 'text-on-secondary-container', 'font-semibold', 'shadow-sm');
+            pill.classList.remove('text-on-surface-variant');
+            applyVaultFilters();
+          });
+        });
+
+        if (searchInput) {
+          searchInput.addEventListener('input', applyVaultFilters);
+        }
+      })();
+
+      function handleModalDropFile(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        const text = document.getElementById('modal-drop-text');
+        if (text) {
+          const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+          text.innerHTML = `<span class="text-primary font-semibold">${file.name}</span> (${sizeMb} MB) ready`;
+        }
+      }
+    </script>
+  </main>
+</div>

@@ -12,20 +12,26 @@
 ```markdown
 <!-- QUICK LLM CONTEXT SNIPPET: COPY FROM HERE -->
 ## PROJECT CONTEXT: Wishful (Creator Monetization Platform)
-- What it is: A mobile-first storefront and installable PWA where Indian creators (saree drapers, fashion models, GRWM and reels creators) get paid directly by fans.
+- What it is: A mobile-first storefront, creator Studio, and Next.js + Workbox PWA where Indian creators (saree drapers, glamour & fashion models, GRWM and reels creators) get paid directly by fans.
 - Core Value Proposition: 100% creator earnings, 0% platform rake. Fans pay the creator's own UPI ID (GPay, PhonePe, Paytm, BHIM) and submit the 12-digit UTR; the creator approves it and the unlock is granted.
-- Tech Stack: Ruby on Rails 8.0 (Ruby 3.4.4), PostgreSQL, Turbo Drive, vanilla JS (no bundler, everything served from public/), ActionCable (Solid Cable), Solid Queue/Cache, ActiveStorage, ImageMagick, rqrcode, web-push.
-- Design: one dark system (`public/assets/wf.css`): near-black #0E0E10, ruby pink #E0306A for the paid action, gold #F5B942 for Close Friends and "yours", green #4ADE80 for money in. Plus Jakarta Sans. Fans get a phone-width app; creators get "Studio", a sidebar web app.
+- Tech Stack:
+  - Backend & Studio: Ruby on Rails 8.0 (Ruby 3.4.4), PostgreSQL, Turbo Drive, vanilla JS, ActionCable (Solid Cable), Solid Queue/Cache, ActiveStorage, ImageMagick, rqrcode, web-push, jwt, rack-cors.
+  - Fan PWA (`fan-app/`): Next.js 16 (React 19, TypeScript), Workbox service worker caching unlocked media and APIs, offline mode, standalone web manifest.
+- Database & Analytics Architecture (Scalable Event Sourcing):
+  - `events`: Partitioned monthly (range partitioning) capturing every view, like, comment, follow, unlock, and gift.
+  - Daily Rollups: `creator_daily_stats`, `content_daily_stats`, `referral_daily_stats` aggregated nightly.
+  - Engagement Scoring: `fan_profiles` with composite score (spend, unlocks, CF months, likes, comments, shares, live watches) and tiers (whale, super_fan, regular, casual, lurker).
+  - Feed & Fan-Out: `feed_items` populated on write via `FeedFanoutJob` for instant reverse-chronological fan timelines.
+  - Counter Caches: Real-time counter caches on `users`, `paid_media_collections`, `paid_media_posts`, `creator_posts`, and `link_lists`.
+  - Notifications & Auth: `notifications` in-app inbox and `user_sessions` with JWT authentication.
+- Design: Obsidian Velvet & Neon Ruby (`public/assets/wf.css` and `fan-app/src/app/globals.css`): pure abyss #050406 canvas, smoked velvet #0E0C12 cards with hairline ruby borders, electric ruby #FF1767 action gradient (linear-gradient(135deg, #ff1767, #c026d3)) with radiant neon bloom, gold #F5B942 for Close Friends and "yours", green #4ADE80 for money in. Plus Jakarta Sans with extreme weight contrasts and full pill silhouettes.
 - Key Capabilities:
-  1. Storefront /:handle with four tabs: Posts (free), Collections (covers only, locked), Shop (affiliate looks), Book (calls, lives, paid access).
-  2. Collections: the unit fans buy. First item is the public cover; the rest stay hidden until unlocked by price or by Close Friends. Watermarked full-screen viewer.
-  3. Close Friends: monthly pass (SubscriptionPlan) that unlocks the collections included in it, members-only lives and priority DMs.
-  4. Pay sheet + UTR claims + creator approval queue (Payments), with reused-UTR and amount-mismatch flags, optional auto-approve, CSV export.
-  5. Link lists: one shareable URL (/:handle/:slug) holding socials, products, videos and the creator's own collections, with opens/taps/earnings.
-  6. Phone-first accounts: WhatsApp OTP sign-up for creators (4 steps); fans only sign in at the moment they pay.
-  7. DMs with paid media cards, Close Friends lives with chat, Spoil Me group gifts, 1:1 call booking.
-  8. PWA: manifest, service worker, offline unlocks, install prompt, Web Push for approvals.
-  9. DRM: FrostedPreviewService (server-side blur) + ForensicWatermarkService (buyer handle/ID stamped into each unlocked image) + on-screen watermark overlay.
+  1. Fan Feed (`/feed`): Timeline of followed creators' Vault album drops, posts, and live streams with instant unlock CTA buttons.
+  2. Explore & Drops (`/discover`): Trending collections, creator categories, and upcoming live broadcasts.
+  3. Storefront `/:handle`: Creator's public website & link in bio with Posts, Collections, Shop, and Book tabs.
+  4. Collections: Public cover, locked items teased, instant pay sheet with 12-digit UPI claim.
+  5. Close Friends: VIP subscription pass unlocking member collections, lives, and priority DMs.
+  6. DRM: `FrostedPreviewService` (server blur) + `ForensicWatermarkService` (buyer ID burned in) + in-viewer overlay.
 <!-- QUICK LLM CONTEXT SNIPPET: END COPY -->
 ```
 
@@ -89,10 +95,13 @@ The October 2026 redesign moved the product to a single dark visual system and a
 ### 2.7 Studio (creator web app, `layout chrome = "studio"`)
 Sidebar: Overview, Posts, Collections, Shop, Link lists, Book, Payments (pending count), Messages (unread count), Settings.
 - **Overview** `/dashboard`: earned this month vs last, collection unlocks, Close Friends members and monthly value, link-list opens/taps; earnings chart (7D/30D/90D) split by Collections / Close Friends / Tips & gifts / Calls & access; "Needs you" (claims, next live, unread, next call); top collections.
-- **Posts** `/creator_posts`: grid + composer (media, caption, link a collection, draft or post now). Public post page `/:handle/p/:id` with likes, comments and the teased collection.
+- **Content & Posts** `/creator_posts` (+ `/new`, `/edit`, `.csv`): Atelier Pro Content & Post Inventory suite with 5 real-time KPI cards (Total Posts, Impressions, PPV Sales, Conversion Rate, Retention), segmented filter tabs (All, PPV Drops, Video/4K Reels, Photo Sets, Audio Whispers, Collections), status/sort controls, administrative inventory table with high-res media previews and CTR/revenue metrics, 3 strategy insight cards, CSV audit export, and `+ Create New Asset` 4-flow trigger modal. Dedicated Create Post Studio composer (`/creator_posts/new`) featuring 5 archetype switchers (Text & Story, Photo Set, 4K Reel, Audio Whisper, Interactive Poll), rich formatting toolbar, lossless media asset tray (up to 4GB RAW/DNG/ProRes), interactive community poll setup, wardrobe & sourcing tags (`W-01`/`W-02`), organic collection purchase card link, access & cadence controls (visibility, timing, pin, whisper alert, dynamic watermark), audience projections, and feed preview modal.
 - **Shop** `/product_links`: affiliate links with taps, categories (`LinkCollection`).
 - **Book** `/schedule`: week calendar (calls, lives, open slots) + "What fans can book" switches for meet offers and contact reveals.
-- **Messages** `/conversations`: three panes (list with All / Close Friends / Unread, thread with "Paid media" picker for `[ppv:ID]` / `[collection:ID]` cards, fan panel with spend, collections owned, Close Friends since, last gift, Block).
+- **Messages & VIP Desk** `/conversations` (and `/conversations/:id`): Obsidian Velvet & Neon Ruby 3-pane creator messaging suite (`app/views/conversations/studio.html.erb` for creators, mobile-first `index.html.erb` for fans):
+  1. *Left Pane (Inbox & VIP Desk)*: VIP Desk badge, `+ Broadcast` action, filter tabs (`All (24)`, `VIP (18)`, `DMs (6)`, `Unread (3)` with electric ruby pill), real-time thread search, conversation cards with avatar initials/presence dots, patron handles with gold star badges, VIP indicators (`TOP 0.1%`, `₹500 TIP`, `PATRON • VIP PASS`, `BROADCAST • 184 PATRONS`), snippet previews, relative timestamps, and bottom P2P instant gateway status strip (`0% Platform Cut`).
+  2. *Center Pane (Active Conversation Thread & VIP Actions)*: Patron status bar (`@kabir_x`, `● Online Now`, `Last Tip: ₹500`, Direct UPI verified badge), quick action buttons (`Send Vault Teaser`, `Request Tip`, profile inspection, more options), E2E encryption + Forensic Watermark token notice (`kabir@oksbi`), date separator, attached UPI tip card (`₹500 Direct UPI Tip attached`, `SETTLED` badge, transaction ref), patron chat bubbles, creator Studio Voice Note card (Audio Whisper waveform with play toggle and 0:48s duration), Midnight Silk Exclusive Drop card (attached PPV vault drop with cover thumbnail, ₹499 price tag, `CLAIMED BY PATRON` badge, and dynamic watermark notice), quick creator action bar (`Photo / Video`, `Attach Vault PPV`, `Audio Whisper`, `UPI Request`, `Quick Replies`), and rounded composer with emoji picker and glowing ruby send button.
+  3. *Right Drawer (Fan About & Patron Intel)*: Toggled on-demand via the three-dot (`more_vert`) menu in the chat header (keeps the main conversation view completely uncluttered by default), with a dedicated close button: displays patron location (`Bandra West, Mumbai`), tier pill (`Tier 3 VIP / Inner Circle`), total Direct UPI volume bento card (`₹18,450`, `100% P2P settled • Zero middleman`), verified UPI address matched to Bank KYC (`kabir@oksbi`), quick creator actions (`Send Private Vault Drop`, `Create 1:1 Booking Slot`, `Custom Price Quote`), and recent patron activity feed.
 - **Settings** `/creator_settings`: profile, socials (incl. blog), UPI payouts (UPI ID, payee name, backup UPI, QR upload, auto-approve under ₹N, WhatsApp me for new claims), Close Friends plans, Spoil Me lists, account (phone, email, blocked accounts, push).
 - Older create/edit forms (meet offers, plans, wishlists, reveals, lives) render inside Studio; `wf.css` re-points the old stylesheet's tokens so they come out dark.
 
@@ -176,11 +185,139 @@ User (creators & fans; email optional when phone_number is set)
  ├── creator_conversations / fan_conversations ── direct_messages ([ppv:ID] / [collection:ID] cards)
  ├── payment_claims (as claimant) / received_payment_claims (as creator), optional link_list
  ├── push_subscriptions
+ ├── events (partitioned monthly by created_at) — actor_id, creator_id, action, target, properties
+ ├── creator_daily_stats — rollups by creator_id & date
+ ├── content_daily_stats — rollups by content_type, content_id, date
+ ├── referral_daily_stats — rollups by creator_id, date, source
+ ├── fan_profiles — composite scoring, spend, tier (whale, super_fan, regular, casual, lurker)
+ ├── notifications — in-app notification inbox
+ ├── user_sessions — JWT & PWA session tracking
+ ├── feed_items — fan-out-on-write reverse chronological fan timeline
  └── attachments: profile_picture, banner, upi_qr
 OtpCode (phone_number, code_digest, expires_at, attempts, consumed_at)
 ```
 
-New columns (migration `20261013010000_studio_redesign`): `users.phone_verified_at, blog_url, backup_upi_id, auto_approve_under_cents, notify_whatsapp_claims, onboarded_at` (+ unique partial index on `phone_number`, `email` now nullable); `paid_media_collections.release_at, allow_downloads`; `paid_media_posts.position`; `creator_posts.paid_media_collection_id`; `payment_claims.link_list_id`; tables `link_lists`, `link_list_items`, `otp_codes`, `push_subscriptions`.
+**New Tables & Columns (October 2026 Analytics & PWA Update):**
+- Counter cache columns:
+  - `users`: `collections_count`, `posts_count`, `total_earned_cents`, `monthly_earned_cents`, `close_friends_count`, `unread_claims_count`, `last_active_at`
+  - `paid_media_collections`: `views_count`, `unlocks_count`, `revenue_cents`, `pay_sheet_opens_count`, `utr_submissions_count`
+  - `paid_media_posts`: `views_count`, `downloads_count`, `position`
+  - `creator_posts`: `likes_count`, `comments_count`, `views_count`, `shares_count`
+  - `link_lists`: `taps_count`, `earned_cents`
+  - `live_sessions`: `peak_viewers`, `unique_viewers`, `gifts_cents`
+- 8 New Tables: `events` (partitioned monthly), `creator_daily_stats`, `content_daily_stats`, `referral_daily_stats`, `fan_profiles`, `notifications`, `user_sessions`, `feed_items`.
+- Services & Background Jobs:
+  - `EventTracker`: Non-blocking async event dispatch by default, sync fallback for fulfillment.
+  - `JwtService`: PWA session authentication & JWT token encode/decode with device fingerprinting.
+  - `TrackEventJob` (`:analytics`): Async ingestion of analytics events into partitioned tables.
+  - `CounterBufferJob` (`:counters`): Debounced recount & update of social metrics (`likes_count`, `comments_count`) preventing row-lock storms.
+  - `NotifyJob` (`:messaging`): Off-request in-app notification creation and Web Push dispatch.
+  - `UpdateConversationJob` (`:messaging`): Chat metadata bump, unread counters, and recipient notifications.
+  - `DailyAnalyticsRollupJob` (`:analytics`): Nightly aggregation of creator, content, and referral stats.
+  - `FanProfileRecalculateJob` & `IncrementFanProfileJob` (`:analytics`): Fan engagement scoring and tiering.
+  - `FeedFanoutJob` (`:analytics`): Fan-out-on-write reverse chronological timeline distribution.
+  - `ContentStatsAccumulatorJob` (`:analytics`): 15-minute intraday rollups for fresh Studio metrics.
+  - `CreateMonthlyPartitionJob` (`:maintenance`): Auto-provisions upcoming month's event partition.
+
+### 2.9 Nocturnal VIP Feed & Vector SVG Iconography Standard (`/feed`, `fan-app/src/app/feed/page.tsx`)
+- **Header**: `WISHFUL ✦` tracked uppercase branding, search vector SVG, notification bell with unread ruby dot, and profile avatar badge with glowing ruby border.
+- **Creator Rings Tray**: Horizontal highlights row featuring glowing neon ruby pulse ring (`ANJALI ✦`), VIP badges, and touchable story triggers.
+- **Card Archetypes**:
+  1. *Photo Post (Anjali Hegde)*: 4K Ultra HD badge, bottom glass sneak peek pill, quick reaction pills (`🔥 1.8k`, `🫦 1.1k`, `🍑 850`, `💘 620`), vector SVG action bar.
+  2. *Interactive Poll (Kiara Roy)*: Real-time animated percentage bars (`68%` vs `32%`), final hours badge, vector SVG action bar.
+  3. *The Vault Drop Album (Tara Kapoor)*: Cover preview with slide peek (`18 Ph...`), `PUBLIC PREVIEW` tag, glowing ruby `🛍️ UNLOCK VAULT DROP • ₹499 (DIRECT UPI)` button with instant UTR claim sheet.
+  4. *Audio Whisper Drop (Rhea Sen)*: ASMR whisper tag, animated equalizer waveform, skip 15s vector controls, spatial binaural 3D & FLAC lossless tags.
+  5. *Video Reel Teaser (Zara Velvet)*: 60fps Dolby Vision tag, audio mute toggle SVG, center play button, duration scrubber line, quick spicy reactions bar.
+  6. *Locked Stream Replay (Kiara Roy)*: Replay archive stats, center lock insignia, direct unlock button at ₹299.
+- **High-Quality Vector SVG Icon Standard**:
+  - Replaces all legacy emoji text characters in interactive actions with crisp, resolution-independent vector SVGs.
+  - Heart: sleek outline or solid ruby-filled with neon bloom glow.
+  - Comment: rounded modern vector message bubble.
+  - Bookmark: elegant ribbon banner (outline or solid gold-filled).
+  - Share: crisp curved vector icon.
+  - More: horizontal three dots SVG.
+- **Dedicated Full-Page Post Viewer (`/feed?post=[id]`)**:
+  - Replaces modal popup overlays with a dedicated page navigation model featuring a sticky header with `<` Back button, creator avatar with pink star ring, verified checkmark badge, and `+ Follow` action.
+  - Automatically hides the bottom navigation bar (`body.hide-bottom-nav`) while viewing a single post to focus attention on the content and discussion.
+  - Discussion thread with pinned creator comments, VIP fan comments with timestamps, likes, and reply counts.
+  - Fixed bottom comment composer bar strictly constrained to the 480px mobile PWA container (`max-width: 480px; left: 50%; transform: translateX(-50%); box-sizing: border-box;`), featuring 6 quick reaction emojis (`🔥`, `😈`, `🌶️`, `🫦`, `🪽`, `🎧`), avatar, rounded input field with smiley trigger, and electric ruby gradient send button.
+- **4-Tab Nocturnal Bottom Navigation**: `FEED`, `VAULT`, `POST +`, `VIP` with tracked uppercase Plus Jakarta Sans typography.
+
+### 2.10 Stitch Studio Architecture Standard (Obsidian Velvet, Neon Ruby)
+The five core Studio creator screens have been implemented with pixel-to-pixel precision matching Google Stitch project `3128119346421041736` (`Creator MarketPlace`), refined to full production SaaS quality (Linear / Vercel standard):
+0. **Overview & Console (`/dashboard`, `DashboardController#show`)**:
+   - Header with `Studio > Console` breadcrumb, Atelier Intelligence settlement tag (`• ATELIER INTELLIGENCE • LIVE SETTLEMENT NODE / Direct P2P Architecture`), personalized greeting with star sparkles (`Welcome back, Aura ✨`), and top action bar with statement CSV export and electric ruby `+ Quick Action` pill.
+   - 4-metric KPI summary bento grid: Monthly Net Revenue (₹4,16,316, +21.4% trend, 100% Direct UPI P2P, 0% Platform Fee), Total Active Patrons (184 Members, +14 billing cycle growth, 96.4% VIP Retention), Vault Drop Unlocks (342 Unlocks, ₹3,24,500 gross yield, 8 active circulation drops), and Feed & Media Reach (482.5K Views, 16.8% avg engagement, Studio Tier TOP 0.1%).
+   - Pending Verifications banner: Glowing plum-ruby card displaying pending UPI claims (3 claims, ₹1,797 total) with instant `Review & Match UTRs ➔` deep-link.
+   - Live Patron Transaction Ledger: Real-time connected table (`● LIVE STREAM CONNECTED`) tracking patron handles, access passes, instant amounts, settlement rail pills (Direct UPI HDFC, Auto-Matched UTR, Direct UPI ICICI), relative timestamps, and receipt inspection triggers.
+   - Top Performing Vault Drops: Showcase grid featuring top PPV bundles with locked 4K / FPS badges, gross yields, sales counts, and `Edit Drop` triggers.
+   - Fast Lane Creator Actions: 2x2 grid for immediate creation (`+ Create Feed Post`, `+ New Vault Drop`, `Schedule Live`, `Curate Sourcing`).
+   - Upcoming Scheduled Drop: Nightly countdown card featuring "Velvet Mirage (Teaser Live)" with `TONIGHT` badge, 11:59 PM IST reminder, and audio/room gate setup action.
+   - Direct UPI Settlement Node: Live status card (`● ACTIVE`) displaying verified VPA (`aura@okhdfcbank`), NPCI 2.4s SLA guarantee, escrow mode breakdown, daily volume, and Gateway & VPA Settings action.
+1. **Posts & Content Analytics (`/creator_posts`, `CreatorPostsController#index`)**:
+   - Fixed `w-[260px]` sidebar with live UPI status indicator, user badge, active state glow, and structural hairline border (`border-r border-white/[0.06]`).
+   - Header bar with search input (⌘K) and notification indicators.
+   - 4-metric KPI bar: Total Public Posts, Impressions, Avg. Engagement Rate, Media Retention with subtle hairline contrast borders.
+   - Client-side interactive filter tabs (All Posts, Photo Sets, 4K Reels & Video, Audio Whispers, Polls) and real-time live search.
+   - Content inventory table with thumbnail badges (12P, 4K, 04:12, LIVE, RAW), reach ratios, likes/comments counters, and feed/edit actions.
+   - Minimalist pagination controls and CSV audit export.
+2. **Create Post (`/creator_posts/new`, `CreatorPostsController#new/create`)**:
+   - Two-column editorial composition grid (68% studio / 32% controls).
+   - 5 post-type tabs: `Text & Story`, `Photo Set`, `4K Reel / Video`, `Audio Whisper`, `Interactive Poll`.
+   - Clean placeholder states without hardcoded prototype narrative text.
+   - Editorial title input + WYSIWYG formatting toolbar (Bold, Italic, Strikethrough, Link, Spoiler Blur) + narrative caption with live 2,200 character counter.
+   - Dynamic drag-and-drop file upload zone reading live file metadata (filename, size in MB) and generating dynamic previews.
+   - Collapsible Interactive Community Poll accordion (Question, Option 01 & 02, duration) expanding automatically on poll tab selection.
+   - Wardrobe & sourcing product credits manager with dynamic tag creation.
+   - Sticky sidebar: Access & Audience (Public vs VIP), Publish Cadence (Now vs Scheduled Drop), Precision Controls (Pin, VIP Whisper, Dynamic Forensic Watermark), and neon-bloom CTA button.
+3. **Collections & Vault (`/paid_media_collections`, `PaidMediaCollectionsController#index`)**:
+   - Vault Engine 4.2 header with instant live search and revenue sorting.
+   - 3 KPI performance cards: Total Gross Vault Revenue, Active Vault Inventory (with circular SVG completion meter), and Top Converting Bundle with subtle top-right badge (replacing legacy rotated ribbon).
+   - Segmented classification pills with instant client-side filtering: All Vault Items, Bundles & Collections, Single 4K Sets, Video Masterclasses.
+   - 2-column inventory grid with locked overlays, items count, pricing, unlock metrics, and DRM badges.
+   - Direct UPI P2P Settlement Guarantee banner (0% platform cut, < 2.4s SLA, creator VPA).
+   - Modal drawer (`#createDropModal`) for publishing new PPV vault drops with price, classification, working file input, and DRM toggles.
+4. **Subscribers & VIP Patrons (`/subscribers`, `SubscribersController#index`)**:
+   - Patronage architecture header with CSV export and "+ Create VIP Tier" CTA.
+   - 3-metric KPI summary bento cards: Total Active Patrons, Monthly Recurring Revenue (Direct UPI 0% Fee), and Member Retention (96.4%).
+   - 3 Active VIP Tier cards: Tier 01 Close Friends Pass (₹499/mo), Tier 02 Inner Circle (₹999/mo), Tier 03 Sultan Patron (₹2,499/mo).
+   - Patrons roster master table with live interactive filter tabs (All, Active, Expiring Soon), real-time search by handle or UTR, calm renewal status indicators (replacing frantic animations), live count badges, and direct messaging actions.
+5. **Live Broadcast Scheduling & On-Air Studio (`/lives/new`, `/lives/:id/studio`, `LiveSessionsController`)**:
+   - **Schedule Suite (`/lives/new`)**:
+     - Breadcrumb `STUDIO > LIVE BROADCAST > SCHEDULE` with `DIRECT RTMP/UPI` badge.
+     - Step 01: Broadcast session details with title, 80-char counter, Markdown VIP teaser description, scheduled datetime with `PEAK FAN SLOT` tag, and duration selector pills (30m, 45m, 60m, Open).
+     - Step 02: 3-tier admission gatekeeper cards: Public Teaser + VIP Transition (5m viral teaser), VIP Patrons Only (Close Friends/Inner Circle inclusion), and Ticketed PPV Live (one-click ₹299 pass).
+     - Step 03: Direct stream ingest with Browser Cam vs OBS / RTMP Pro switcher, copyable RTMP endpoint (`rtmps://live.wishful.app/live`), masked stream key with visibility reveal, and automated paywalled replay vaulting toggle.
+     - Live Incentive Goal: Real-time fan crowd-funding meter toggle, goal target amount (`₹10,000` with ₹2.5k / ₹5k / ₹10k / ₹25k presets), milestone reward title, 3-tier unlock triggers (VIP Audio, Silhouette Costume Swap, Main Drape Reveal), and 64% simulated HUD momentum bar.
+     - Interactive Controls & Moderation: Pay-to-Chat Tip Gate (`Min ₹50`), Chat Pace Regulation (`10s Delay`), Discreet Fan Watermark toggle, and VIP Alert Dispatch.
+     - Past Broadcasts Archive Drawer: Modal drawer listing completed past sessions with studio inspect links.
+   - **Live Broadcast Studio On-Air (`/lives/:id/studio`)**:
+     - Telemetry Header: Glowing `● ON AIR / 00:44:14` timer badge, broadcast title with verified tick, `1,842 VIPs` viewer chip, `₹18,450.00` Instant UPI (0% fee) chip, `1080p60 • 6,200 kbps • 0 drops` stream health indicator, and `End Broadcast` call termination action.
+     - UltraHD Video Stage: Nocturnal luxury stream simulation with animated `WHISPER EQ ACTIVE` audio spectrum, `WISHFUL FORENSIC WATERMARK ACTIVE` shield badge, camera lens indicator (`Lens: Sony FE 50mm f/1.2 GM`), and floating glass control dock (Mic, Video, `Studio ASMR` radiant pill, PIP, and Audio Settings).
+     - Milestone Goal Meter: Radiant ruby progress bar (`74% Reached`), remaining milestone yield calculation, and recent tipper badges (`+₹500 @kabir_x`, `+₹200 @rohit_v`).
+     - VIP Chat Stream: Pay-to-Chat (`₹50+`) tab switcher (`All Messages (89)` vs `Tips Only (24)`), styled patron chat cards with VIP badges & instant tip highlights, and pinned Host Priority announcement composer.
+
+### 2.11 High-Concurrency Architecture, Job Queues & Real-Time Chat Scaling
+Wishful is architected for viral creator traffic (concurrent likes, comments, and real-time broadcasts) without database row locks:
+1. **Asynchronous Event Ingestion (`TrackEventJob`)**:
+   - `EventTracker.track(action:, actor:, creator:, target:, properties:, request:)` extracts request metadata and enqueues `TrackEventJob` in the `:analytics` queue.
+   - Database writes go to monthly partitioned `events` tables (`events_YYYY_MM`).
+   - `EventTracker.track_sync` is retained for entitlement fulfillment and backfill.
+2. **Debounced Counter Caching (`CounterBufferJob`)**:
+   - Standard Rails `counter_cache: true` locks parent rows on every tap. Wishful replaces this with `CounterBufferJob` in the `:counters` queue.
+   - Runs `COUNT(*)` asynchronously via `after_create_commit` and `after_destroy_commit` on likes and comments, updating `likes_count` and `comments_count` via `update_column`.
+3. **Off-Thread Notifications (`NotifyJob`)**:
+   - Creates in-app `Notification` rows and triggers Web Push via `:messaging` queue.
+   - Built-in deduplication prevents notifying a user of their own actions.
+4. **Chat & Real-Time Messaging (`UpdateConversationJob`, `ConversationChannel`)**:
+   - ActionCable broadcasts messages, typing indicators (`typing`), and read receipts (`read`) over WebSockets without DB blocking.
+   - `UpdateConversationJob` runs in `:messaging` queue to update `last_message_at`, unread counters, analytics, and push notifications.
+   - `config/cable.yml` supports Redis Pub/Sub in production via `REDIS_URL` with Solid Cable fallback.
+5. **Intraday & Nightly Rollups (`config/recurring.yml`)**:
+   - `DailyAnalyticsRollupJob`: Nightly at 2:00 AM IST (20:30 UTC).
+   - `FanProfileRecalculateJob`: Nightly at 3:00 AM IST (21:30 UTC).
+   - `ContentStatsAccumulatorJob`: Every 15 minutes for intraday Studio stats freshness.
+   - `CreateMonthlyPartitionJob`: 25th of each month for next month's partition creation.
 
 ---
 
@@ -192,6 +329,9 @@ New columns (migration `20261013010000_studio_redesign`): `users.phone_verified_
 | `GET /start` · `/start/profile` · `/start/upi` · `/start/live` | `onboarding#*` | Creator sign-up, 4 steps |
 | `GET/POST /sign_in` · `GET /sign_in/email` | `sessions#*` | Phone sign-in; email fallback |
 | `POST /otp` · `GET/POST /otp/verify` · `POST /otp/resend` · `GET /join` | `otp#*` | OTP send/verify; fan sign-in at pay time |
+| `GET /feed` | `feed#index` | Fan Feed: Timeline of drops, posts, lives |
+| `POST /feed_items/:id/seen` | `feed_items#seen` | Mark feed item seen |
+| `GET /discover` | `discover#index` | Explore: Trending vault drops & categories |
 | `GET /:handle` | `profiles#show` | Storefront (`?tab=`) |
 | `GET /:handle/c/:id` · `/:handle/c/:id/view` | `paid_media_collections#show/viewer` | Collection page; watermarked viewer |
 | `GET /:handle/d/:id` | `paid_media_posts#show` | Standalone drop (`?view=1` viewer) |
@@ -204,14 +344,26 @@ New columns (migration `20261013010000_studio_redesign`): `users.phone_verified_
 | `GET /payment_claims(.csv)` · `POST …/approve|reject|nudge` | `payment_claims#*` | Studio · Payments |
 | `GET /unlocks` | `unlocks#index` | Fan library, PWA start page |
 | `GET /dashboard` | `dashboard#show` | Studio · Overview |
-| `/creator_posts` | `creator_posts#index/create/edit/update/destroy` | Studio · Posts |
-| `/paid_media_collections` (+ `POST :id/items`, `PATCH :id/reorder`, `DELETE :id/items/:post_id`) | `paid_media_collections#*` | Studio · Collections + editor |
+| `/creator_posts` (+ `/new`, `/edit`, `.csv`) | `creator_posts#index/new/create/edit/update/destroy` | Studio · Posts & Content Analytics + Create Post (Stitch Screen 1 & 2) |
+| `/paid_media_collections` (+ `POST :id/items`, `PATCH :id/reorder`, `DELETE :id/items/:post_id`) | `paid_media_collections#*` | Studio · Collections & Vault (Stitch Screen 3) |
+| `GET /subscribers` | `subscribers#index` | Studio · Subscribers & VIP Patrons (Stitch Screen 4) |
 | `/product_links` · `/collections` | `product_links#*`, `collections#*` | Studio · Shop and its categories |
 | `/lists` (+ `PATCH :id/reorder`, `GET :id/qr`, `/lists/:id/items`) | `link_lists#*`, `link_list_items#*` | Studio · Link lists |
 | `GET /schedule` | `schedule#show` | Studio · Book (`?week=YYYY-MM-DD`) |
 | `/conversations` | `conversations#*` | Studio inbox / fan chat |
 | `GET/PATCH /creator_settings` | `creator_settings#*` | Studio · Settings |
 | `/lives/:id` · `/lives/:id/studio` | `live_sessions#*` | Live room; creator phone studio |
+| `POST /api/v1/auth/otp` · `/verify` · `GET /me` | `api/v1/sessions#*` | PWA JWT auth |
+| `GET /api/v1/feed` | `api/v1/feed#index` | PWA Fan feed data API with rich archetype serialization & curated discovery fallback |
+| `GET /api/v1/posts/:id` | `api/v1/posts#show` | Detailed post metadata with creator info, media, tags, likes & bookmarks |
+| `POST/DELETE /api/v1/posts/:id/like` | `api/v1/posts#like/unlike` | Fan post likes toggle with real-time counter updates & event sourcing |
+| `POST/DELETE /api/v1/posts/:id/save` | `api/v1/posts#bookmark/unbookmark` | Fan post bookmarks / save to vault library |
+| `GET/POST /api/v1/posts/:id/comments` | `api/v1/post_comments#index/create` | Fan post discussion comments thread with VIP & creator badges |
+| `GET /api/v1/discover` | `discover#index` (json) | PWA Explore data API (content & creator subtabs) |
+| `GET /api/v1/creators/:handle` (+ `/follow`) | `api/v1/creators#*` | In-app creator profile & follow API with feed sync |
+| `POST /api/v1/payment_claims` | `api/v1/payment_claims#create` | In-app 12-digit UTR UPI unlock API |
+| `GET /api/v1/notifications` (+ `POST :id/read`) | `api/v1/notifications#*` | Fan in-app notifications |
+| `POST /api/v1/events` | `api/v1/events#create` | Client-side analytics event ingestion |
 | `GET /paid_media_posts/:id/media` · `/preview` | `paid_media_posts#media/preview` | Watermarked media; frosted teaser |
 | `POST/DELETE /push_subscriptions` | `push_subscriptions#*` | Web Push registration |
 | `GET /manifest.webmanifest` · `/service-worker.js` · `/offline` | `rails/pwa#*`, `pages#offline` | PWA |
@@ -221,10 +373,37 @@ New columns (migration `20261013010000_studio_redesign`): `users.phone_verified_
 
 ## 7. Development & Testing Reference
 
-- **Run in WSL (Ubuntu-22.04):** `cd /mnt/c/Users/703344457/Documents/development/creator-marketplace && bin/rails server -b 0.0.0.0` → http://localhost:3000.
-- **Seed:** `bin/rails db:seed` (idempotent). Password for every seeded email account: `password123`.
-- **Flagship creator:** `ananya@example.com` / `@ananyarao`: 4 collections (one scheduled), 3 link lists (`/ananyarao/diwali`, `/grwm`, hidden `/kit`), payment queue with mismatches.
-- **Fan:** `priya@example.com`, phone `+91 98765 43210`; owns *Banarasi Heritage* (bought via the Diwali list).
-- **Phone sign-in in development:** no WhatsApp provider is configured, so the OTP is shown in the flash on the verify screen and written to `log/development.log` (`[whatsapp:log]`).
-- **ImageMagick:** install in WSL (`sudo apt install imagemagick`) for frosted previews and watermarks; without it teasers fall back to an SVG and unlocked media is served without a watermark.
-- **Environment variables for production:** `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_OTP_TEMPLATE`, `WHATSAPP_NOTICE_TEMPLATE`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`.
+- **Quick Start (Development Environment):**
+  - **Rails Backend** (Ruby 3.4.4, Rails 8.0.2):
+    ```bash
+    ~/.rvm/wrappers/ruby-3.4.4/bundle exec rails s
+    # Default port: http://localhost:3000
+    ```
+  - **Fan App PWA** (Next.js 16 / TypeScript):
+    ```bash
+    cd fan-app && npm run dev -- -p 3001
+    # Default port: http://localhost:3001
+    ```
+- **Database & Migrations:**
+  - `bin/rails db:migrate`
+  - `bin/rails db:seed` (idempotent; seed accounts use password `password123`)
+- **Background Jobs & Solid Queue:**
+  - Rails 8 Solid Queue runs automatically in development via Puma plugin (`SolidQueue::Supervisor`).
+  - To inspect or run dedicated background job workers: `bin/rails solid_queue:start`.
+  - Recurring scheduled jobs are defined in `config/recurring.yml` (daily rollups, intraday stats accumulator, fan profile calculations, monthly partitions).
+  - Job queues: `:analytics`, `:counters`, `:messaging`, `:maintenance`, `:default`.
+- **ActionCable / Real-Time Messaging:**
+  - In development: `async` adapter in `config/cable.yml`.
+  - In production: Set `REDIS_URL` to enable Redis pub/sub adapter, or defaults to Solid Cable (`database: cable`).
+- **Flagship Seed Personas:**
+  - Creator: `ananya@example.com` / `@ananyarao` (4 collections, link lists, payment claims queue).
+  - Fan: `priya@example.com`, phone `+91 98765 43210` (owns *Banarasi Heritage*).
+- **Phone sign-in in development:** OTP is logged to `log/development.log` (`[whatsapp:log]`) and displayed in the flash alert.
+- **ImageMagick:** `sudo apt install imagemagick` (or `brew install imagemagick` on macOS) for frosted previews and dynamic forensic watermarking.
+- **Continuing On Another Machine / Workplace:**
+  - Clone/pull repository.
+  - Install dependencies: `bundle install` and `(cd fan-app && npm install)`.
+  - Setup DB: `bin/rails db:create db:migrate db:seed`.
+  - Check `REFERENCE.md`, `FEATURES.md`, and `TODO.md` which are kept continuously updated.
+- **Key Environment Variables for Production:**
+  `DATABASE_URL`, `REDIS_URL`, `SECRET_KEY_BASE`, `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_OTP_TEMPLATE`, `WHATSAPP_NOTICE_TEMPLATE`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`.

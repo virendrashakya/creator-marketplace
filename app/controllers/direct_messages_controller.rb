@@ -12,9 +12,14 @@ class DirectMessagesController < ApplicationController
     message = conversation.direct_messages.build(sender: current_user, body: params[:body])
     if message.save
       ConversationChannel.broadcast_to(conversation, {
-        id: message.id, body: message.body, sender_id: message.sender_id,
+        type: "message", id: message.id, body: message.body, sender_id: message.sender_id,
         handle: current_user.handle, at: message.created_at.iso8601
       })
+      UpdateConversationJob.perform_later(
+        conversation.id,
+        current_user.id,
+        message_preview: message.body
+      )
       redirect_to conversation_path(conversation)
     else
       redirect_to conversation_path(conversation), alert: message.errors.full_messages.to_sentence

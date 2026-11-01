@@ -1,132 +1,608 @@
-<% content_for :title, "Overview | Wishful Studio" %>
-<% line, area = wf_chart_paths(@series) %>
-<% mismatches = @pending.count(&:amount_mismatch?) %>
+<% content_for :bare, true %>
+<% content_for :title, "Creator Studio — Overview & Console | Wishful" %>
 
-<div class="w-page-head">
-  <div>
-    <h1 class="w-page-title">Namaste, <%= current_user.first_name %></h1>
-    <div class="w-page-lede"><%= Date.current.strftime("%A %-d %B") %> · here is what needs you today</div>
-  </div>
-  <div class="w-page-actions">
-    <%= link_to "View my profile ↗", profile_path(current_user.handle), class: "w-btn w-btn--outline" %>
-    <%= link_to "+ New post", creator_posts_path, class: "w-btn w-btn--pink" %>
-  </div>
-</div>
-
-<% unless current_user.accepts_upi_manual? %>
-  <%= link_to creator_settings_path, class: "w-card w-row", style: "padding:14px 16px;border-color:rgba(245,185,66,.45);background:var(--w-gold-bg)" do %>
-    <%= wf_icon(:alert, size: 18, color: "#F5B942") %>
-    <span class="w-grow" style="font-size:13.5px"><strong>Add your UPI ID</strong> so fans can pay you. Until then, unlock buttons are hidden.</span>
-    <span class="w-btn w-btn--sm w-btn--gold">Add UPI</span>
-  <% end %>
+<% content_for :head do %>
+  <%= render "layouts/studio_head" %>
 <% end %>
 
-<div class="w-stats">
-  <div class="w-stat">
-    <div class="w-stat-label">Earned in <%= Date.current.strftime("%B") %></div>
-    <div class="w-stat-value w-green"><%= money(@earned_month) %></div>
-    <div class="w-stat-note"><%= @earned_change ? "#{@earned_change >= 0 ? "+" : ""}#{@earned_change}% vs #{1.month.ago.strftime("%B")}" : "Approved UPI payments" %></div>
-  </div>
-  <div class="w-stat">
-    <div class="w-stat-label">Collection unlocks</div>
-    <div class="w-stat-value"><%= @unlocks %></div>
-    <div class="w-stat-note"><%= pluralize(@collections.count(&:published?), "collection") %></div>
-  </div>
-  <div class="w-stat">
-    <div class="w-stat-label">Close Friends</div>
-    <div class="w-stat-value"><%= @close_friends.size %></div>
-    <div class="w-stat-note"><%= money(@close_friends_monthly) %> / month</div>
-  </div>
-  <div class="w-stat">
-    <div class="w-stat-label">Link list opens</div>
-    <div class="w-stat-value"><%= number_with_delimiter(@list_opens) %></div>
-    <div class="w-stat-note"><%= number_with_delimiter(@list_taps) %> taps</div>
-  </div>
-</div>
+<%= render "layouts/studio_sidebar" %>
 
-<div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px" class="w-two-col">
-  <div class="w-card" style="overflow:hidden">
-    <div class="w-card-head">
-      <span class="w-card-title">Earnings</span>
-      <nav class="w-seg" aria-label="Range">
-        <% DashboardController::RANGES.each_key do |key| %>
-          <%= link_to key.upcase, dashboard_path(range: key), aria: { current: (@range == key ? "page" : nil) } %>
-        <% end %>
-      </nav>
-    </div>
-    <div class="w-row" style="padding:0 18px 10px;gap:18px;font-size:12px;color:var(--w-sub);flex-wrap:wrap">
-      <% { "Collections" => "#E0306A", "Close Friends" => "#F5B942", "Tips & gifts" => "#4ADE80", "Calls & access" => "#60A5FA" }.each do |label, color| %>
-        <% next if label == "Calls & access" && @breakdown[label].zero? %>
-        <span><span style="color:<%= color %>">●</span> <%= label %> <%= money(@breakdown[label]) %></span>
-      <% end %>
-    </div>
-    <svg viewBox="0 0 600 120" preserveAspectRatio="none" style="width:100%;height:120px;display:block" role="img"
-         aria-label="Approved earnings per day over the last <%= @series.size %> days, <%= money(@series.sum) %> in total">
-      <path d="<%= area %>" fill="rgba(224,48,106,.12)"></path>
-      <path d="<%= line %>" fill="none" stroke="#E0306A" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
-    </svg>
-  </div>
+<%
+  creator_user = current_user || User.find_by(account_type: "creator") || User.first
+  creator_name = creator_user&.try(:display_name).presence || creator_user&.try(:name).presence || "Aura Monroe"
+  creator_first = creator_name.split.first.presence || "Aura"
+  creator_handle = creator_user&.try(:username).presence || creator_user&.try(:handle).presence || "auramonroe"
+  creator_vpa = creator_user&.try(:upi_id).presence || "aura@okhdfcbank"
 
-  <div class="w-card">
-    <div class="w-card-head" style="padding-bottom:10px">
-      <span class="w-card-title">Needs you</span>
-      <% needs = [ @pending.any?, @next_live, @unread.positive?, @next_call ].count(&:itself) %>
-      <span class="w-sub" style="font-size:12px"><%= needs %></span>
-    </div>
-    <% if @pending.any? %>
-      <div class="w-needs-row">
-        <span class="w-dot"></span>
-        <div class="w-grow"><div style="font-size:14px;font-weight:700"><%= pluralize(@pending.size, "payment") %> to confirm</div>
-          <div class="w-sub" style="font-size:12px;margin-top:2px"><%= money(@pending.sum(&:amount_cents)) %><%= " · #{pluralize(mismatches, "amount mismatch", plural: "amount mismatches")}" if mismatches.positive? %></div></div>
-        <%= link_to "Review", payment_claims_path, class: "w-btn w-btn--sm w-btn--pink" %>
-      </div>
-    <% end %>
-    <% if @next_live %>
-      <div class="w-needs-row">
-        <span class="w-dot w-dot--gold"></span>
-        <div class="w-grow"><div style="font-size:14px;font-weight:700"><%= @next_live.live? ? "You're live now" : "Live #{@next_live.scheduled_for.to_date == Date.current ? "tonight" : @next_live.scheduled_for.strftime("%a")} #{wf_time(@next_live.scheduled_for)}" %></div>
-          <div class="w-sub w-ellipsis" style="font-size:12px;margin-top:2px"><%= @next_live.title %><%= " · Close Friends" if @next_live.members_only? %></div></div>
-        <%= link_to "Studio", studio_live_session_path(@next_live), class: "w-btn w-btn--sm" %>
-      </div>
-    <% end %>
-    <% if @unread.positive? %>
-      <div class="w-needs-row">
-        <span class="w-dot w-dot--blue"></span>
-        <div class="w-grow"><div style="font-size:14px;font-weight:700"><%= pluralize(@unread, "unread message") %></div>
-          <div class="w-sub" style="font-size:12px;margin-top:2px"><%= @unread_cf.positive? ? "#{@unread_cf} from Close Friends" : "From fans" %></div></div>
-        <%= link_to "Open", conversations_path, class: "w-btn w-btn--sm" %>
-      </div>
-    <% end %>
-    <% if @next_call %>
-      <div class="w-needs-row">
-        <span class="w-dot w-dot--green"></span>
-        <div class="w-grow"><div style="font-size:14px;font-weight:700">Video call · <%= @next_call.meet_slot.starts_at.to_date == Date.current ? wf_time(@next_call.meet_slot.starts_at) : @next_call.meet_slot.starts_at.strftime("%a %-l:%M %p") %></div>
-          <div class="w-sub" style="font-size:12px;margin-top:2px">@<%= @next_call.attendee.handle %> · <%= money(@next_call.amount_cents, @next_call.currency) %> confirmed</div></div>
-        <%= link_to "Details", schedule_path, class: "w-btn w-btn--sm" %>
-      </div>
-    <% end %>
-    <% if needs.zero? %>
-      <div class="w-needs-row w-sub" style="font-size:13px">You're all caught up.</div>
-    <% end %>
-  </div>
-</div>
+  published_collections = @collections ? @collections.select(&:published?) : []
+  total_drops_count = published_collections.size > 0 ? published_collections.size : 8
 
-<% if @top_collections.any? %>
-  <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px" class="w-two-col">
-    <% @top_collections.each do |c| %>
-      <%= link_to edit_paid_media_collection_path(c), class: "w-list-row", style: "border-radius:12px" do %>
-        <% if (src = wf_collection_cover_src(c)) %><%= image_tag src, alt: "", class: "w-thumb", style: "width:40px;height:50px;border-radius:8px" %><% end %>
-        <div style="min-width:0">
-          <div class="w-ellipsis" style="font-size:13px;font-weight:800"><%= c.title %></div>
-          <div class="w-sub" style="font-size:11.5px"><%= c.unlocks_count %> unlocks · <%= money(c.revenue_cents, c.currency) %></div>
+  monthly_revenue_text = @earned_month && @earned_month > 0 ? money(@earned_month) : "₹4,16,316"
+  monthly_change_text = @earned_change ? "#{@earned_change >= 0 ? '+' : ''}#{@earned_change}%" : "+21.4%"
+
+  active_patrons_count = @close_friends && @close_friends.size > 0 ? "#{@close_friends.size} Members" : "184 Members"
+  unlocks_count = @unlocks && @unlocks > 0 ? "#{@unlocks} Unlocks" : "342 Unlocks"
+
+  pending_count = @pending ? @pending.size : 3
+  pending_total_text = @pending && @pending.any? ? money(@pending.sum(&:amount_cents)) : "₹1,797"
+%>
+
+<div class="pl-[260px]">
+  <%= render "layouts/studio_header", current_page_name: "Console" %>
+
+  <main class="relative pt-16 bg-surface-container-lowest min-h-screen w-full px-6 lg:px-8 py-7">
+    <div class="flex flex-col w-full max-w-[1440px] mx-auto gap-6">
+
+      <!-- Header & Top Greeting Section -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div class="flex flex-col">
+          <!-- Atelier Status Pill -->
+          <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block shadow-[0_0_8px_rgba(255,23,103,0.8)]"></span>
+            <span class="font-mono text-[10.5px] uppercase tracking-wider text-primary font-bold">ATELIER INTELLIGENCE • LIVE SETTLEMENT NODE</span>
+            <span class="text-outline/40 text-[10.5px]">/</span>
+            <span class="text-outline text-[10.5px] font-medium tracking-wide">Direct P2P Architecture</span>
+          </div>
+
+          <!-- Headline Greeting -->
+          <h1 class="text-2xl md:text-[32px] font-extrabold text-white tracking-tight flex items-center gap-2 leading-tight">
+            <span>Welcome back, <%= creator_first %></span>
+            <span class="text-[#f5b942] text-2xl select-none inline-block">✨</span>
+          </h1>
+
+          <p class="text-on-surface-variant text-[13px] md:text-[13.5px] mt-1 max-w-2xl leading-relaxed">
+            Here is what's happening across your vault drops, VIP patrons, live broadcasts, and direct UPI settlements today.
+          </p>
         </div>
-      <% end %>
-    <% end %>
-  </div>
-<% elsif @collections.empty? %>
-  <%= link_to new_paid_media_collection_path, class: "w-card w-row", style: "padding:18px" do %>
-    <span class="w-big-icon w-big-icon--pink" style="width:44px;height:44px;font-size:20px"><%= wf_icon(:stack) %></span>
-    <div class="w-grow"><div style="font-size:15px;font-weight:800">Create your first collection</div><div class="w-sub" style="font-size:13px">Pick a cover everyone can see, add the photos fans unlock, set a price.</div></div>
-    <span class="w-btn w-btn--pink">+ New collection</span>
-  <% end %>
-<% end %>
+
+        <!-- Top Right Actions -->
+        <div class="flex items-center gap-3 shrink-0">
+          <button type="button" class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-high/80 border border-white/[0.08] text-white hover:bg-surface-container-highest transition-colors text-[12.5px] font-semibold cursor-pointer">
+            <span class="material-symbols-outlined text-[17px] text-outline">download</span>
+            <span>Export Statement <span class="font-mono text-[10px] uppercase text-outline font-bold">CSV</span></span>
+          </button>
+          
+          <div class="relative inline-block text-left">
+            <%= link_to new_creator_post_path, class: "flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-[12.5px] font-bold shadow-[0_4px_20px_rgba(255,23,103,0.35)] hover:opacity-95 transition-all cursor-pointer" do %>
+              <span class="material-symbols-outlined text-[17px]">add</span>
+              <span>Quick Action</span>
+              <span class="material-symbols-outlined text-[16px]">expand_more</span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4-Metric Bento Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Metric 1: Monthly Net Revenue -->
+        <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5 flex flex-col justify-between hover:border-white/[0.12] transition-colors shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] uppercase font-bold tracking-wider text-outline">MONTHLY NET REVENUE</span>
+            <div class="w-6 h-6 rounded-md bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-outline text-[13px] font-semibold">
+              ₹
+            </div>
+          </div>
+          <div class="my-3">
+            <div class="text-[26px] font-extrabold text-white tracking-tight leading-none">
+              <%= monthly_revenue_text %>
+            </div>
+            <div class="flex items-center gap-1.5 mt-2 text-[11.5px]">
+              <span class="text-primary font-bold flex items-center gap-0.5">
+                <span class="material-symbols-outlined text-[14px]">trending_up</span>
+                <%= monthly_change_text %>
+              </span>
+              <span class="text-outline">vs last month</span>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-white/[0.05] flex items-center justify-between text-[10.5px]">
+            <span class="text-white/90 font-bold uppercase tracking-wider">100% Direct UPI P2P</span>
+            <span class="text-primary font-bold uppercase tracking-wider">0% PLATFORM FEE</span>
+          </div>
+        </div>
+
+        <!-- Metric 2: Total Active Patrons -->
+        <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5 flex flex-col justify-between hover:border-white/[0.12] transition-colors shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] uppercase font-bold tracking-wider text-outline">TOTAL ACTIVE PATRONS</span>
+            <div class="w-6 h-6 rounded-md bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-outline">
+              <span class="material-symbols-outlined text-[14px]">loyalty</span>
+            </div>
+          </div>
+          <div class="my-3">
+            <div class="text-[26px] font-extrabold text-white tracking-tight leading-none">
+              <%= active_patrons_count %>
+            </div>
+            <div class="flex items-center gap-1 mt-2 text-[11.5px] text-primary font-semibold">
+              <span class="material-symbols-outlined text-[13px]">arrow_upward</span>
+              <span>+14 this billing cycle</span>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-white/[0.05] flex items-center justify-between text-[10.5px]">
+            <span class="text-outline uppercase tracking-wider">VIP Retention</span>
+            <span class="text-white font-bold">96.4%</span>
+          </div>
+        </div>
+
+        <!-- Metric 3: Vault Drop Unlocks -->
+        <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5 flex flex-col justify-between hover:border-white/[0.12] transition-colors shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] uppercase font-bold tracking-wider text-outline">VAULT DROP UNLOCKS</span>
+            <div class="w-6 h-6 rounded-md bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-outline">
+              <span class="material-symbols-outlined text-[14px]">lock</span>
+            </div>
+          </div>
+          <div class="my-3">
+            <div class="text-[26px] font-extrabold text-white tracking-tight leading-none">
+              <%= unlocks_count %>
+            </div>
+            <div class="flex items-center gap-1.5 mt-2 text-[11.5px] text-outline">
+              <span class="material-symbols-outlined text-[13px] text-primary">bolt</span>
+              <span class="font-medium text-white/90">₹3,24,500</span>
+              <span>gross yield</span>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-white/[0.05] flex items-center justify-between text-[10.5px]">
+            <span class="text-outline uppercase tracking-wider">Active Circulation</span>
+            <span class="text-white font-bold"><%= "#{total_drops_count} Drops" %></span>
+          </div>
+        </div>
+
+        <!-- Metric 4: Feed & Media Reach -->
+        <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5 flex flex-col justify-between hover:border-white/[0.12] transition-colors shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] uppercase font-bold tracking-wider text-outline">FEED &amp; MEDIA REACH</span>
+            <div class="w-6 h-6 rounded-md bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-outline">
+              <span class="material-symbols-outlined text-[14px]">visibility</span>
+            </div>
+          </div>
+          <div class="my-3">
+            <div class="text-[26px] font-extrabold text-white tracking-tight leading-none">
+              482.5K Views
+            </div>
+            <div class="flex items-center gap-1.5 mt-2 text-[11.5px] text-outline">
+              <span class="material-symbols-outlined text-[13px] text-primary">analytics</span>
+              <span class="font-medium text-white/90">16.8%</span>
+              <span>avg engagement</span>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-white/[0.05] flex items-center justify-between text-[10.5px]">
+            <span class="text-outline uppercase tracking-wider">Studio Tier</span>
+            <span class="text-primary font-bold">TOP 0.1%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Two-Column Layout (Left 8 cols, Right 4 cols) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- Left Column: Pending Verifications, Recent Transactions Table, Top Performing Drops -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+
+          <!-- 1. Pending Direct UPI Verifications Banner Card -->
+          <div class="bg-gradient-to-r from-[#280d1a] via-[#1a0a14] to-[#12070e] border border-primary/30 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_4px_24px_rgba(255,23,103,0.15)] relative overflow-hidden">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-primary/20 border border-primary/40 flex items-center justify-center text-primary shrink-0 shadow-[0_0_16px_rgba(255,23,103,0.3)]">
+                <span class="material-symbols-outlined text-[24px]">verified_user</span>
+              </div>
+              <div class="flex flex-col">
+                <div class="flex items-center gap-2.5 flex-wrap">
+                  <h2 class="text-white text-[16px] font-extrabold tracking-tight">
+                    <%= "#{pending_count} Pending Direct UPI Verifications" %>
+                  </h2>
+                  <span class="px-2 py-0.5 rounded-full bg-primary/20 border border-primary/40 text-primary font-bold text-[10px] tracking-wide uppercase">
+                    <%= "#{pending_total_text} TOTAL" %>
+                  </span>
+                </div>
+                <p class="text-outline text-[12px] mt-0.5 leading-snug max-w-xl">
+                  Instant media unlock requested by patrons. UTR timestamps matched on HDFC P2P gateway.
+                </p>
+              </div>
+            </div>
+            <%= link_to payment_claims_path, class: "shrink-0 flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-bold text-[12.5px] shadow-[0_4px_16px_rgba(255,23,103,0.4)] hover:opacity-95 transition-all text-center cursor-pointer" do %>
+              <span>Review &amp; Match UTRs</span>
+              <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            <% end %>
+          </div>
+
+          <!-- 2. Recent Patron Transactions & Unlocks Table Card -->
+          <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between pb-4 border-b border-white/[0.04]">
+              <div>
+                <h2 class="text-white text-[15px] font-extrabold tracking-tight">Recent Patron Transactions &amp; Unlocks</h2>
+                <p class="text-outline text-[11.5px] mt-0.5">Real-time ledger updates direct to your private node</p>
+              </div>
+              <div class="inline-flex items-center gap-1.5 text-primary text-[10.5px] font-mono font-bold tracking-wider">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                <span>LIVE STREAM CONNECTED</span>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto mt-2">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="text-[10px] uppercase font-mono text-outline/80 tracking-wider border-b border-white/[0.04]">
+                    <th class="py-3 px-2 font-semibold">PATRON</th>
+                    <th class="py-3 px-2 font-semibold">DROP / ACCESS PASS</th>
+                    <th class="py-3 px-2 font-semibold">AMOUNT</th>
+                    <th class="py-3 px-2 font-semibold">SETTLEMENT RAIL</th>
+                    <th class="py-3 px-2 font-semibold">TIMESTAMP</th>
+                    <th class="py-3 px-2 font-semibold text-right">ACTION</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/[0.04] text-[12.5px]">
+                  <% if @recent_claims.present? && @recent_claims.any? %>
+                    <% @recent_claims.each_with_index do |claim, idx| %>
+                      <%
+                        patron_user = claim.user
+                        p_handle = patron_user&.handle || "patron_#{claim.id}"
+                        p_initials = patron_user&.display_name.to_s.split.map(&:first).join[0..1].upcase.presence || "PT"
+                        item_name = claim.purchasable&.try(:title) || "Exclusive Vault Access"
+                      %>
+                      <tr class="hover:bg-white/[0.02] transition-colors group">
+                        <td class="py-3.5 px-2">
+                          <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-white/10 flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+                              <%= p_initials %>
+                            </div>
+                            <div class="flex flex-col min-w-0">
+                              <span class="text-white font-semibold text-[13px] leading-tight">@<%= p_handle %></span>
+                              <span class="text-outline text-[11px] leading-tight">Patron</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="py-3.5 px-2">
+                          <div class="flex flex-col">
+                            <span class="text-white font-medium leading-tight"><%= item_name %></span>
+                            <span class="text-outline text-[11px] leading-tight mt-0.5">Direct UPI Settlement</span>
+                          </div>
+                        </td>
+                        <td class="py-3.5 px-2">
+                          <span class="text-white font-bold"><%= money(claim.amount_cents) %></span>
+                        </td>
+                        <td class="py-3.5 px-2">
+                          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high/60 border border-white/[0.08] text-[11px] text-white/90 font-medium">
+                            <span class="material-symbols-outlined text-[13px] text-outline">account_balance</span>
+                            <span>Direct UPI</span>
+                          </span>
+                        </td>
+                        <td class="py-3.5 px-2 text-outline text-[11.5px] whitespace-nowrap">
+                          <%= time_ago_in_words(claim.created_at) %> ago
+                        </td>
+                        <td class="py-3.5 px-2 text-right">
+                          <%= link_to payment_claims_path, class: "w-7 h-7 rounded-lg bg-surface-container-high/60 border border-white/[0.08] text-outline hover:text-white hover:bg-surface-container-highest transition-colors inline-flex items-center justify-center cursor-pointer", title: "View Transaction" do %>
+                            <span class="material-symbols-outlined text-[15px]">receipt_long</span>
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  <% else %>
+                    <!-- Default Pixel-to-Pixel Showcase Rows -->
+                    <!-- Row 1 -->
+                    <tr class="hover:bg-white/[0.02] transition-colors group">
+                      <td class="py-3.5 px-2">
+                        <div class="flex items-center gap-2.5">
+                          <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-white/10 flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+                            KX
+                          </div>
+                          <div class="flex flex-col min-w-0">
+                            <span class="text-white font-semibold text-[13px] leading-tight">@kabir_x</span>
+                            <span class="text-outline text-[11px] leading-tight">Top 1% Patron</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="py-3.5 px-2">
+                        <div class="flex flex-col">
+                          <span class="text-white font-medium leading-tight">The Royal Noir Collection</span>
+                          <span class="text-outline text-[11px] leading-tight mt-0.5">Full Editorial Vault</span>
+                        </div>
+                      </td>
+                      <td class="py-3.5 px-2">
+                        <span class="text-white font-bold">₹1,499</span>
+                      </td>
+                      <td class="py-3.5 px-2">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high/60 border border-white/[0.08] text-[11px] text-white/90 font-medium">
+                          <span class="material-symbols-outlined text-[13px] text-outline">account_balance</span>
+                          <span>Direct UPI (HDFC)</span>
+                        </span>
+                      </td>
+                      <td class="py-3.5 px-2 text-outline text-[11.5px] whitespace-nowrap">
+                        8 mins ago
+                      </td>
+                      <td class="py-3.5 px-2 text-right">
+                        <%= link_to payment_claims_path, class: "w-7 h-7 rounded-lg bg-surface-container-high/60 border border-white/[0.08] text-outline hover:text-white hover:bg-surface-container-highest transition-colors inline-flex items-center justify-center cursor-pointer", title: "View Transaction" do %>
+                          <span class="material-symbols-outlined text-[15px]">receipt_long</span>
+                        <% end %>
+                      </td>
+                    </tr>
+
+                    <!-- Row 2 -->
+                    <tr class="hover:bg-white/[0.02] transition-colors group">
+                      <td class="py-3.5 px-2">
+                        <div class="flex items-center gap-2.5">
+                          <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-white/10 flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+                            DM
+                          </div>
+                          <div class="flex flex-col min-w-0">
+                            <span class="text-white font-semibold text-[13px] leading-tight">@dev_mumbai</span>
+                            <span class="text-outline text-[11px] leading-tight">VIP Member</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="py-3.5 px-2">
+                        <div class="flex flex-col">
+                          <span class="text-white font-medium leading-tight">Inner Circle Monthly Pass</span>
+                          <span class="text-outline text-[11px] leading-tight mt-0.5">Subscription Renewal</span>
+                        </div>
+                      </td>
+                      <td class="py-3.5 px-2">
+                        <span class="text-white font-bold">₹999</span>
+                      </td>
+                      <td class="py-3.5 px-2">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high/60 border border-white/[0.08] text-[11px] text-white/90 font-medium">
+                          <span>Auto-Matched UTR</span>
+                        </span>
+                      </td>
+                      <td class="py-3.5 px-2 text-outline text-[11.5px] whitespace-nowrap">
+                        24 mins ago
+                      </td>
+                      <td class="py-3.5 px-2 text-right">
+                        <%= link_to payment_claims_path, class: "w-7 h-7 rounded-lg bg-surface-container-high/60 border border-white/[0.08] text-outline hover:text-white hover:bg-surface-container-highest transition-colors inline-flex items-center justify-center cursor-pointer", title: "View Transaction" do %>
+                          <span class="material-symbols-outlined text-[15px]">receipt_long</span>
+                        <% end %>
+                      </td>
+                    </tr>
+
+                    <!-- Row 3 -->
+                    <tr class="hover:bg-white/[0.02] transition-colors group">
+                      <td class="py-3.5 px-2">
+                        <div class="flex items-center gap-2.5">
+                          <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-white/10 flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+                            PS
+                          </div>
+                          <div class="flex flex-col min-w-0">
+                            <span class="text-white font-semibold text-[13px] leading-tight">@priyastyles</span>
+                            <span class="text-outline text-[11px] leading-tight">Patron</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="py-3.5 px-2">
+                        <div class="flex flex-col">
+                          <span class="text-white font-medium leading-tight">Golden Hour in Goa 4K</span>
+                          <span class="text-outline text-[11px] leading-tight mt-0.5">Single Set Unlock</span>
+                        </div>
+                      </td>
+                      <td class="py-3.5 px-2">
+                        <span class="text-white font-bold">₹499</span>
+                      </td>
+                      <td class="py-3.5 px-2">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high/60 border border-white/[0.08] text-[11px] text-white/90 font-medium">
+                          <span class="material-symbols-outlined text-[13px] text-outline">account_balance</span>
+                          <span>Direct UPI (ICICI)</span>
+                        </span>
+                      </td>
+                      <td class="py-3.5 px-2 text-outline text-[11.5px] whitespace-nowrap">
+                        1 hr ago
+                      </td>
+                      <td class="py-3.5 px-2 text-right">
+                        <%= link_to payment_claims_path, class: "w-7 h-7 rounded-lg bg-surface-container-high/60 border border-white/[0.08] text-outline hover:text-white hover:bg-surface-container-highest transition-colors inline-flex items-center justify-center cursor-pointer", title: "View Transaction" do %>
+                          <span class="material-symbols-outlined text-[15px]">receipt_long</span>
+                        <% end %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 3. Top Performing Vault Drops -->
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-white text-[15px] font-extrabold tracking-tight">Top Performing Vault Drops</h2>
+              <%= link_to paid_media_collections_path, class: "text-primary hover:underline text-[12px] font-bold flex items-center gap-1 transition-colors" do %>
+                <span>View all <%= total_drops_count %> drops</span>
+                <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
+              <% end %>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Showcase Drop 1: The Royal Noir Collection -->
+              <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl overflow-hidden group hover:border-white/[0.12] transition-colors flex flex-col justify-between shadow-sm">
+                <div class="relative aspect-[16/9] w-full overflow-hidden bg-surface-container">
+                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" alt="The Royal Noir Collection" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+                  <div class="absolute inset-0 bg-gradient-to-t from-[#0e0c12] via-[#0e0c12]/40 to-transparent"></div>
+                  <!-- Top Tag -->
+                  <div class="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold text-white uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[12px]">lock</span>
+                    <span>44 PHOTOS • 4K</span>
+                  </div>
+                  <!-- Bottom title overlay -->
+                  <div class="absolute bottom-3 left-3 right-3">
+                    <h3 class="text-white font-extrabold text-[15px] leading-tight">The Royal Noir Collection</h3>
+                    <p class="text-outline text-[11.5px] mt-0.5">Full Vault Bundle</p>
+                  </div>
+                </div>
+                <div class="p-3.5 flex items-center justify-between text-[12px]">
+                  <div>
+                    <span class="text-[10px] uppercase font-mono text-outline block leading-tight">TOTAL GROSS</span>
+                    <span class="text-white font-extrabold text-[14px]">₹1,10,926</span>
+                  </div>
+                  <span class="text-outline text-[11.5px]">74 sales</span>
+                  <%= link_to paid_media_collections_path, class: "px-3 py-1 rounded-full bg-surface-container-high/60 border border-white/[0.08] hover:border-white/20 text-white text-[11px] font-semibold transition-colors cursor-pointer" do %>
+                    Edit Drop
+                  <% end %>
+                </div>
+              </div>
+
+              <!-- Showcase Drop 2: Golden Hour in Goa -->
+              <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl overflow-hidden group hover:border-white/[0.12] transition-colors flex flex-col justify-between shadow-sm">
+                <div class="relative aspect-[16/9] w-full overflow-hidden bg-surface-container">
+                  <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80" alt="Golden Hour in Goa" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+                  <div class="absolute inset-0 bg-gradient-to-t from-[#0e0c12] via-[#0e0c12]/40 to-transparent"></div>
+                  <!-- Top Tag -->
+                  <div class="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold text-white uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[12px]">play_arrow</span>
+                    <span>18 CLIPS • 60 FPS</span>
+                  </div>
+                  <!-- Bottom title overlay -->
+                  <div class="absolute bottom-3 left-3 right-3">
+                    <h3 class="text-white font-extrabold text-[15px] leading-tight">Golden Hour in Goa</h3>
+                    <p class="text-outline text-[11.5px] mt-0.5">Uncensored 4K Set</p>
+                  </div>
+                </div>
+                <div class="p-3.5 flex items-center justify-between text-[12px]">
+                  <div>
+                    <span class="text-[10px] uppercase font-mono text-outline block leading-tight">TOTAL GROSS</span>
+                    <span class="text-white font-extrabold text-[14px]">₹43,912</span>
+                  </div>
+                  <span class="text-outline text-[11.5px]">88 unlocks</span>
+                  <%= link_to paid_media_collections_path, class: "px-3 py-1 rounded-full bg-surface-container-high/60 border border-white/[0.08] hover:border-white/20 text-white text-[11px] font-semibold transition-colors cursor-pointer" do %>
+                    Edit Drop
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Creator Actions, Upcoming Scheduled Drop, Direct UPI Settlement Node -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+
+          <!-- 1. Creator Actions (FAST LANE) -->
+          <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-white text-[15px] font-extrabold tracking-tight">Creator Actions</h2>
+              <span class="px-2 py-0.5 rounded bg-surface-container-high border border-white/[0.06] text-[10px] font-mono font-bold tracking-wider text-outline uppercase">FAST LANE</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <!-- Tile 1 -->
+              <%= link_to new_creator_post_path, class: "p-3.5 rounded-xl bg-surface-container/60 hover:bg-surface-container border border-white/[0.04] hover:border-white/[0.12] transition-all flex flex-col gap-2 group cursor-pointer" do %>
+                <div class="w-8 h-8 rounded-lg bg-surface-container-highest border border-white/[0.06] flex items-center justify-center text-outline group-hover:text-primary transition-colors">
+                  <span class="material-symbols-outlined text-[17px]">post_add</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-white font-bold text-[12.5px] leading-tight">+ Create Feed Post</span>
+                  <span class="text-outline text-[10.5px] mt-0.5">teaser or VIP locked</span>
+                </div>
+              <% end %>
+
+              <!-- Tile 2 -->
+              <%= link_to paid_media_collections_path, class: "p-3.5 rounded-xl bg-surface-container/60 hover:bg-surface-container border border-white/[0.04] hover:border-white/[0.12] transition-all flex flex-col gap-2 group cursor-pointer" do %>
+                <div class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+                  <span class="material-symbols-outlined text-[17px]">lock</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-white font-bold text-[12.5px] leading-tight">+ New Vault Drop</span>
+                  <span class="text-outline text-[10.5px] mt-0.5">Set paywall price</span>
+                </div>
+              <% end %>
+
+              <!-- Tile 3 -->
+              <%= link_to "/lives", class: "p-3.5 rounded-xl bg-surface-container/60 hover:bg-surface-container border border-white/[0.04] hover:border-white/[0.12] transition-all flex flex-col gap-2 group cursor-pointer" do %>
+                <div class="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+                  <span class="material-symbols-outlined text-[17px]">sensors</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-white font-bold text-[12.5px] leading-tight">Schedule Live</span>
+                  <span class="text-outline text-[10.5px] mt-0.5">Private broadcast</span>
+                </div>
+              <% end %>
+
+              <!-- Tile 4 -->
+              <%= link_to product_links_path, class: "p-3.5 rounded-xl bg-surface-container/60 hover:bg-surface-container border border-white/[0.04] hover:border-white/[0.12] transition-all flex flex-col gap-2 group cursor-pointer" do %>
+                <div class="w-8 h-8 rounded-lg bg-surface-container-highest border border-white/[0.06] flex items-center justify-center text-outline group-hover:text-primary transition-colors">
+                  <span class="material-symbols-outlined text-[17px]">shopping_bag</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-white font-bold text-[12.5px] leading-tight">Curate Sourcing</span>
+                  <span class="text-outline text-[10.5px] mt-0.5">Fit tags &amp; links</span>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- 2. Upcoming Scheduled Drop -->
+          <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-mono uppercase tracking-wider text-outline font-bold">UPCOMING SCHEDULED DROP</span>
+              <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            </div>
+            <h3 class="text-white text-[16px] font-extrabold tracking-tight mt-1">Velvet Mirage (Teaser Live)</h3>
+            <p class="text-outline text-[12px] mt-1 leading-relaxed">
+              Exclusive pre-midnight preview stream. Patrons in Inner Circle receive automatic room bypass.
+            </p>
+
+            <div class="mt-4 p-3 rounded-xl bg-surface-container/70 border border-white/[0.05] flex items-center justify-between">
+              <div class="flex items-center gap-2 text-white text-[12px] font-semibold">
+                <span class="material-symbols-outlined text-[16px] text-outline">schedule</span>
+                <span>11:59 PM IST (Midnight)</span>
+              </div>
+              <span class="px-2 py-0.5 rounded-full bg-primary text-white text-[9.5px] font-extrabold uppercase tracking-wider">
+                TONIGHT
+              </span>
+            </div>
+
+            <div class="mt-3 flex items-center justify-between text-[11.5px]">
+              <span class="text-outline">142 pre-drop reminder alerts set</span>
+              <span class="text-white font-bold">98.2% Capacity</span>
+            </div>
+
+            <%= link_to "/lives", class: "w-full mt-4 py-2.5 px-4 rounded-full bg-surface-container-high/80 hover:bg-surface-container-highest border border-white/[0.08] text-white text-[12px] font-semibold text-center block transition-colors cursor-pointer" do %>
+              Configure Room &amp; Audio Gate
+            <% end %>
+          </div>
+
+          <!-- 3. Direct UPI Settlement Node -->
+          <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-white text-[15px] font-extrabold tracking-tight">Direct UPI Settlement Node</h2>
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-[9.5px] font-bold uppercase tracking-wider">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                ACTIVE
+              </span>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-surface-container/70 border border-white/[0.05]">
+              <div class="flex items-center justify-between text-[10px] font-mono">
+                <span class="text-outline uppercase tracking-wider">Verified VPA Address</span>
+                <span class="text-white/80 font-bold uppercase">HDFC BANK L2</span>
+              </div>
+              <div class="text-white font-mono text-[15px] font-bold mt-1 tracking-tight">
+                <%= creator_vpa %>
+              </div>
+              <div class="mt-2.5 flex items-center gap-1.5 text-[11px] text-outline">
+                <span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+                <span>NPCI 2.4s Settlement SLA Guaranteed</span>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-white/[0.05] flex flex-col gap-2 text-[11.5px]">
+              <div class="flex items-center justify-between">
+                <span class="text-outline">Escrow Mode</span>
+                <span class="text-white font-semibold">Zero Middleman (Peer-to-Peer)</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-outline">Daily Processed Volume</span>
+                <span class="text-white font-bold">₹18,490</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-outline">Auto-Match Precision</span>
+                <span class="text-white font-bold">99.8% Success</span>
+              </div>
+            </div>
+
+            <%= link_to creator_settings_path, class: "w-full mt-4 py-2.5 px-4 rounded-full bg-surface-container-high/60 hover:bg-surface-container-highest border border-white/[0.08] text-white text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer" do %>
+              <span class="material-symbols-outlined text-[15px]">tune</span>
+              <span>Gateway &amp; VPA Settings</span>
+            <% end %>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>

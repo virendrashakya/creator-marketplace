@@ -55,6 +55,7 @@ Rails.application.routes.draw do
   resources :subscription_plans, except: %i[index show] do
     post :subscribe, on: :member
   end
+  get "subscribers", to: "subscribers#index", as: :subscribers
   resources :paid_media_collections, except: %i[show] do
     member do
       post :items
@@ -95,6 +96,40 @@ Rails.application.routes.draw do
   end
   # A fan's own library: everything they have unlocked, readable offline.
   get "unlocks", to: "unlocks#index", as: :unlocks
+  get "feed", to: "feed#index", as: :feed
+  post "feed_items/:id/seen", to: "feed_items#seen", as: :seen_feed_item
+  get "discover", to: "discover#index", as: :discover
+
+  namespace :api do
+    namespace :v1 do
+      post "auth/otp", to: "sessions#send_otp"
+      post "auth/verify", to: "sessions#verify_otp"
+      get  "auth/me", to: "sessions#me"
+      delete "auth", to: "sessions#destroy"
+
+      get "feed", to: "feed#index"
+      post "feed_items/:id/seen", to: "feed#seen"
+      get "discover", to: "/discover#index"
+      get "creators/:handle", to: "creators#show"
+      post "creators/:handle/follow", to: "creators#follow"
+      delete "creators/:handle/follow", to: "creators#unfollow"
+      resources :notifications, only: %i[index] do
+        member { post :read }
+        collection { post :read_all }
+      end
+      resources :posts, only: %i[show] do
+        member do
+          post :like
+          delete :like, action: :unlike
+          post :save, action: :bookmark
+          delete :save, action: :unbookmark
+        end
+        resources :comments, only: %i[index create], controller: "post_comments"
+      end
+      resources :payment_claims, only: %i[create]
+      resources :events, only: %i[create]
+    end
+  end
 
   resources :creator_posts, except: %i[show] do
     resource :creator_post_like, only: %i[create destroy]
@@ -106,14 +141,14 @@ Rails.application.routes.draw do
   # so a socket is never more trusted than a page load.
   mount ActionCable.server => "/cable"
 
-  # Scheduled lives. The room is public so a non-member can open the link
-  # from a story; the stream inside is gated on an active subscription.
-  resources :live_sessions, path: "lives", except: :index do
+  # Scheduled lives & Live Studio
+  resources :live_sessions, path: "lives" do
     member do
       # The creator's control room, as distinct from the viewer's page.
       get :studio
       post :start
       post :finish
+      post :announcement
     end
     resources :live_messages, only: %i[create index], path: "messages"
   end

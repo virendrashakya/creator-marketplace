@@ -17,11 +17,42 @@ class ConversationChannel < ApplicationCable::Channel
     return unless message.save
 
     ConversationChannel.broadcast_to(conversation, {
+      type: "message",
       id: message.id,
       body: message.body,
       sender_id: message.sender_id,
       handle: message.sender.handle,
       at: message.created_at.iso8601
+    })
+
+    UpdateConversationJob.perform_later(
+      conversation.id,
+      current_user.id,
+      message_preview: message.body
+    )
+  end
+
+  def typing(data)
+    conversation = Conversation.find_by(id: params[:conversation_id])
+    return if conversation.blank? || !conversation.participant?(current_user)
+
+    ConversationChannel.broadcast_to(conversation, {
+      type: "typing",
+      user_id: current_user.id,
+      handle: current_user.handle,
+      typing: data["typing"] != false
+    })
+  end
+
+  def read(_data = {})
+    conversation = Conversation.find_by(id: params[:conversation_id])
+    return if conversation.blank? || !conversation.participant?(current_user)
+
+    conversation.mark_read_for!(current_user)
+    ConversationChannel.broadcast_to(conversation, {
+      type: "read",
+      user_id: current_user.id,
+      read_at: Time.current.iso8601
     })
   end
 end

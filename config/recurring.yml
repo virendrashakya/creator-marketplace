@@ -1,10 +1,29 @@
-# production:
-#   periodic_cleanup:
-#     class: CleanSoftDeletedRecordsJob
-#     queue: background
-#     args: [ 1000, { batch_size: 500 } ]
-#     schedule: every hour
-#   periodic_command:
-#     command: "SoftDeletedRecord.due.delete_all"
-#     priority: 2
-#     schedule: at 5am every day
+# Solid Queue Recurring Tasks Configuration
+# Times specified in cron format (UTC by default in Rails jobs)
+
+production:
+  daily_analytics_rollup:
+    class: DailyAnalyticsRollupJob
+    schedule: "30 20 * * *"  # 2:00 AM IST (UTC 20:30)
+    queue: analytics
+
+  fan_profile_recalculate:
+    class: FanProfileRecalculateJob
+    schedule: "30 21 * * *"  # 3:00 AM IST (UTC 21:30)
+    queue: analytics
+
+  content_stats_accumulator:
+    class: ContentStatsAccumulatorJob
+    schedule: "*/15 * * * *" # Every 15 minutes
+    queue: analytics
+
+  create_monthly_partition:
+    class: CreateMonthlyPartitionJob
+    schedule: "0 0 25 * *"   # 25th of every month at midnight UTC
+    queue: maintenance
+
+development:
+  content_stats_accumulator:
+    class: ContentStatsAccumulatorJob
+    schedule: "*/15 * * * *"
+    queue: analytics

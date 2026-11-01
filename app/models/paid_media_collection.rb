@@ -5,8 +5,10 @@
 class PaidMediaCollection < ApplicationRecord
   include MoneyFormatting
 
-  belongs_to :user
+  belongs_to :user, counter_cache: :collections_count
   belongs_to :subscription_plan, optional: true
+
+  after_create_commit :enqueue_feed_fanout, if: :published?
   has_many :paid_media_posts, -> { order(:position, :id) }, dependent: :nullify
   has_many :access_purchases, as: :purchasable, dependent: :destroy
   has_many :creator_posts, dependent: :nullify
@@ -86,10 +88,14 @@ class PaidMediaCollection < ApplicationRecord
   end
 
   def revenue_cents
-    access_purchases.paid.sum(:amount_cents)
+    super.presence || access_purchases.paid.sum(:amount_cents)
   end
 
   private
+
+  def enqueue_feed_fanout
+    FeedFanoutJob.perform_later("PaidMediaCollection", id, "collection_drop")
+  end
 
   def subscription_plan_belongs_to_owner
     errors.add(:subscription_plan, "is not yours") if subscription_plan.present? && subscription_plan.user_id != user_id

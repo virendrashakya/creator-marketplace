@@ -27,9 +27,15 @@ class DashboardController < ApplicationController
 
     @range = RANGES.key?(params[:range]) ? params[:range] : "30d"
     days = RANGES[@range]
-    window = approved.where(reviewed_at: (days - 1).days.ago.beginning_of_day..)
+    start_date = (days - 1).days.ago.to_date
+    window = approved.where(reviewed_at: start_date.beginning_of_day..)
     by_day = window.group("DATE(reviewed_at)").sum(:amount_cents)
-    @series = (0...days).map { |i| by_day[(days - 1 - i).days.ago.to_date].to_i }
+
+    daily_rollups = me.respond_to?(:creator_daily_stats) ? me.creator_daily_stats.where(date: start_date..Date.current).index_by(&:date) : {}
+    @series = (0...days).map do |i|
+      d = (days - 1 - i).days.ago.to_date
+      daily_rollups[d]&.total_revenue_cents || by_day[d].to_i
+    end
     @breakdown = {
       "Collections" => window.where(purchasable_type: %w[PaidMediaCollection PaidMediaPost]).sum(:amount_cents),
       "Close Friends" => window.where(purchasable_type: "SubscriptionPlan").sum(:amount_cents),
@@ -50,6 +56,7 @@ class DashboardController < ApplicationController
                             .order("meet_slots.starts_at").first
 
     @top_collections = @collections.select(&:published?).sort_by { |c| -c.revenue_cents }.first(4)
+    @recent_claims = me.received_payment_claims.includes(:user, :purchasable).order(created_at: :desc).limit(5).to_a
   end
 
   private

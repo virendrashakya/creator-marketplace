@@ -1,0 +1,109 @@
+<%
+  is_overview = current_page?(dashboard_path) rescue false
+  is_posts = controller_name == "creator_posts" && action_name == "index"
+  is_create_post = controller_name == "creator_posts" && %w[new create edit update].include?(action_name)
+  is_collections = controller_name == "paid_media_collections"
+  is_lives = controller_name.in?(%w[live_sessions lives])
+  is_messages = controller_name.in?(%w[conversations direct_messages])
+  is_subscribers = controller_name == "subscribers"
+  is_settings = controller_name == "creator_settings"
+
+  creator_user = current_user || User.find_by(account_type: "creator") || User.first
+  creator_name = creator_user&.try(:display_name).presence || creator_user&.try(:name).presence || "Aura Monroe"
+  creator_handle = creator_user&.try(:username).presence || creator_user&.try(:handle).presence || "auramonroe"
+  creator_initials = creator_name.split.map(&:first).join[0..1].upcase.presence || "AM"
+
+  nav_link_cls = ->(active) {
+    if active
+      "flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-primary-container/15 text-white font-semibold border border-primary/30 shadow-[0_0_20px_rgba(255,23,103,0.15)] transition-all relative group"
+    else
+      "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all duration-150 group"
+    end
+  }
+%>
+<aside class="fixed left-0 top-0 h-full w-[260px] bg-surface-container-low/95 backdrop-blur-2xl z-50 flex flex-col justify-between py-5 px-3.5 border-r border-white/[0.06] shadow-[0_1px_12px_rgba(0,0,0,0.5)]">
+  <div class="flex flex-col gap-6">
+    <!-- Studio Brand Logo -->
+    <div class="flex items-center gap-2.5 px-2">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center relative shadow-[0_0_16px_rgba(255,23,103,0.35)] shrink-0">
+        <span class="material-symbols-outlined text-white text-[19px]">auto_awesome</span>
+        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-surface-container-low"></span>
+      </div>
+      <div class="flex flex-col min-w-0">
+        <span class="font-headline-sm text-[17px] text-white tracking-tight leading-tight font-extrabold">Wishful</span>
+        <span class="font-label-vip text-[10px] uppercase tracking-widest text-primary font-bold">Creator Studio</span>
+      </div>
+    </div>
+
+    <!-- Navigation List -->
+    <nav class="flex flex-col gap-1 text-[13.5px]">
+      <%= link_to dashboard_path, class: nav_link_cls.call(is_overview), data: { path: "overview" } do %>
+        <span class="material-symbols-outlined text-[19px] <%= is_overview ? 'text-primary' : 'text-outline group-hover:text-on-surface' %> transition-colors">dashboard</span>
+        <span class="leading-none">Overview</span>
+      <% end %>
+
+      <%= link_to creator_posts_path, class: nav_link_cls.call(is_posts), data: { path: "posts-and-content-analytics" } do %>
+        <span class="material-symbols-outlined text-[19px] <%= is_posts ? 'text-primary' : 'text-outline group-hover:text-on-surface' %> transition-colors">analytics</span>
+        <span class="leading-none">Posts &amp; Analytics</span>
+      <% end %>
+
+      <%= link_to new_creator_post_path, class: nav_link_cls.call(is_create_post), data: { path: "create-post" }, aria: (is_create_post ? { current: "page" } : {}) do %>
+        <span class="material-symbols-outlined text-[19px] <%= is_create_post ? 'text-primary' : 'text-outline group-hover:text-on-surface' %> transition-colors">add_circle</span>
+        <span class="leading-none">Create Post</span>
+      <% end %>
+
+      <%= link_to paid_media_collections_path, class: nav_link_cls.call(is_collections), data: { path: "collections-and-vault" } do %>
+        <span class="material-symbols-outlined text-[19px] <%= is_collections ? 'text-primary' : 'text-outline group-hover:text-on-surface' %> transition-colors">lock</span>
+        <span class="leading-none">Collections &amp; Vault</span>
+      <% end %>
+
+      <%= link_to "/lives", class: nav_link_cls.call(is_lives), data: { path: "live-broadcast" } do %>
+        <span class="material-symbols-outlined text-[19px] <%= is_lives ? 'text-primary' : 'text-outline group-hover:text-on-surface' %> transition-colors">sensors</span>
+        <span class="leading-none">Live Broadcast</span>
+      <% end %>
+
+      <%= link_to conversations_path, class: nav_link_cls.call(is_messages), data: { path: "messages-and-direct-access" } do %>
+        <span class="material-symbols-outlined text-[19px] <%= is_messages ? 'text-primary' : 'text-outline group-hover:text-on-surface' %> transition-colors">chat_bubble</span>
+        <span class="leading-none flex-1">Messages &amp; DMs</span>
+        <span class="w-5 h-5 rounded-full <%= is_messages ? 'bg-white text-primary' : 'bg-primary/20 text-primary' %> text-[10.5px] font-extrabold flex items-center justify-center shrink-0">3</span>
+      <% end %>
+
+      <%= link_to subscribers_path, class: nav_link_cls.call(is_subscribers), data: { path: "subscribers-and-vip-patrons" } do %>
+        <span class="material-symbols-outlined text-[19px] <%= is_subscribers ? 'text-primary' : 'text-outline group-hover:text-on-surface' %> transition-colors">group</span>
+        <span class="leading-none">Subscribers</span>
+      <% end %>
+
+      <%= link_to creator_settings_path, class: nav_link_cls.call(is_settings), data: { path: "studio-settings" } do %>
+        <span class="material-symbols-outlined text-[19px] <%= is_settings ? 'text-primary' : 'text-outline group-hover:text-on-surface' %> transition-colors">settings</span>
+        <span class="leading-none">Settings</span>
+      <% end %>
+    </nav>
+  </div>
+
+  <!-- Bottom User Card with UPI status & Sign out -->
+  <div class="flex flex-col gap-2 p-2.5 bg-surface-container/70 border border-white/[0.05] rounded-xl">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-container/40 to-surface-container-highest flex items-center justify-center font-bold text-primary text-[12px] ring-1 ring-primary/30 shrink-0">
+          <%= creator_initials %>
+        </div>
+        <div class="flex flex-col min-w-0">
+          <span class="text-[13px] font-semibold text-white leading-tight truncate"><%= creator_name %></span>
+          <span class="text-[11px] text-outline leading-tight truncate">@<%= creator_handle %></span>
+        </div>
+      </div>
+      <%= link_to creator_settings_path, class: "w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-white hover:bg-surface-container transition-colors shrink-0", title: "Settings" do %>
+        <span class="material-symbols-outlined text-[18px]">more_vert</span>
+      <% end %>
+    </div>
+    <div class="flex items-center justify-between px-1 pt-1 border-t border-white/[0.04]">
+      <div class="inline-flex items-center gap-1.5 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="font-label-vip text-[10px] text-emerald-300 font-bold uppercase">UPI ACTIVE</span>
+      </div>
+      <%= button_to sign_out_path, method: :delete, class: "text-[12px] text-outline hover:text-rose-400 transition-colors flex items-center gap-1 p-1 cursor-pointer", title: "Sign Out" do %>
+        <span class="material-symbols-outlined text-[16px]">logout</span>
+      <% end %>
+    </div>
+  </div>
+</aside>

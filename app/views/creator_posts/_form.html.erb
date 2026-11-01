@@ -1,19 +1,251 @@
-<%= form_with model: @creator_post do |f| %>
+<%= form_with model: @creator_post, url: @creator_post.persisted? ? creator_post_path(@creator_post) : creator_posts_path, local: true, multipart: true, html: { class: "w-stack w-post-composer-form", style: "gap:16px" } do |f| %>
   <%= render "shared/errors", record: @creator_post %>
-  <div class="field">
-    <%= f.label :body, "Post" %>
-    <%= f.text_area :body, placeholder: "Share an update with the people who follow you…" %>
+
+  <% current_type = @creator_post.post_type.presence || @creator_post.item_type || "post" %>
+  <%= f.hidden_field :post_type, value: current_type, id: "composer-post-type-input" %>
+
+  <!-- 1. Post Type Segmented Switcher Pills -->
+  <div>
+    <label class="w-sub" style="font-size:12px;font-weight:700;display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">
+      Select Post Archetype
+    </label>
+    <div class="w-row" style="gap:6px;overflow-x:auto;padding-bottom:4px" id="composer-type-pills">
+      <button type="button" class="w-btn w-type-pill <%= 'w-type-pill--active' if current_type == 'post' %>" data-type="post" style="font-size:12px;padding:6px 14px;border-radius:9999px">
+        📸 Photo Set
+      </button>
+      <button type="button" class="w-btn w-type-pill <%= 'w-type-pill--active' if current_type == 'poll' %>" data-type="poll" style="font-size:12px;padding:6px 14px;border-radius:9999px">
+        📊 Runway Poll
+      </button>
+      <button type="button" class="w-btn w-type-pill <%= 'w-type-pill--active' if current_type == 'audio' %>" data-type="audio" style="font-size:12px;padding:6px 14px;border-radius:9999px">
+        🎙️ Audio Whisper
+      </button>
+      <button type="button" class="w-btn w-type-pill <%= 'w-type-pill--active' if current_type == 'video_teaser' %>" data-type="video_teaser" style="font-size:12px;padding:6px 14px;border-radius:9999px">
+        🎥 4K Reel Teaser
+      </button>
+    </div>
   </div>
-  <div class="field">
-    <%= f.label :media, "Photo or video (optional)" %>
-    <%= f.file_field :media, accept: "image/*,video/*" %>
+
+  <!-- 2. Dynamic Media Dropzone -->
+  <div id="media-drop-section" class="<%= 'w-hidden' if current_type == 'poll' && !@creator_post.media.attached? %>">
+    <label class="w-file-drop" style="min-height:160px;position:relative;border-radius:14px;overflow:hidden;background:#050406;border:1.5px dashed rgba(255, 23, 103, 0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:16px">
+      <%= f.file_field :media, id: "post-media-file", accept: "image/*,video/*,audio/*", style: "position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2" %>
+      
+      <div id="media-preview-container" style="display:<%= @creator_post.media.attached? ? 'block' : 'none' %>;max-height:140px;margin-bottom:8px">
+        <% if @creator_post.media.attached? %>
+          <% if @creator_post.video? %>
+            <video src="<%= url_for(@creator_post.media) %>" muted playsinline style="max-height:120px;border-radius:8px"></video>
+          <% elsif @creator_post.audio? %>
+            <div style="padding:12px;background:#181520;border-radius:8px;color:var(--w-pink);font-size:13px;font-weight:700">🎙️ Audio attached: <%= @creator_post.media.filename %></div>
+          <% else %>
+            <%= image_tag url_for(@creator_post.media), style: "max-height:120px;border-radius:8px;object-fit:cover" %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <div id="media-drop-label" style="text-align:center;pointer-events:none">
+        <strong style="font-size:24px;color:var(--w-pink);display:block;margin-bottom:2px">+</strong>
+        <span id="post-media-label-text" style="font-size:13px;font-weight:700;color:var(--w-soft)">
+          <%= @creator_post.media.attached? ? "Click or drop to replace file" : "Drop photo, 60fps video, or binaural audio" %>
+        </span>
+        <div class="w-sub" style="font-size:11px;margin-top:4px">Accepts JPG, PNG, MP4, MOV, MP3, WAV, FLAC</div>
+      </div>
+    </label>
   </div>
-  <label class="toggle-wrap">
-    <%= f.check_box :published %>
-    Publish now
-  </label>
-  <div class="actions" style="margin-top: 18px">
-    <%= f.submit(@creator_post.persisted? ? "Save post" : "Publish post", class: "button accent", data: { disable_with: "Saving…" }) %>
-    <%= link_to "Cancel", dashboard_path, class: "button light" %>
+
+  <!-- 3. Type-Specific Panel: Runway Poll -->
+  <div id="poll-fields-panel" class="<%= 'w-hidden' unless current_type == 'poll' %>" style="background:#181520;border:1px solid rgba(255, 23, 103, 0.2);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:16px">📊</span>
+      <span style="font-size:13.5px;font-weight:800;color:#fff">Interactive Poll Details</span>
+    </div>
+    
+    <div>
+      <label style="font-size:11.5px;font-weight:700;color:var(--w-sub);display:block;margin-bottom:4px">Poll Question / Outfit Dilemma</label>
+      <input type="text" name="poll_question" value="<%= @creator_post.poll_question %>" placeholder="e.g. Deep V-cut velvet blouse or halter neckline for tomorrow?" class="w-input" style="width:100%;box-sizing:border-box;background:#0e0c12;border:1px solid var(--w-line);border-radius:10px;padding:10px 12px;color:#fff;font-size:13px">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div>
+        <label style="font-size:11.5px;font-weight:700;color:var(--w-sub);display:block;margin-bottom:4px">Option A</label>
+        <input type="text" name="poll_option_1" value="<%= @creator_post.poll_options[0] %>" placeholder="e.g. Sheer Rose Bodysuit" class="w-input" style="width:100%;box-sizing:border-box;background:#0e0c12;border:1px solid var(--w-line);border-radius:10px;padding:9px 12px;color:#fff;font-size:12.5px">
+      </div>
+      <div>
+        <label style="font-size:11.5px;font-weight:700;color:var(--w-sub);display:block;margin-bottom:4px">Option B</label>
+        <input type="text" name="poll_option_2" value="<%= @creator_post.poll_options[1] %>" placeholder="e.g. Obsidian Midnight Silk" class="w-input" style="width:100%;box-sizing:border-box;background:#0e0c12;border:1px solid var(--w-line);border-radius:10px;padding:9px 12px;color:#fff;font-size:12.5px">
+      </div>
+    </div>
+
+    <div>
+      <label style="font-size:11.5px;font-weight:700;color:var(--w-sub);display:block;margin-bottom:4px">Voting Duration</label>
+      <select name="poll_duration" class="w-select" style="width:100%;background:#0e0c12;border:1px solid var(--w-line);border-radius:10px;padding:8px 12px;color:#fff;font-size:12.5px">
+        <option value="6 hours" <%= 'selected' if @creator_post.poll_duration == '6 hours' %>>Closes in 6 hours</option>
+        <option value="24 hours" <%= 'selected' if @creator_post.poll_duration == '24 hours' || @creator_post.poll_duration.blank? %>>Closes in 24 hours</option>
+        <option value="3 days" <%= 'selected' if @creator_post.poll_duration == '3 days' %>>Closes in 3 days</option>
+        <option value="7 days" <%= 'selected' if @creator_post.poll_duration == '7 days' %>>Closes in 7 days</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 4. Type-Specific Panel: Audio Whisper -->
+  <div id="audio-fields-panel" class="<%= 'w-hidden' unless current_type == 'audio' %>" style="background:#181520;border:1px solid rgba(255, 23, 103, 0.2);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:16px">🎙️</span>
+      <span style="font-size:13.5px;font-weight:800;color:#fff">Binaural Audio Note Setup</span>
+    </div>
+
+    <div>
+      <label style="font-size:11.5px;font-weight:700;color:var(--w-sub);display:block;margin-bottom:4px">Audio Title</label>
+      <input type="text" name="audio_title" value="<%= @creator_post.audio_title %>" placeholder="e.g. Bedside Confessions #04 (Uncut)" class="w-input" style="width:100%;box-sizing:border-box;background:#0e0c12;border:1px solid var(--w-line);border-radius:10px;padding:10px 12px;color:#fff;font-size:13px">
+    </div>
+
+    <div>
+      <label style="font-size:11.5px;font-weight:700;color:var(--w-sub);display:block;margin-bottom:4px">Recording Fidelity / Quality Subtitle</label>
+      <input type="text" name="audio_format" value="<%= @creator_post.audio_format %>" placeholder="e.g. 3D Binaural • FLAC Lossless" class="w-input" style="width:100%;box-sizing:border-box;background:#0e0c12;border:1px solid var(--w-line);border-radius:10px;padding:10px 12px;color:#fff;font-size:13px">
+    </div>
+  </div>
+
+  <!-- 5. Caption & Editorial Body -->
+  <div>
+    <label style="font-size:12px;font-weight:700;color:var(--w-sub);display:block;margin-bottom:6px">Caption / Post Body</label>
+    <%= f.text_area :body, id: "composer-body-textarea", class: "w-textarea", rows: 3, placeholder: "Write what's on your mind or tease the shoot…", required: true, maxlength: 2200, style: "width:100%;box-sizing:border-box;background:#0e0c12;border:1px solid var(--w-line);border-radius:12px;color:#fff;padding:12px;font-size:13.5px;line-height:1.45" %>
+  </div>
+
+  <!-- 6. Badge & Hashtags -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div>
+      <label style="font-size:11.5px;font-weight:700;color:var(--w-sub);display:block;margin-bottom:4px">VIP Tag / Badge</label>
+      <input type="text" name="badge" id="composer-badge-input" value="<%= @creator_post.badge %>" placeholder="e.g. 4K ULTRA HD" class="w-input" style="width:100%;box-sizing:border-box;background:#0e0c12;border:1px solid var(--w-line);border-radius:10px;padding:9px 12px;color:#fff;font-size:12.5px">
+    </div>
+
+    <div>
+      <label style="font-size:11.5px;font-weight:700;color:var(--w-sub);display:block;margin-bottom:4px">Hashtags (comma separated)</label>
+      <input type="text" name="tags_string" value="<%= @creator_post.tags.join(', ') %>" placeholder="#AfterDark, #ChiffonDrape" class="w-input" style="width:100%;box-sizing:border-box;background:#0e0c12;border:1px solid var(--w-line);border-radius:10px;padding:9px 12px;color:#fff;font-size:12.5px">
+    </div>
+  </div>
+
+  <!-- 7. Teaser Link to Collection (Organic Purchase Funnel) -->
+  <% collections = @collections || current_user&.paid_media_collections&.order(created_at: :desc) || [] %>
+  <% if collections.any? %>
+    <div style="background:#0e0c12;border:1px solid rgba(245, 185, 66, 0.25);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div>
+        <div style="font-size:12.5px;font-weight:800;color:var(--w-gold)">🛍️ Tease a Paid Vault Drop</div>
+        <div style="font-size:11px;color:var(--w-sub)">Adds an instant direct UPI unlock card under this post</div>
+      </div>
+      <%= f.select :paid_media_collection_id, collections.map { |c| [ "#{c.title} (#{c.price_label})", c.id ] }, { include_blank: "No collection linked" },
+            class: "w-select", style: "width:auto;height:32px;font-size:12px;padding:0 10px;background:#181520;color:#fff;border:1px solid var(--w-line);border-radius:8px" %>
+    </div>
+  <% end %>
+
+  <!-- 8. Actions: Save Draft vs Publish Now -->
+  <div class="w-row" style="gap:10px;margin-top:6px">
+    <button type="submit" name="creator_post[published]" value="0" class="w-btn w-grow" style="background:#181520;border:1px solid var(--w-line);color:var(--w-sub);padding:11px;font-weight:700">
+      Save draft
+    </button>
+    <button type="submit" name="creator_post[published]" value="1" class="w-btn w-btn--pink w-grow" style="padding:11px;font-weight:800;box-shadow:var(--w-pink-glow)">
+      <%= @creator_post.persisted? ? "Update post" : "Post to Feed ✦" %>
+    </button>
   </div>
 <% end %>
+
+<style>
+  .w-type-pill {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--w-sub);
+    border: 1px solid var(--w-line);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .w-type-pill--active {
+    background: var(--w-btn-gradient) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+    box-shadow: 0 0 12px rgba(255, 23, 103, 0.45) !important;
+  }
+  .w-hidden {
+    display: none !important;
+  }
+</style>
+
+<script>
+  (function() {
+    function initPostComposer() {
+      var pills = document.querySelectorAll('#composer-type-pills .w-type-pill');
+      var typeInput = document.getElementById('composer-post-type-input');
+      var pollPanel = document.getElementById('poll-fields-panel');
+      var audioPanel = document.getElementById('audio-fields-panel');
+      var badgeInput = document.getElementById('composer-badge-input');
+      var mediaFile = document.getElementById('post-media-file');
+      var mediaPreview = document.getElementById('media-preview-container');
+      var mediaLabelText = document.getElementById('post-media-label-text');
+
+      if (!pills.length) return;
+
+      pills.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var selected = btn.getAttribute('data-type');
+          pills.forEach(function(b) { b.classList.remove('w-type-pill--active'); });
+          btn.classList.add('w-type-pill--active');
+          if (typeInput) typeInput.value = selected;
+
+          // Toggle Panels
+          if (pollPanel) pollPanel.classList.toggle('w-hidden', selected !== 'poll');
+          if (audioPanel) audioPanel.classList.toggle('w-hidden', selected !== 'audio');
+
+          // Update default badge suggestion
+          if (badgeInput && (!badgeInput.value || badgeInput.dataset.auto === 'true')) {
+            badgeInput.dataset.auto = 'true';
+            if (selected === 'poll') badgeInput.value = 'INTERACTIVE RUNWAY POLL';
+            else if (selected === 'audio') badgeInput.value = 'AUDIO WHISPER DROP';
+            else if (selected === 'video_teaser') badgeInput.value = '60FPS 4K UHD TEASER';
+            else badgeInput.value = '4K UHD • RAW EDIT';
+          }
+
+          // Adjust accept types on file input
+          if (mediaFile) {
+            if (selected === 'audio') mediaFile.accept = 'audio/*';
+            else if (selected === 'video_teaser') mediaFile.accept = 'video/*';
+            else if (selected === 'post') mediaFile.accept = 'image/*,video/*';
+            else mediaFile.accept = 'image/*';
+          }
+        });
+      });
+
+      // Live File Drop Preview
+      if (mediaFile) {
+        mediaFile.addEventListener('change', function() {
+          if (mediaFile.files && mediaFile.files[0]) {
+            var file = mediaFile.files[0];
+            if (mediaLabelText) mediaLabelText.textContent = 'Selected: ' + file.name + ' (' + Math.round(file.size / 1024) + ' KB)';
+            
+            if (file.type.startsWith('image/')) {
+              var reader = new FileReader();
+              reader.onload = function(e) {
+                if (mediaPreview) {
+                  mediaPreview.style.display = 'block';
+                  mediaPreview.innerHTML = '<img src="' + e.target.result + '" style="max-height:120px;border-radius:8px;object-fit:cover" />';
+                }
+              };
+              reader.readAsDataURL(file);
+            } else if (file.type.startsWith('video/')) {
+              if (mediaPreview) {
+                mediaPreview.style.display = 'block';
+                mediaPreview.innerHTML = '<div style="padding:10px;background:#181520;border-radius:8px;color:var(--w-pink);font-size:12.5px;font-weight:700">🎥 60fps Video Selected: ' + file.name + '</div>';
+              }
+            } else if (file.type.startsWith('audio/')) {
+              if (mediaPreview) {
+                mediaPreview.style.display = 'block';
+                mediaPreview.innerHTML = '<div style="padding:10px;background:#181520;border-radius:8px;color:var(--w-pink);font-size:12.5px;font-weight:700">🎙️ Binaural Audio Selected: ' + file.name + '</div>';
+              }
+            }
+          }
+        });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPostComposer);
+    } else {
+      initPostComposer();
+    }
+  })();
+</script>

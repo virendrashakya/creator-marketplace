@@ -4,7 +4,25 @@ class ApplicationController < ActionController::Base
   private
 
   def current_user
-    @current_user ||= User.find_by(id: session[:user_id]) if session[:user_id]
+    return @current_user if defined?(@current_user)
+
+    if session[:user_id]
+      @current_user = User.find_by(id: session[:user_id])
+    elsif (header = request.headers["Authorization"]).present?
+      token = header.to_s.split(" ").last
+      if token.present?
+        payload = JwtService.decode(token)
+        if payload && payload["sub"]
+          @current_user = User.find_by(id: payload["sub"])
+        else
+          session_record = UserSession.active.find_by(session_token: token)
+          @current_user = session_record&.user
+          session_record&.touch_last_seen! if session_record
+        end
+      end
+    end
+
+    @current_user
   end
 
   def signed_in?

@@ -1,0 +1,562 @@
+<% content_for :bare, true %>
+<% content_for :title, "Creator Studio — Subscribers & VIP Patrons | Wishful" %>
+
+<% content_for :head do %>
+  <%= render "layouts/studio_head" %>
+<% end %>
+
+<%= render "layouts/studio_sidebar" %>
+
+<div class="pl-[260px]">
+  <%= render "layouts/studio_header", current_page_name: "Subscribers & VIP Patrons" %>
+
+  <main class="relative pt-16 bg-surface-container-lowest min-h-screen w-full px-gutter-desktop py-space-lg">
+    <div class="flex flex-col w-full">
+      <!-- Header & Top Actions Section -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-lg pb-space-xl">
+        <div class="flex flex-col gap-space-xs">
+          <div class="flex items-center gap-space-sm mb-space-xs">
+            <span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_12px_rgba(255,178,188,0.7)]"></span>
+            <span class="font-label-vip text-label-vip uppercase tracking-widest text-primary">Patronage Architecture</span>
+          </div>
+          <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Subscribers &amp; VIP Patrons</h1>
+          <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Manage your recurring supporters, tier distribution, and direct UPI patronage revenue.</p>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="flex items-center gap-space-md shrink-0">
+          <button class="flex items-center gap-space-sm px-space-lg py-space-sm rounded-full bg-surface-container-high/80 text-on-surface hover:bg-surface-container-highest transition-all duration-200 font-label-md text-label-md shadow-sm" type="button">
+            <span class="material-symbols-outlined text-[18px] text-outline">download</span>
+            <span>Export CSV</span>
+          </button>
+          <%= link_to new_subscription_plan_path, class: "flex items-center gap-space-sm px-space-xl py-space-sm rounded-full bg-gradient-to-r from-primary-container via-secondary-container to-inverse-primary text-on-surface hover:opacity-95 shadow-[0_4px_24px_rgba(255,23,103,0.35)] transition-all duration-200 font-label-md text-label-md active:scale-95" do %>
+            <span class="material-symbols-outlined text-[20px] leading-none">add</span>
+            <span>+ Create VIP Tier</span>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- 3-Metric KPI Summary Bento Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md mb-space-xl">
+        <!-- Metric 1 -->
+        <div class="relative overflow-hidden bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-xl p-space-lg flex flex-col justify-between shadow-md hover:border-white/[0.12] transition-colors">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Total Active Patrons</span>
+            <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-white/[0.06] flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined text-[18px]">group</span>
+            </div>
+          </div>
+          <div class="pt-space-lg flex flex-col">
+            <div class="flex items-baseline gap-space-md">
+              <span class="font-headline-lg text-headline-lg text-on-surface font-extrabold tracking-tight"><%= @total_patrons_count %></span>
+              <span class="inline-flex items-center gap-0.5 font-label-sm text-label-sm text-primary font-semibold">
+                <span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+                +12 this month
+              </span>
+            </div>
+            <div class="mt-space-md w-full bg-surface-container-highest/60 rounded-full h-1 overflow-hidden">
+              <div class="bg-primary h-full rounded-full w-[78%]"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric 2 -->
+        <div class="relative overflow-hidden bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-xl p-space-lg flex flex-col justify-between shadow-md hover:border-white/[0.12] transition-colors">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Monthly Recurring Revenue</span>
+            <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-white/[0.06] flex items-center justify-center text-secondary">
+              <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+            </div>
+          </div>
+          <div class="pt-space-lg flex flex-col">
+            <div class="flex items-baseline gap-space-md">
+              <span class="font-headline-lg text-headline-lg text-on-surface font-extrabold tracking-tight">₹<%= @mrr_amount.round.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse %></span>
+              <span class="inline-flex items-center gap-1 font-label-vip text-label-vip text-on-surface-variant bg-surface-container-highest/70 border border-white/[0.06] px-2 py-0.5 rounded-full text-[10px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Direct UPI 0% Fee
+              </span>
+            </div>
+            <div class="mt-space-md flex items-center justify-between text-outline font-label-sm text-label-sm border-t border-white/[0.04] pt-2">
+              <span>Net Disbursed via NPCI</span>
+              <span class="text-on-surface font-medium">100% Real-time</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric 3 -->
+        <div class="relative overflow-hidden bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-xl p-space-lg flex flex-col justify-between shadow-md hover:border-white/[0.12] transition-colors">
+          <div class="flex items-center justify-between">
+            <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Member Retention</span>
+            <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-white/[0.06] flex items-center justify-center text-tertiary">
+              <span class="material-symbols-outlined text-[18px]">verified_user</span>
+            </div>
+          </div>
+          <div class="pt-space-lg flex flex-col">
+            <div class="flex items-baseline gap-space-md">
+              <span class="font-headline-lg text-headline-lg text-on-surface font-extrabold tracking-tight">96.4%</span>
+              <span class="font-label-vip text-label-vip text-secondary-fixed bg-secondary-container/50 border border-secondary/20 px-2 py-0.5 rounded-full text-[10px]">
+                OBSIDIAN TOP TIER
+              </span>
+            </div>
+            <div class="mt-space-md flex items-center justify-between text-outline font-label-sm text-label-sm border-t border-white/[0.04] pt-2">
+              <span>Churn Threshold</span>
+              <span class="text-on-surface font-medium">&lt; 3.6%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIP Tiers Overview Header & Grid -->
+      <div class="flex flex-col gap-space-md mb-space-xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-primary text-[20px]">diamond</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Active VIP Tiers</h2>
+          </div>
+          <span class="font-label-sm text-label-sm text-outline">3 Active Levels Configured</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+          <!-- Tier 1: Close Friends Pass -->
+          <div class="group bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-xl p-space-lg flex flex-col justify-between hover:border-white/[0.14] transition-all duration-300 shadow-md">
+            <div class="flex flex-col gap-space-sm">
+              <div class="flex items-center justify-between">
+                <span class="font-label-vip text-label-vip uppercase tracking-widest text-outline text-[10px]">Tier 01</span>
+                <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container-high border border-white/[0.06] text-on-surface-variant font-label-vip text-[10px]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Active
+                </div>
+              </div>
+              <div class="mt-space-xs">
+                <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Close Friends Pass</h3>
+                <div class="flex items-baseline gap-1 mt-1">
+                  <span class="font-headline-md text-headline-md text-on-surface font-extrabold">₹499</span>
+                  <span class="font-label-sm text-label-sm text-outline">/mo</span>
+                </div>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant pt-space-xs leading-relaxed">
+                All paywalled drops unlocked, private story broadcast &amp; high-res editorial archive access.
+              </p>
+            </div>
+            <div class="mt-space-lg pt-space-md flex flex-col gap-space-md bg-surface-container-lowest/40 border-t border-white/[0.04] -mx-space-lg -mb-space-lg px-space-lg pb-space-lg rounded-b-xl">
+              <div class="flex items-center justify-between font-label-sm text-label-sm">
+                <span class="text-outline">Enrollment</span>
+                <span class="text-on-surface font-semibold">142 members</span>
+              </div>
+              <button class="w-full py-space-xs px-space-md rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-white/[0.06] text-on-surface text-label-md font-label-md transition-colors text-center cursor-pointer" type="button">
+                Manage Tier
+              </button>
+            </div>
+          </div>
+
+          <!-- Tier 2: Inner Circle -->
+          <div class="group relative bg-surface-container-low/90 backdrop-blur-xl border border-primary/25 rounded-xl p-space-lg flex flex-col justify-between hover:border-primary/40 transition-all duration-300 shadow-[0_4px_24px_rgba(255,23,103,0.1)]">
+            <div class="flex flex-col gap-space-sm">
+              <div class="flex items-center justify-between">
+                <span class="font-label-vip text-label-vip uppercase tracking-widest text-primary text-[10px]">Tier 02 • Popular</span>
+                <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-secondary-container/60 border border-secondary/20 text-secondary-fixed font-label-vip text-[10px]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                  Active
+                </div>
+              </div>
+              <div class="mt-space-xs">
+                <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Inner Circle</h3>
+                <div class="flex items-baseline gap-1 mt-1">
+                  <span class="font-headline-md text-headline-md text-on-surface font-extrabold">₹999</span>
+                  <span class="font-label-sm text-label-sm text-outline">/mo</span>
+                </div>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant pt-space-xs leading-relaxed">
+                Close friends privileges + monthly 1:1 styling video whisper &amp; behind-the-scenes vault.
+              </p>
+            </div>
+            <div class="mt-space-lg pt-space-md flex flex-col gap-space-md bg-surface-container-lowest/40 border-t border-white/[0.04] -mx-space-lg -mb-space-lg px-space-lg pb-space-lg rounded-b-xl">
+              <div class="flex items-center justify-between font-label-sm text-label-sm">
+                <span class="text-outline">Enrollment</span>
+                <span class="text-on-surface font-semibold">36 members</span>
+              </div>
+              <button class="w-full py-space-xs px-space-md rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-white/[0.06] text-on-surface text-label-md font-label-md transition-colors text-center cursor-pointer" type="button">
+                Manage Tier
+              </button>
+            </div>
+          </div>
+
+          <!-- Tier 3: Sultan Patron -->
+          <div class="group bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-xl p-space-lg flex flex-col justify-between hover:border-white/[0.14] transition-all duration-300 shadow-md">
+            <div class="flex flex-col gap-space-sm">
+              <div class="flex items-center justify-between">
+                <span class="font-label-vip text-label-vip uppercase tracking-widest text-secondary text-[10px]">Tier 03 • Ultra High Roller</span>
+                <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container-high border border-white/[0.06] text-on-surface-variant font-label-vip text-[10px]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Active
+                </div>
+              </div>
+              <div class="mt-space-xs">
+                <h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Sultan Patron</h3>
+                <div class="flex items-baseline gap-1 mt-1">
+                  <span class="font-headline-md text-headline-md text-on-surface font-extrabold">₹2,499</span>
+                  <span class="font-label-sm text-label-sm text-outline">/mo</span>
+                </div>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant pt-space-xs leading-relaxed">
+                Dedicated WhatsApp direct line + quarterly bespoke physical Polaroid set signed in silver ink.
+              </p>
+            </div>
+            <div class="mt-space-lg pt-space-md flex flex-col gap-space-md bg-surface-container-lowest/40 border-t border-white/[0.04] -mx-space-lg -mb-space-lg px-space-lg pb-space-lg rounded-b-xl">
+              <div class="flex items-center justify-between font-label-sm text-label-sm">
+                <span class="text-outline">Enrollment</span>
+                <span class="text-on-surface font-semibold">6 members</span>
+              </div>
+              <button class="w-full py-space-xs px-space-md rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-white/[0.06] text-on-surface text-label-md font-label-md transition-colors text-center cursor-pointer" type="button">
+                Manage Tier
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Patrons Roster Master Table Section -->
+      <div class="bg-surface-container-low/90 backdrop-blur-xl border border-white/[0.06] rounded-xl p-space-lg shadow-md flex flex-col gap-space-md">
+        <!-- Filter Tabs & Search Controls -->
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md pb-space-sm">
+          <!-- Tabs -->
+          <div class="flex items-center gap-space-xs bg-surface-container-lowest/60 border border-white/[0.06] p-1 rounded-xl" id="patronTabsContainer">
+            <button class="patron-tab-btn px-space-md py-space-xs rounded-lg font-label-md text-label-md bg-surface-container-high text-on-surface shadow-sm cursor-pointer" data-filter="all" type="button">
+              All <span class="text-outline ml-1"><%= @total_patrons_count %></span>
+            </button>
+            <button class="patron-tab-btn px-space-md py-space-xs rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer" data-filter="active" type="button">
+              Active <span class="text-outline ml-1"><%= @active_patrons_count %></span>
+            </button>
+            <button class="patron-tab-btn px-space-md py-space-xs rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer" data-filter="expiring" type="button">
+              Expiring Soon <span class="text-primary-container font-semibold ml-1">5</span>
+            </button>
+          </div>
+          <!-- Search Input Field -->
+          <div class="relative flex items-center min-w-[280px]">
+            <span class="material-symbols-outlined absolute left-space-md text-[18px] text-outline">search</span>
+            <input class="w-full pl-10 pr-4 py-space-xs bg-surface-container-high/80 border border-white/[0.06] focus:border-primary/40 rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-outline/50 focus:outline-none transition-all shadow-sm" id="patronSearchInput" placeholder="Filter by name, handle, or UTR..." type="text"/>
+          </div>
+        </div>
+
+        <!-- Roster Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left" id="patronsTable">
+            <thead>
+              <tr class="text-outline font-label-sm text-label-sm border-b border-white/[0.06] bg-surface-container-lowest/40">
+                <th class="py-space-sm px-space-md font-semibold">PATRON</th>
+                <th class="py-space-sm px-space-md font-semibold">VIP TIER</th>
+                <th class="py-space-sm px-space-md font-semibold">MONTHLY AMOUNT</th>
+                <th class="py-space-sm px-space-md font-semibold">PAYMENT STATUS</th>
+                <th class="py-space-sm px-space-md text-right font-semibold">ACTION</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/[0.04] font-body-md text-body-md" id="patronsTableBody">
+              <!-- Render real subscriptions if any -->
+              <% @subscriptions.each do |sub| %>
+                <%
+                  patron = sub.subscriber
+                  p_name = patron&.display_name.presence || patron&.name.presence || "Subscriber ##{sub.id}"
+                  p_handle = patron&.handle.presence || patron&.username.presence || "patron_#{sub.id}"
+                  p_initials = p_name.split.map(&:first).join[0..1].upcase.presence || "SP"
+                  plan_name = sub.subscription_plan&.name || "VIP Pass"
+                  plan_price = sub.subscription_plan&.price_label || "₹499"
+                %>
+                <tr class="patron-row hover:bg-surface-container/60 transition-colors group" data-status="active" data-search="<%= "#{p_name} #{p_handle} #{plan_name}".downcase %>">
+                  <td class="py-space-md px-space-md">
+                    <div class="flex items-center gap-space-md">
+                      <div class="w-10 h-10 rounded-full bg-surface-container-highest border border-white/[0.06] flex items-center justify-center font-headline-sm text-primary text-label-md font-bold shrink-0">
+                        <%= p_initials %>
+                      </div>
+                      <div class="flex flex-col min-w-0">
+                        <div class="flex items-center gap-1.5">
+                          <span class="font-label-md text-label-md text-on-surface font-semibold truncate"><%= p_name %></span>
+                          <span class="material-symbols-outlined text-secondary text-[16px]">stars</span>
+                        </div>
+                        <span class="font-body-sm text-body-sm text-outline truncate">@<%= p_handle %></span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="py-space-md px-space-md">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-highest border border-white/[0.06] text-secondary-fixed font-label-vip text-[10px]">
+                      <span class="material-symbols-outlined text-[13px]">military_tech</span>
+                      <%= plan_name %>
+                    </span>
+                  </td>
+                  <td class="py-space-md px-space-md text-on-surface font-semibold">
+                    <%= plan_price %>
+                  </td>
+                  <td class="py-space-md px-space-md">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container/40 border border-secondary/20 text-on-secondary-container font-label-vip text-[10px]">
+                      <span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed"></span>
+                      Auto-Matched UTR
+                    </span>
+                  </td>
+                  <td class="py-space-md px-space-md text-right">
+                    <%= link_to conversations_path, class: "inline-flex items-center gap-1.5 px-space-md py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-white/[0.06] text-on-surface font-label-sm text-label-sm transition-colors" do %>
+                      <span class="material-symbols-outlined text-[16px]">forum</span>
+                      Message
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+
+              <!-- Row 1: Kabir Malhotra -->
+              <tr class="patron-row hover:bg-surface-container/60 transition-colors group" data-status="active" data-search="kabir malhotra kabir_x sultan patron">
+                <td class="py-space-md px-space-md">
+                  <div class="flex items-center gap-space-md">
+                    <div class="w-10 h-10 rounded-full bg-surface-container-highest border border-white/[0.06] flex items-center justify-center font-headline-sm text-primary text-label-md font-bold shrink-0">
+                      KM
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="font-label-md text-label-md text-on-surface font-semibold truncate">Kabir Malhotra</span>
+                        <span class="material-symbols-outlined text-secondary text-[16px]">stars</span>
+                      </div>
+                      <span class="font-body-sm text-body-sm text-outline truncate">@kabir_x</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-space-md px-space-md">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-surface-container-highest border border-white/[0.06] text-secondary-fixed font-label-vip text-[10px]">
+                    <span class="material-symbols-outlined text-[13px]">military_tech</span>
+                    Sultan Patron
+                  </span>
+                </td>
+                <td class="py-space-md px-space-md text-on-surface font-semibold">
+                  ₹2,499
+                </td>
+                <td class="py-space-md px-space-md">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container/40 border border-secondary/20 text-on-secondary-container font-label-vip text-[10px]">
+                    <span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed"></span>
+                    Auto-Matched UTR
+                  </span>
+                </td>
+                <td class="py-space-md px-space-md text-right">
+                  <button class="inline-flex items-center gap-1.5 px-space-md py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-white/[0.06] text-on-surface font-label-sm text-label-sm transition-colors cursor-pointer" type="button">
+                    <span class="material-symbols-outlined text-[16px]">forum</span>
+                    Message
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 2: Devansh S. -->
+              <tr class="patron-row hover:bg-surface-container/60 transition-colors group" data-status="active" data-search="devansh s dev_mumbai inner circle">
+                <td class="py-space-md px-space-md">
+                  <div class="flex items-center gap-space-md">
+                    <div class="w-10 h-10 rounded-full bg-surface-container-highest border border-white/[0.06] flex items-center justify-center font-headline-sm text-secondary text-label-md font-bold shrink-0">
+                      DS
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-label-md text-label-md text-on-surface font-semibold truncate">Devansh S.</span>
+                      <span class="font-body-sm text-body-sm text-outline truncate">@dev_mumbai</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-space-md px-space-md">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface-container-highest border border-white/[0.06] text-on-surface font-label-vip text-[10px]">
+                    Inner Circle
+                  </span>
+                </td>
+                <td class="py-space-md px-space-md text-on-surface font-semibold">
+                  ₹999
+                </td>
+                <td class="py-space-md px-space-md">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-highest border border-white/[0.06] text-on-surface-variant font-label-vip text-[10px]">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Settled
+                  </span>
+                </td>
+                <td class="py-space-md px-space-md text-right">
+                  <button class="inline-flex items-center gap-1.5 px-space-md py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-white/[0.06] text-on-surface font-label-sm text-label-sm transition-colors cursor-pointer" type="button">
+                    <span class="material-symbols-outlined text-[16px]">forum</span>
+                    Message
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 3: Rahul Verma -->
+              <tr class="patron-row hover:bg-surface-container/60 transition-colors group" data-status="active" data-search="rahul verma rahul_v close friends">
+                <td class="py-space-md px-space-md">
+                  <div class="flex items-center gap-space-md">
+                    <div class="w-10 h-10 rounded-full bg-surface-container-highest border border-white/[0.06] flex items-center justify-center font-headline-sm text-outline text-label-md font-bold shrink-0">
+                      RV
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-label-md text-label-md text-on-surface font-semibold truncate">Rahul Verma</span>
+                      <span class="font-body-sm text-body-sm text-outline truncate">@rahul_v</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-space-md px-space-md">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface-container-highest border border-white/[0.06] text-on-surface-variant font-label-vip text-[10px]">
+                    Close Friends
+                  </span>
+                </td>
+                <td class="py-space-md px-space-md text-on-surface font-semibold">
+                  ₹499
+                </td>
+                <td class="py-space-md px-space-md">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-highest border border-white/[0.06] text-on-surface-variant font-label-vip text-[10px]">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Settled
+                  </span>
+                </td>
+                <td class="py-space-md px-space-md text-right">
+                  <button class="inline-flex items-center gap-1.5 px-space-md py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-white/[0.06] text-on-surface font-label-sm text-label-sm transition-colors cursor-pointer" type="button">
+                    <span class="material-symbols-outlined text-[16px]">forum</span>
+                    Message
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 4: Sameer Joshi -->
+              <tr class="patron-row hover:bg-surface-container/60 transition-colors group" data-status="active" data-search="sameer joshi sam_josh close friends">
+                <td class="py-space-md px-space-md">
+                  <div class="flex items-center gap-space-md">
+                    <div class="w-10 h-10 rounded-full bg-surface-container-highest border border-white/[0.06] flex items-center justify-center font-headline-sm text-outline text-label-md font-bold shrink-0">
+                      SJ
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-label-md text-label-md text-on-surface font-semibold truncate">Sameer Joshi</span>
+                      <span class="font-body-sm text-body-sm text-outline truncate">@sam_josh</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-space-md px-space-md">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface-container-highest border border-white/[0.06] text-on-surface-variant font-label-vip text-[10px]">
+                    Close Friends
+                  </span>
+                </td>
+                <td class="py-space-md px-space-md text-on-surface font-semibold">
+                  ₹499
+                </td>
+                <td class="py-space-md px-space-md">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-highest border border-white/[0.06] text-on-surface-variant font-label-vip text-[10px]">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    Settled
+                  </span>
+                </td>
+                <td class="py-space-md px-space-md text-right">
+                  <button class="inline-flex items-center gap-1.5 px-space-md py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-white/[0.06] text-on-surface font-label-sm text-label-sm transition-colors cursor-pointer" type="button">
+                    <span class="material-symbols-outlined text-[16px]">forum</span>
+                    Message
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 5: Arjun Kapoor (Expiring Soon - Calm Elegant Amber State) -->
+              <tr class="patron-row hover:bg-surface-container/60 transition-colors group bg-amber-500/[0.04]" data-status="expiring" data-search="arjun kapoor arjunk_blr close friends renewal due">
+                <td class="py-space-md px-space-md">
+                  <div class="flex items-center gap-space-md">
+                    <div class="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center font-headline-sm text-amber-300 text-label-md font-bold shrink-0">
+                      AK
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <span class="font-label-md text-label-md text-on-surface font-semibold truncate">Arjun Kapoor</span>
+                      <span class="font-body-sm text-body-sm text-outline truncate">@arjunk_blr</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-space-md px-space-md">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface-container-highest border border-white/[0.06] text-on-surface-variant font-label-vip text-[10px]">
+                    Close Friends
+                  </span>
+                </td>
+                <td class="py-space-md px-space-md text-on-surface font-semibold">
+                  ₹499
+                </td>
+                <td class="py-space-md px-space-md">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 font-label-vip text-[10px]">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                    Renewal Due (2d)
+                  </span>
+                </td>
+                <td class="py-space-md px-space-md text-right">
+                  <button class="inline-flex items-center gap-1.5 px-space-md py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 font-label-sm text-label-sm transition-all cursor-pointer" type="button">
+                    <span class="material-symbols-outlined text-[16px]">forward_to_inbox</span>
+                    Remind
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Clean Minimalist Pagination -->
+        <div class="flex items-center justify-between pt-space-lg border-t border-white/[0.04]">
+          <span class="font-body-sm text-body-sm text-outline" id="patronResultsCount">
+            Showing <span class="text-on-surface font-medium">1 - 5</span> of <%= @total_patrons_count %> patrons
+          </span>
+          <div class="flex items-center gap-space-xs">
+            <button class="w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high border border-white/[0.06] transition-colors" type="button">
+              <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+            </button>
+            <button class="w-8 h-8 rounded-lg flex items-center justify-center bg-primary text-on-primary font-label-sm text-label-sm font-semibold shadow-sm" type="button">
+              1
+            </button>
+            <button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface border border-white/[0.06] font-label-sm text-label-sm transition-colors" type="button">
+              2
+            </button>
+            <button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface border border-white/[0.06] font-label-sm text-label-sm transition-colors" type="button">
+              3
+            </button>
+            <button class="w-8 h-8 rounded-lg flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high border border-white/[0.06] transition-colors" type="button">
+              <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        const tabBtns = document.querySelectorAll('.patron-tab-btn');
+        const rows = document.querySelectorAll('.patron-row');
+        const searchInput = document.getElementById('patronSearchInput');
+        const countDisplay = document.getElementById('patronResultsCount');
+
+        function applyPatronFilters() {
+          const activeBtn = document.querySelector('.patron-tab-btn.bg-surface-container-high');
+          const filter = activeBtn ? activeBtn.getAttribute('data-filter') : 'all';
+          const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+          let visibleCount = 0;
+          rows.forEach(row => {
+            const status = row.getAttribute('data-status');
+            const searchData = row.getAttribute('data-search') || '';
+
+            const matchesTab = (filter === 'all') || (status === filter);
+            const matchesQuery = !query || searchData.includes(query);
+
+            if (matchesTab && matchesQuery) {
+              row.style.display = '';
+              visibleCount++;
+            } else {
+              row.style.display = 'none';
+            }
+          });
+
+          if (countDisplay) {
+            countDisplay.innerHTML = `Showing <span class="text-on-surface font-medium">${visibleCount}</span> of ${rows.length} patrons`;
+          }
+        }
+
+        tabBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            tabBtns.forEach(b => {
+              b.classList.remove('bg-surface-container-high', 'text-on-surface', 'shadow-sm');
+              b.classList.add('text-on-surface-variant');
+            });
+            btn.classList.add('bg-surface-container-high', 'text-on-surface', 'shadow-sm');
+            btn.classList.remove('text-on-surface-variant');
+            applyPatronFilters();
+          });
+        });
+
+        if (searchInput) {
+          searchInput.addEventListener('input', applyPatronFilters);
+        }
+      })();
+    </script>
+  </main>
+</div>

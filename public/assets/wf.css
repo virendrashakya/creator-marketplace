@@ -13,33 +13,34 @@
    so those forms come out dark too. */
 
 :root {
-  --w-bg: #0E0E10;
-  --w-bg-deep: #0A0A0C;
-  --w-card: #16161A;
-  --w-raise: #1C1C20;
-  --w-btn: #232327;
-  --w-btn-hover: #2C2C31;
-  --w-line: #26262A;
-  --w-line-2: #3A3A40;
-  --w-line-soft: #1C1C20;
+  --w-bg: #050406;
+  --w-bg-deep: #09080c;
+  --w-card: #0e0c12;
+  --w-raise: #181520;
+  --w-btn: #1c1b1f;
+  --w-btn-hover: #2b292e;
+  --w-line: rgba(255, 23, 103, 0.12);
+  --w-line-2: rgba(255, 23, 103, 0.22);
+  --w-line-soft: rgba(93, 63, 67, 0.35);
 
-  --w-text: #F5F5F7;
-  --w-soft: #D4D4D8;
-  --w-sub: #A1A1AA;
-  --w-dim: #71717A;
-  --w-faint: #52525B;
+  --w-text: #fdf2f4;
+  --w-soft: #e6bcc1;
+  --w-sub: #a39aa5;
+  --w-dim: #716973;
+  --w-faint: #4e4750;
 
-  --w-pink: #E0306A;
-  --w-pink-hover: #EA4A7F;
-  --w-pink-deep: #A3164B;
-  --w-pink-tint: rgba(224,48,106,.14);
+  --w-pink: #ff1767;
+  --w-pink-hover: #ff337a;
+  --w-pink-deep: #9d174d;
+  --w-pink-tint: rgba(255, 23, 103, 0.15);
+  --w-btn-gradient: linear-gradient(135deg, #ff1767 0%, #c026d3 100%);
   --w-gold: #F5B942;
   --w-gold-ink: #17130B;
   --w-gold-bg: #1E1A10;
-  --w-gold-line: rgba(245,185,66,.45);
+  --w-gold-line: rgba(245, 185, 66, 0.45);
   --w-green: #4ADE80;
-  --w-green-tint: rgba(74,222,128,.12);
-  --w-rose: #F87196;
+  --w-green-tint: rgba(74, 222, 128, 0.14);
+  --w-rose: #ffb4ab;
   --w-blue: #60A5FA;
 
   --w-font: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -96,7 +97,8 @@ body.wf [hidden] { display: none !important; }
   transition: background-color 160ms var(--w-ease), transform 120ms var(--w-ease), border-color 160ms var(--w-ease);
 }
 .w-btn:active { transform: scale(.97); }
-.w-btn--pink { background: var(--w-pink); color: #FFF; }
+.w-btn--pink { background: var(--w-btn-gradient); color: #FFF; box-shadow: 0 4px 20px rgba(255, 23, 103, 0.35); }
+.w-btn--pink:hover { background: var(--w-btn-gradient-hover); box-shadow: 0 0 30px rgba(255, 23, 103, 0.5); }
 .w-btn--gold { background: var(--w-gold); color: var(--w-gold-ink); }
 .w-btn--light { background: var(--w-text); color: var(--w-bg); }
 .w-btn--outline { background: var(--w-raise); border-color: var(--w-line); }

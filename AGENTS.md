@@ -21,22 +21,24 @@ Whenever any code, architectural pattern, database schema, route, controller, se
 
 ---
 
-## 3. Design System Standard: Dark "Studio" (since 13 Oct 2026)
+## 3. Design System Standard: Obsidian Velvet & Neon Ruby (since 14 Oct 2026)
 
-The light "Indian Modern Editorial Chic" theme was replaced by one dark system, ported from the Claude Design files. `DESIGN.md` and `.agents/rules/design_system.md` describe the old light theme and are kept for history only.
+The design system channels an uncompromising, late-night sensual chic aesthetic—merging high-end editorial luxury with the nocturnal pulse of exclusive VIP nightlife.
 
-- **Source of truth**: `public/assets/wf.css` (tokens and `w-` components) and `app/helpers/wf_helper.rb` (icons, avatars, cover sources, Studio nav). Screenshots: `docs/screenshots/redesign-2026-10/`.
-- **Typography**: **Plus Jakarta Sans** everywhere.
+- **Source of truth**: `public/assets/wf.css` (Rails Studio & Storefront tokens) and `fan-app/src/app/globals.css` (Next.js PWA tokens).
+- **Typography**: **Plus Jakarta Sans** everywhere (`display-hero`, `headline-lg/md/sm`, `body-lg/md/sm`, `label-vip`). Extreme weight contrasts: razor-sharp tight headings against tracked uppercase VIP cues (`letter-spacing: 0.14em`).
 - **Colors**:
-  - Page `#0E0E10`, cards `#16161A`, raised `#1C1C20`, lines `#26262A`
-  - Text `#F5F5F7`, secondary `#A1A1AA`, muted `#71717A`
-  - Ruby pink `#E0306A`: the paid action and active states
-  - Gold `#F5B942`: Close Friends and anything the fan already owns
-  - Green `#4ADE80`: money received, approved, live
-  - Rose `#F87196`: errors and short payments
-- **Layouts** (`content_for :chrome`):
-  - `fan`: phone-width (≤480px) dark app for everything a fan sees; desktop storefront widens to 960px.
-  - `list`: public link-list page; floats over a blurred copy of its cover on desktop.
-  - `studio`: creator web app with the 220px sidebar (Overview, Posts, Collections, Shop, Link lists, Book, Payments, Messages, Settings); collapses to a scrolling top strip under 960px.
-- **Light theme**: `html[data-theme="light"]` re-points the same tokens (page `#F6F5F2`, cards `#FFFFFF`, text `#17151A`, pink `#D6245F`, gold text `#A86A00`, green `#15803D`). Use tokens, not hex, in new markup so both themes work. Anything over a photo or video stays dark.
-- **Rules**: prices appear only where a fan can act on them (never in the Collections grid); the first item of a collection is its public cover; every unlocked image goes through `/paid_media_posts/:id/media`.
+  - Base Canvas (Z0 Abyss): `#050406`, neutral core `#09080c` with warm violet undertones
+  - Surface Layer 1 (Cards & Trays): Smoked velvet `#0e0c12` with 24px backdrop blur and hairline ruby border `rgba(255, 23, 103, 0.12)`
+  - Surface Layer 2 (Elevated Sheets & Popovers): `#181520` with 1px border tinted in `rgba(255, 23, 103, 0.12)`
+  - Text: Alabaster primary `#fdf2f4`, soft `#e6bcc1`, silky twilight gray muted `#a39aa5`, dim `#716973`
+  - Electric Ruby (Primary): `#ff1767`, active action gradient `linear-gradient(135deg, #ff1767 0%, #c026d3 100%)` with radiant neon bloom `box-shadow: 0 4px 20px rgba(255, 23, 103, 0.35)`
+  - Secondary: Deep plum-rose velvet `#9d174d`
+  - Tertiary: Rose quartz bloom `#fb7185`
+  - Gold: `#F5B942` for Close Friends, VIP pass, and already owned assets (`#1E1A10` background with gold glow)
+  - Green: `#4ADE80` for money received, approved, live broadcasts
+  - Error / Rose: `#ffb4ab`
+- **Shapes & Elevation**:
+  - Pill silhouette (`rounded-full`, `border-radius: 9999px`) on all buttons, badges, and interactive chips.
+  - Floating velvet trays with smoked glass blur (`backdrop-filter: blur(24px)`) and ruby neon ambient glow.
+- **Rules**: prices appear only where a fan can act on them; the first item of a collection is its public cover; every unlocked image goes through `/paid_media_posts/:id/media`.

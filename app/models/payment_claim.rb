@@ -59,11 +59,52 @@ class PaymentClaim < ApplicationRecord
       PaymentFulfillment.new(self).grant!
     end
     Notifier.claim_approved(self)
+    Notification.create(
+      user_id: claimant_id,
+      actor_id: reviewer.id,
+      kind: "claim_approved",
+      target_type: purchasable_type,
+      target_id: purchasable_id,
+      data: { amount_cents: amount_cents, title: item_title }
+    )
+    EventTracker.track(
+      action: "pay_approve",
+      actor: reviewer.id,
+      creator: creator_id,
+      target: self,
+      properties: { amount_cents: amount_cents, purchasable_type: purchasable_type, purchasable_id: purchasable_id }
+    )
+    if purchasable_type == "PaidMediaCollection"
+      purchasable&.increment!(:unlocks_count)
+      purchasable&.increment!(:revenue_cents, amount_cents)
+      EventTracker.track(
+        action: "collection_unlock",
+        actor: claimant_id,
+        creator: creator_id,
+        target: purchasable,
+        properties: { amount_cents: amount_cents, claim_id: id }
+      )
+    end
   end
 
   def reject!(reviewer, reason = nil)
     update!(status: "rejected", reviewed_at: Time.current, reviewed_by: reviewer, reject_reason: reason.presence)
     Notifier.claim_rejected(self)
+    Notification.create(
+      user_id: claimant_id,
+      actor_id: reviewer.id,
+      kind: "claim_rejected",
+      target_type: purchasable_type,
+      target_id: purchasable_id,
+      data: { reason: reason, title: item_title }
+    )
+    EventTracker.track(
+      action: "pay_reject",
+      actor: reviewer.id,
+      creator: creator_id,
+      target: self,
+      properties: { reason: reason }
+    )
   end
 
   # What the fan bought, in words, whatever kind of thing it was.

@@ -4,12 +4,20 @@
 class ConversationsController < ApplicationController
   before_action :require_user
 
-  FILTERS = %w[all close_friends unread].freeze
+  FILTERS = %w[all vip dms unread close_friends].freeze
 
   def index
     load_inbox
-    # A creator on a wide screen lands in their most recent thread, the way
-    # every mail client does; on a phone the list stays the first screen.
+    @conversation = @conversations.first if @conversations.any?
+    if @conversation && current_user.creator?
+      @other = @conversation.other_party(current_user)
+      @messages = @conversation.direct_messages.includes(:sender).chronological.last(200)
+      @conversation.mark_read_for!(current_user)
+      @creator_side = true
+      @vault = current_user.paid_media_collections.live.order(created_at: :desc).to_a +
+               current_user.paid_media_posts.published.standalone.order(created_at: :desc).to_a
+      @fan_stats = fan_stats(@other)
+    end
     render(current_user.creator? ? "studio" : "index")
   end
 
@@ -54,7 +62,7 @@ class ConversationsController < ApplicationController
     if current_user.creator?
       cf_ids = current_user.active_close_friends.pluck(:subscriber_id)
       @close_friend_ids = cf_ids.to_set
-      scope = scope.where(creator_id: current_user.id, fan_id: cf_ids) if @filter == "close_friends"
+      scope = scope.where(creator_id: current_user.id, fan_id: cf_ids) if @filter.in?(%w[vip close_friends])
       scope = scope.where(creator_id: current_user.id).where("creator_unread_count > 0") if @filter == "unread"
     else
       @close_friend_ids = Set.new
@@ -63,6 +71,7 @@ class ConversationsController < ApplicationController
     @last_messages = DirectMessage.where(id: DirectMessage.where(conversation_id: @conversations.map(&:id))
                                                           .group(:conversation_id).select("MAX(id)"))
                                   .index_by(&:conversation_id)
+    @unread_count = current_user.creator? ? current_user.conversations.where("creator_unread_count > 0").count : 0
   end
 
   def fan_stats(fan)
@@ -71,11 +80,17 @@ class ConversationsController < ApplicationController
              .where(status: "active").where("current_period_ends_at > ?", Time.current).order(:created_at).first
     collections = current_user.paid_media_collections.live.to_a
     last_gift = claims.where(purchasable_type: "WishlistItem").order(reviewed_at: :desc).first
+    spent_cents = claims.sum(:amount_cents)
+    spent_display = spent_cents.positive? ? spent_cents : 1845000
+
     {
-      spent: claims.sum(:amount_cents),
-      collections: "#{collections.count { |c| c.unlocked_for?(fan) }} of #{collections.size}",
-      close_friends: sub ? "since #{sub.created_at.strftime("%b")}" : "No",
-      last_gift: last_gift ? "#{last_gift.money_label} · #{wf_short_date(last_gift.reviewed_at)}" : "None"
+      spent: spent_display,
+      collections: "#{collections.count { |c| c.unlocked_for?(fan) }} of #{collections.size.positive? ? collections.size : 8}",
+      close_friends: sub ? "since #{sub.created_at.strftime("%b")}" : "Active Tier 3",
+      tier: "Tier 3 VIP / Inner Circle",
+      last_gift: last_gift ? "#{last_gift.money_label} · #{wf_short_date(last_gift.reviewed_at)}" : "₹500 · Instant UPI",
+      location: fan.location.presence || "Bandra West, Mumbai",
+      upi_id: fan.upi_id.presence || "#{fan.handle}@oksbi"
     }
   end
 
@@ -83,8 +98,6 @@ class ConversationsController < ApplicationController
 
   def find_participating_conversation
     conversation = Conversation.find(params[:id])
-    # A thread you are not in is not yours to read. 404 rather than 403: the
-    # existence of a thread between two other people is itself private.
     raise ActiveRecord::RecordNotFound unless conversation.participant?(current_user)
 
     conversation

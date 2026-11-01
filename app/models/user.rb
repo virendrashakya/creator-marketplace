@@ -70,6 +70,8 @@ class User < ApplicationRecord
            dependent: :destroy, inverse_of: :sender
   has_many :creator_post_likes, dependent: :destroy
   has_many :creator_post_comments, dependent: :destroy
+  has_many :post_bookmarks, dependent: :destroy
+  has_many :bookmarked_posts, through: :post_bookmarks, source: :creator_post
   has_many :creator_blocks, foreign_key: :creator_id, dependent: :destroy, inverse_of: :creator
   has_many :payment_claims, foreign_key: :claimant_id, dependent: :destroy, inverse_of: :claimant
   has_many :received_payment_claims, class_name: "PaymentClaim", foreign_key: :creator_id, dependent: :destroy, inverse_of: :creator
@@ -83,6 +85,19 @@ class User < ApplicationRecord
   has_many :following_relationships, class_name: "CreatorFollow", foreign_key: :follower_id,
            dependent: :destroy, inverse_of: :follower
   has_many :following, through: :following_relationships, source: :creator
+
+  # Analytics, engagement & feed
+  has_many :creator_daily_stats, foreign_key: :creator_id, dependent: :destroy
+  has_many :content_daily_stats, foreign_key: :creator_id, dependent: :destroy
+  has_many :referral_daily_stats, foreign_key: :creator_id, dependent: :destroy
+  has_many :creator_fan_profiles, class_name: "FanProfile", foreign_key: :creator_id, dependent: :destroy
+  has_many :fan_profiles, foreign_key: :fan_id, dependent: :destroy
+  has_many :notifications, dependent: :destroy
+  has_many :user_sessions, dependent: :destroy
+  has_many :feed_items, foreign_key: :fan_id, dependent: :destroy
+  has_many :creator_feed_items, class_name: "FeedItem", foreign_key: :creator_id, dependent: :destroy
+  has_many :actor_events, class_name: "Event", foreign_key: :actor_id, dependent: :destroy
+  has_many :creator_events, class_name: "Event", foreign_key: :creator_id, dependent: :destroy
 
   # Section headings for the public page. Each falls back to a default, so a
   # creator who never opens settings still gets a page that reads well, and
@@ -108,6 +123,25 @@ class User < ApplicationRecord
     return false if creator.blank?
     following_relationships.exists?(creator_id: creator.id)
   end
+
+  def likes_post?(post)
+    return false if post.blank?
+    creator_post_likes.exists?(creator_post_id: post.id)
+  end
+
+  def bookmarked_post?(post)
+    return false if post.blank?
+    post_bookmarks.exists?(creator_post_id: post.id)
+  end
+
+  def display_name
+    name.presence || handle
+  end
+
+  def username
+    handle
+  end
+
   has_one_attached :profile_picture
   has_one_attached :banner
   has_one_attached :upi_qr

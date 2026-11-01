@@ -1,16 +1,19 @@
 # Be sure to restart your server when you modify this file.
 
-# Avoid CORS issues when API is called from the frontend app.
-# Handle Cross-Origin Resource Sharing (CORS) in order to accept cross-origin Ajax requests.
+# Avoid CORS issues when API is called from the Next.js fan PWA.
+Rails.application.config.middleware.insert_before 0, Rack::Cors do
+  allow do
+    origins "http://localhost:3000", "http://localhost:3001", "https://app.wishful.in", "https://wishful.in"
 
-# Read more: https://github.com/cyu/rack-cors
+    resource "/api/*",
+      headers: :any,
+      methods: %i[get post put patch delete options head],
+      expose: %w[Authorization Content-Type],
+      credentials: true
 
-# Rails.application.config.middleware.insert_before 0, Rack::Cors do
-#   allow do
-#     origins "example.com"
-#
-#     resource "*",
-#       headers: :any,
-#       methods: [:get, :post, :put, :patch, :delete, :options, :head]
-#   end
-# end
+    resource "/cable",
+      headers: :any,
+      methods: %i[get post options],
+      credentials: true
+  end
+end

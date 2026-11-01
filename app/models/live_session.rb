@@ -93,8 +93,11 @@ class LiveSession < ApplicationRecord
     :subscribe
   end
 
+  after_create_commit :enqueue_feed_fanout, unless: :unlisted?
+
   def start!
     update!(status: "live", started_at: Time.current)
+    FeedFanoutJob.perform_later("LiveSession", id, "live_now") unless unlisted?
   end
 
   def end!
@@ -102,6 +105,10 @@ class LiveSession < ApplicationRecord
   end
 
   private
+
+  def enqueue_feed_fanout
+    FeedFanoutJob.perform_later("LiveSession", id, "live")
+  end
 
   def plan_belongs_to_creator
     return if subscription_plan.blank? || user_id.blank?

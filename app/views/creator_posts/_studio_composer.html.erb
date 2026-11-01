@@ -1,0 +1,629 @@
+<% content_for :bare, true %>
+<% content_for :title, "#{@creator_post.persisted? ? 'Edit Post' : 'Create Post'} — Creator Studio | Wishful" %>
+
+<% content_for :head do %>
+  <%= render "layouts/studio_head" %>
+<% end %>
+
+<%= render "layouts/studio_sidebar" %>
+
+<div class="pl-[260px]">
+  <%= render "layouts/studio_header", current_page_name: "Console" %>
+
+  <main class="relative pt-16 bg-surface-container-lowest min-h-screen w-full px-gutter-desktop py-space-lg">
+    <div class="flex flex-col w-full pb-space-xl">
+      <!-- Subtle Ambient Glow -->
+      <div class="relative w-full">
+        <div class="absolute -top-16 left-1/4 w-96 h-56 bg-primary-container/10 blur-[120px] pointer-events-none rounded-full"></div>
+        <div class="absolute -top-12 right-1/4 w-80 h-48 bg-secondary-container/15 blur-[100px] pointer-events-none rounded-full"></div>
+      </div>
+
+      <!-- Editorial Page Header -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md mb-space-lg">
+        <div class="flex flex-col">
+          <div class="flex items-center gap-space-xs mb-space-xs">
+            <span class="inline-flex w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            <span class="font-label-vip text-label-vip uppercase tracking-widest text-primary">Creator Studio</span>
+            <span class="text-outline-variant font-label-vip">•</span>
+            <span class="font-label-vip text-label-vip uppercase tracking-widest text-on-surface-variant">Editorial Studio</span>
+          </div>
+          <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight"><%= @creator_post.persisted? ? "Edit Post" : "Create Post" %></h1>
+          <p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Compose editorial studio stories, photo sets, 4K reels, or interactive polls for your admirers.</p>
+        </div>
+
+        <!-- Top State Cues -->
+        <div class="flex items-center gap-space-sm self-start md:self-auto">
+          <div class="flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-surface-container-low text-on-surface-variant shadow-sm">
+            <span class="material-symbols-outlined text-[15px] text-tertiary">cloud_done</span>
+            <span class="font-label-sm text-label-sm tracking-wide text-tertiary font-medium">Draft auto-saved 2m ago</span>
+          </div>
+          <button class="flex items-center gap-space-xs px-space-md py-1.5 rounded-full bg-surface-container-high hover:bg-surface-bright text-on-surface transition-all text-label-sm font-label-sm" type="button">
+            <span class="material-symbols-outlined text-[16px]">history</span>
+            <span>Version History</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Primary Workspace: Two-Column Composition -->
+      <%= form_with model: @creator_post, url: @creator_post.persisted? ? creator_post_path(@creator_post) : creator_posts_path, local: true, multipart: true, id: "composer-form" do |f| %>
+        <% current_type = @creator_post.post_type.presence || "post" %>
+        <input type="hidden" name="creator_post[post_type]" id="selected-post-type" value="<%= current_type %>" />
+        <input type="hidden" name="creator_post[published]" id="published-input" value="1" />
+        <input type="hidden" name="tags_string" id="tags-string-input" value="<%= @creator_post.tags.join(', ') %>" />
+        <input type="hidden" name="badge" id="badge-input" value="<%= @creator_post.badge %>" />
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+          <!-- LEFT COLUMN: Primary Content Studio (~68% on Desktop) -->
+          <div class="lg:col-span-8 flex flex-col gap-space-lg">
+            <!-- 1. Post Type Segmented Control -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl rounded-xl p-1.5 shadow-md flex items-center gap-1 overflow-x-auto" id="post-type-selector">
+              <button class="post-type-tab flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg <%= current_type == 'text' ? 'bg-secondary-container text-on-secondary-container shadow-sm font-semibold' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container' %> transition-all" data-type="text" type="button">
+                <span class="material-symbols-outlined text-[18px]">edit_note</span>
+                <span class="font-label-md text-label-md whitespace-nowrap">Text &amp; Story</span>
+              </button>
+              <button class="post-type-tab flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg <%= (current_type == 'post' || current_type.blank?) ? 'bg-secondary-container text-on-secondary-container shadow-sm font-semibold' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container' %> transition-all" data-type="post" type="button">
+                <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">photo_library</span>
+                <span class="font-label-md text-label-md whitespace-nowrap">Photo Set</span>
+              </button>
+              <button class="post-type-tab flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg <%= current_type == 'video' ? 'bg-secondary-container text-on-secondary-container shadow-sm font-semibold' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container' %> transition-all" data-type="video" type="button">
+                <span class="material-symbols-outlined text-[18px]">movie</span>
+                <span class="font-label-md text-label-md whitespace-nowrap">4K Reel / Video</span>
+              </button>
+              <button class="post-type-tab flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg <%= current_type == 'audio' ? 'bg-secondary-container text-on-secondary-container shadow-sm font-semibold' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container' %> transition-all" data-type="audio" type="button">
+                <span class="material-symbols-outlined text-[18px]">graphic_eq</span>
+                <span class="font-label-md text-label-md whitespace-nowrap">Audio Whisper</span>
+              </button>
+              <button class="post-type-tab flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg <%= current_type == 'poll' ? 'bg-secondary-container text-on-secondary-container shadow-sm font-semibold' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container' %> transition-all" data-type="poll" type="button">
+                <span class="material-symbols-outlined text-[18px]">ballot</span>
+                <span class="font-label-md text-label-md whitespace-nowrap">Interactive Poll</span>
+              </button>
+            </div>
+
+            <!-- 2. Story Title & Narrative Panel -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl rounded-xl p-space-lg border border-white/[0.06] shadow-md flex flex-col gap-space-md">
+              <!-- Title Input -->
+              <div class="flex flex-col gap-1.5">
+                <div class="flex items-center justify-between">
+                  <label class="font-label-vip text-label-vip uppercase tracking-widest text-outline" for="post-title">Editorial Title (Optional)</label>
+                  <span class="font-label-sm text-label-sm text-outline">Visible as primary header</span>
+                </div>
+                <input class="w-full bg-surface-container/80 border border-white/[0.05] focus:border-primary/40 px-space-md py-3 rounded-lg text-on-surface font-headline-sm text-headline-sm placeholder:text-outline/40 focus:outline-none focus:bg-surface-container transition-all" id="post-title" name="post_title" placeholder="Give this editorial moment a title..." type="text" value="<%= @creator_post.title %>"/>
+              </div>
+
+              <!-- Post Narrative & Caption with Clean Toolbar -->
+              <div class="flex flex-col rounded-lg bg-surface-container/70 border border-white/[0.05] overflow-hidden">
+                <!-- Formatting Toolbar -->
+                <div class="flex items-center justify-between px-space-md py-2 bg-surface-container-high/60 border-b border-white/[0.04] backdrop-blur-sm">
+                  <div class="flex items-center gap-0.5">
+                    <button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-bright hover:text-on-surface transition-colors" title="Bold" type="button" onclick="formatText('bold')">
+                      <span class="material-symbols-outlined text-[17px]">format_bold</span>
+                    </button>
+                    <button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-bright hover:text-on-surface transition-colors" title="Italic" type="button" onclick="formatText('italic')">
+                      <span class="material-symbols-outlined text-[17px]">format_italic</span>
+                    </button>
+                    <button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-bright hover:text-on-surface transition-colors" title="Strikethrough" type="button" onclick="formatText('strike')">
+                      <span class="material-symbols-outlined text-[17px]">format_strikethrough</span>
+                    </button>
+                    <div class="w-px h-4 bg-outline-variant/30 mx-1.5"></div>
+                    <button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-bright hover:text-on-surface transition-colors" title="Insert Link" type="button" onclick="formatText('link')">
+                      <span class="material-symbols-outlined text-[17px]">link</span>
+                    </button>
+                    <button class="flex items-center gap-1 px-2 h-7 rounded bg-surface-container-highest text-secondary text-label-sm font-label-sm hover:bg-secondary-container transition-colors" title="Discreet Spoiler Blur" type="button" onclick="formatText('spoiler')">
+                      <span class="material-symbols-outlined text-[15px]">blur_on</span>
+                      <span class="font-medium">Spoiler Blur</span>
+                    </button>
+                  </div>
+                  <div class="flex items-center gap-2 text-outline font-label-sm text-label-sm">
+                    <span class="material-symbols-outlined text-[16px] cursor-pointer hover:text-on-surface" title="Add emoji" onclick="insertEmoji('✨')">sentiment_satisfied</span>
+                    <span class="material-symbols-outlined text-[16px] cursor-pointer hover:text-on-surface" title="Mention patron" onclick="insertEmoji('@')">alternate_email</span>
+                  </div>
+                </div>
+
+                <!-- Caption Textarea -->
+                <div class="p-space-md">
+                  <textarea class="w-full bg-transparent text-on-surface font-body-md text-body-md placeholder:text-outline/40 focus:outline-none resize-none leading-relaxed min-h-[120px]" id="narrative-caption" name="creator_post[body]" placeholder="Tell the backstage story, set lighting details, or intimate thoughts..." rows="4"><%= @creator_post.body %></textarea>
+                </div>
+
+                <!-- Bottom Meta Bar: Count & Tags -->
+                <div class="px-space-md pb-space-md pt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm border-t border-white/[0.04]">
+                  <div class="flex flex-wrap items-center gap-1.5" id="tags-container">
+                    <% if @creator_post.tags.present? %>
+                      <% @creator_post.tags.each do |tag| %>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-highest text-primary font-label-sm text-label-sm border border-primary/20">
+                          #<%= tag.delete_prefix('#') %>
+                          <button class="hover:text-on-surface" type="button" onclick="this.parentElement.remove()"><span class="material-symbols-outlined text-[13px] leading-none">close</span></button>
+                        </span>
+                      <% end %>
+                    <% end %>
+                    <button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high hover:bg-surface-bright text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors border border-white/[0.06]" type="button" onclick="promptAddTag()">
+                      <span class="material-symbols-outlined text-[14px]">add</span>
+                      <span>Add Tag</span>
+                    </button>
+                  </div>
+                  <div class="flex items-center gap-space-xs self-end sm:self-auto font-label-sm text-label-sm text-outline">
+                    <span class="text-on-surface-variant font-medium" id="char-counter">0</span>
+                    <span>/</span>
+                    <span>2,200 chars</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Media Set Gallery (Drag & Drop + Real Previews) -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl rounded-xl p-space-lg border border-white/[0.06] shadow-md flex flex-col gap-space-md">
+              <div class="flex items-center justify-between">
+                <div class="flex flex-col">
+                  <span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Media Set Gallery</span>
+                  <span class="font-label-sm text-label-sm text-on-surface-variant">Lossless high-resolution assets (ProRes, DNG, RAW, MP4, JPG up to 4GB)</span>
+                </div>
+                <div class="flex items-center gap-space-xs font-label-sm text-label-sm text-primary" id="upload-status-badge">
+                  <span class="material-symbols-outlined text-[16px]">verified</span>
+                  <span id="upload-count-text"><%= @creator_post.media.attached? ? '1 Media Attached' : 'Ready for Upload' %></span>
+                </div>
+              </div>
+
+              <!-- Dropzone Area -->
+              <label for="media-file-input" id="dropzone-box" class="group relative rounded-xl bg-surface-container/60 hover:bg-surface-container border border-dashed border-white/[0.12] hover:border-primary/40 p-space-lg flex flex-col items-center justify-center text-center cursor-pointer transition-all">
+                <input type="file" id="media-file-input" name="creator_post[media]" class="sr-only" accept="image/*,video/*,audio/*" onchange="handleFileChosen(this)" />
+                <div class="w-12 h-12 rounded-full bg-surface-container-highest group-hover:bg-primary/20 flex items-center justify-center text-primary transition-transform duration-300 group-hover:scale-110 mb-space-sm shadow-sm border border-white/[0.06]">
+                  <span class="material-symbols-outlined text-[24px]">cloud_upload</span>
+                </div>
+                <div class="flex items-center gap-1.5 font-label-md text-label-md text-on-surface font-semibold mb-0.5">
+                  <span>Drag &amp; drop master files here, or</span>
+                  <span class="text-primary hover:underline">browse storage</span>
+                </div>
+                <p class="font-label-sm text-label-sm text-outline max-w-sm">Color profiles preserved in Adobe RGB &amp; Rec.709. Automatic AV1 adaptive transcode applied.</p>
+              </label>
+
+              <!-- Uploaded Asset Card Mosaic / Previews -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md pt-space-xs <%= @creator_post.media.attached? ? '' : 'hidden' %>" id="asset-mosaic">
+                <% if @creator_post.media.attached? %>
+                  <div class="group relative rounded-lg overflow-hidden bg-surface-container border border-white/[0.06] shadow-md flex flex-col" id="attached-media-card">
+                    <div class="relative w-full h-44 overflow-hidden bg-black/40">
+                      <% if @creator_post.media.image? %>
+                        <%= image_tag url_for(@creator_post.media), class: "w-full h-full object-cover", id: "asset-1-img" %>
+                      <% else %>
+                        <div class="w-full h-full flex items-center justify-center text-on-surface-variant">
+                          <span class="material-symbols-outlined text-[48px]">movie</span>
+                        </div>
+                      <% end %>
+                      <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 via-transparent to-black/30"></div>
+                      <div class="absolute top-2 left-2 flex items-center gap-1">
+                        <span class="px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-vip text-[10px] uppercase tracking-wider font-bold shadow-sm">Cover</span>
+                      </div>
+                      <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between text-on-surface font-label-sm text-label-sm">
+                        <span class="truncate font-medium"><%= @creator_post.media.filename.to_s %></span>
+                        <span class="text-outline-variant font-mono text-[11px]"><%= (@creator_post.media.byte_size / (1024.0 * 1024.0)).round(1) %> MB</span>
+                      </div>
+                    </div>
+                    <div class="p-2 bg-surface-container flex items-center justify-end">
+                      <button class="w-7 h-7 rounded hover:bg-error-container/30 flex items-center justify-center text-error hover:text-on-error-container" title="Remove Media" type="button" onclick="removeAttachedAsset()">
+                        <span class="material-symbols-outlined text-[16px]">delete</span>
+                      </button>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- 4. Interactive Community Poll (Collapsible Clean Card) -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl rounded-xl p-space-lg border border-white/[0.06] shadow-md flex flex-col gap-space-md" id="poll-section-card">
+              <div class="flex items-center justify-between cursor-pointer" onclick="togglePollSection()">
+                <div class="flex items-center gap-space-sm">
+                  <div class="w-8 h-8 rounded-lg bg-surface-container-high border border-white/[0.06] flex items-center justify-center text-secondary">
+                    <span class="material-symbols-outlined text-[20px]">poll</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <div class="flex items-center gap-2">
+                      <span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Interactive Community Poll</span>
+                      <span class="px-2 py-0.5 rounded-full bg-secondary-container/40 text-secondary-fixed font-label-vip text-[10px] uppercase font-semibold hidden" id="poll-active-badge">ACTIVE</span>
+                    </div>
+                    <span class="font-label-sm text-label-sm text-on-surface-variant">Gather feedback and elevate engagement from active subscribers</span>
+                  </div>
+                </div>
+                <button class="text-on-surface-variant hover:text-on-surface p-1" type="button">
+                  <span class="material-symbols-outlined text-[20px] transition-transform duration-200" id="poll-chevron">expand_more</span>
+                </button>
+              </div>
+
+              <!-- Collapsible Container (Hidden by default unless poll type) -->
+              <div class="flex flex-col gap-space-md pt-space-xs hidden" id="poll-content">
+                <div class="flex flex-col gap-1.5">
+                  <label class="font-label-vip text-label-vip uppercase tracking-widest text-outline">Poll Question</label>
+                  <input class="w-full bg-surface-container border border-white/[0.05] focus:border-primary/40 px-space-md py-2.5 rounded-lg text-on-surface font-body-md text-body-md focus:outline-none focus:bg-surface-container-high transition-colors" name="poll_question" id="poll-question-input" placeholder="e.g. Which editorial color palette should lead next drop?" type="text"/>
+                </div>
+
+                <!-- Options -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm" id="poll-options-grid">
+                  <div class="flex items-center gap-2 bg-surface-container border border-white/[0.05] px-space-md py-2.5 rounded-lg">
+                    <span class="font-label-vip text-label-vip text-outline font-bold">01</span>
+                    <input class="bg-transparent text-on-surface font-label-md text-label-md w-full focus:outline-none" name="poll_option_1" placeholder="Option 1" type="text"/>
+                  </div>
+                  <div class="flex items-center gap-2 bg-surface-container border border-white/[0.05] px-space-md py-2.5 rounded-lg">
+                    <span class="font-label-vip text-label-vip text-outline font-bold">02</span>
+                    <input class="bg-transparent text-on-surface font-label-md text-label-md w-full focus:outline-none" name="poll_option_2" placeholder="Option 2" type="text"/>
+                  </div>
+                </div>
+
+                <!-- Poll Footer Config -->
+                <div class="flex items-center justify-between pt-1">
+                  <div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+                    <span class="material-symbols-outlined text-[16px]">schedule</span>
+                    <span>Poll Duration:</span>
+                    <select class="px-2 py-1 rounded bg-surface-container-highest border border-white/[0.06] text-on-surface text-label-sm focus:outline-none" name="poll_duration">
+                      <option value="24h">24 Hours</option>
+                      <option value="48h">48 Hours</option>
+                      <option value="7d">7 Days</option>
+                    </select>
+                  </div>
+                  <button class="text-label-sm font-label-sm text-outline hover:text-error transition-colors flex items-center gap-1" type="button" onclick="clearAndClosePoll()">
+                    <span class="material-symbols-outlined text-[16px]">remove_circle_outline</span>
+                    <span>Remove Poll</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Wardrobe & Sourcing Tags -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl rounded-xl p-space-lg border border-white/[0.06] shadow-md flex flex-col gap-space-sm">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[18px] text-primary">sell</span>
+                  <span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Wardrobe &amp; Sourcing Credits</span>
+                </div>
+                <button class="text-label-sm font-label-sm text-primary hover:underline flex items-center gap-1 cursor-pointer" type="button" onclick="promptAddProductTag()">
+                  <span class="material-symbols-outlined text-[15px]">add</span>
+                  <span>Tag Product</span>
+                </button>
+              </div>
+              <div class="flex flex-wrap items-center gap-space-sm pt-space-xs" id="product-tags-container">
+                <div class="text-outline text-label-sm py-1 italic" id="empty-product-tags-msg">
+                  No wardrobe items tagged yet. Tag designers, jewelry, or styling credits for your admirers.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: Access, Cadence & Publishing Controls (~32% on Desktop) -->
+          <div class="lg:col-span-4 flex flex-col gap-space-lg sticky top-20">
+            <!-- 1. Access & Visibility Card -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl rounded-xl p-space-lg border border-white/[0.06] shadow-md flex flex-col gap-space-md">
+              <div class="flex items-center justify-between">
+                <span class="font-label-vip text-label-vip uppercase tracking-widest text-outline">Access &amp; Audience</span>
+                <span class="material-symbols-outlined text-[18px] text-primary">shield</span>
+              </div>
+              <div class="flex flex-col gap-space-sm" id="audience-selector">
+                <!-- Public Feed Option -->
+                <label class="relative flex items-start gap-space-md p-space-md rounded-lg bg-surface-container/60 border border-white/[0.04] cursor-pointer transition-all hover:bg-surface-container hover:border-white/[0.08]">
+                  <input class="mt-1 accent-primary" name="visibility" type="radio" value="public"/>
+                  <div class="flex flex-col">
+                    <span class="font-label-md text-label-md text-on-surface font-semibold">Public Feed</span>
+                    <span class="font-label-sm text-label-sm text-on-surface-variant">Discoverable by all admirers across global studio feeds.</span>
+                  </div>
+                </label>
+                <!-- VIP Tier Only (Default / Selected) -->
+                <label class="relative flex items-start gap-space-md p-space-md rounded-lg bg-surface-container-high/60 border border-primary/30 cursor-pointer transition-all shadow-sm">
+                  <input checked="" class="mt-1 accent-primary" name="visibility" type="radio" value="vip"/>
+                  <div class="flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-label-md text-label-md text-on-surface font-semibold">VIP Tier Only</span>
+                      <span class="px-1.5 py-0.5 rounded bg-secondary-container/60 text-secondary-fixed font-label-vip text-[9px] uppercase tracking-wider font-extrabold">Exclusive</span>
+                    </div>
+                    <span class="font-label-sm text-label-sm text-on-surface-variant">Restricted to active monthly patrons &amp; inner circle.</span>
+                  </div>
+                </label>
+              </div>
+              <div class="p-space-sm rounded-lg bg-surface-container/60 border border-white/[0.04] flex items-center gap-space-xs text-outline font-label-sm text-label-sm">
+                <span class="material-symbols-outlined text-[16px] text-primary">info</span>
+                <span>Pay-per-view collections belong in <%= link_to "Collections & Vault", paid_media_collections_path, class: "text-on-surface font-medium underline hover:text-primary" %>.</span>
+              </div>
+            </div>
+
+            <!-- 2. Timing & Cadence Card -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl rounded-xl p-space-lg border border-white/[0.06] shadow-md flex flex-col gap-space-md">
+              <div class="flex items-center justify-between">
+                <span class="font-label-vip text-label-vip uppercase tracking-widest text-outline">Publish Cadence</span>
+                <span class="material-symbols-outlined text-[18px] text-tertiary">alarm</span>
+              </div>
+              <div class="flex flex-col gap-space-sm">
+                <!-- Publish Immediately -->
+                <label class="relative flex items-center justify-between p-space-md rounded-lg bg-surface-container/60 border border-white/[0.04] cursor-pointer hover:bg-surface-container hover:border-white/[0.08] transition-colors">
+                  <div class="flex items-center gap-space-sm">
+                    <input class="accent-primary" name="cadence" type="radio" value="now"/>
+                    <div class="flex flex-col">
+                      <span class="font-label-md text-label-md text-on-surface font-semibold">Publish Immediately</span>
+                      <span class="font-label-sm text-label-sm text-outline">Drops live right now</span>
+                    </div>
+                  </div>
+                  <span class="material-symbols-outlined text-[18px] text-outline">bolt</span>
+                </label>
+                <!-- Schedule Drop (Selected) -->
+                <label class="relative flex items-start justify-between p-space-md rounded-lg bg-surface-container-high/60 border border-primary/30 cursor-pointer shadow-sm">
+                  <div class="flex items-start gap-space-sm">
+                    <input checked="" class="mt-1 accent-primary" name="cadence" type="radio" value="schedule"/>
+                    <div class="flex flex-col">
+                      <span class="font-label-md text-label-md text-on-surface font-semibold">Schedule Midnight Drop</span>
+                      <span class="font-label-sm text-label-sm text-primary font-medium">Tonight, 11:59 PM IST</span>
+                      <span class="font-label-sm text-label-sm text-outline mt-0.5">Optimal midnight audience surge (+44%)</span>
+                    </div>
+                  </div>
+                  <span class="material-symbols-outlined text-[18px] text-primary">nights_stay</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 3. Creator Precision Controls -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl rounded-xl p-space-lg border border-white/[0.06] shadow-md flex flex-col gap-space-md">
+              <span class="font-label-vip text-label-vip uppercase tracking-widest text-outline">Creator Controls</span>
+              <div class="flex flex-col gap-space-md">
+                <!-- Toggle 1: Pin to profile -->
+                <div class="flex items-center justify-between">
+                  <div class="flex flex-col">
+                    <span class="font-label-md text-label-md text-on-surface font-medium">Pin to Profile Feed</span>
+                    <span class="font-label-sm text-label-sm text-outline">Anchor at top of creator showcase</span>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input checked="" class="sr-only peer" name="pin_to_profile" type="checkbox" value="1"/>
+                    <div class="w-10 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+                  </label>
+                </div>
+                <!-- Toggle 2: Discreet VIP Whisper Alert -->
+                <div class="flex items-center justify-between">
+                  <div class="flex flex-col">
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-label-md text-label-md text-on-surface font-medium">Discreet VIP Whisper Alert</span>
+                      <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                    </div>
+                    <span class="font-label-sm text-label-sm text-outline">Silent push notification to top patrons</span>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input checked="" class="sr-only peer" name="vip_whisper_alert" type="checkbox" value="1"/>
+                    <div class="w-10 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+                  </label>
+                </div>
+                <!-- Toggle 3: Dynamic Forensic Watermark -->
+                <div class="flex items-center justify-between">
+                  <div class="flex flex-col">
+                    <span class="font-label-md text-label-md text-on-surface font-medium">Dynamic Forensic Watermark</span>
+                    <span class="font-label-sm text-label-sm text-outline">Invisible viewer ID encoding against leaks</span>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input checked="" class="sr-only peer" name="dynamic_watermark" type="checkbox" value="1"/>
+                    <div class="w-10 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Primary Actions Card -->
+            <div class="bg-surface-container-low/90 backdrop-blur-xl rounded-xl p-space-lg border border-white/[0.06] shadow-md flex flex-col gap-space-sm">
+              <!-- Publish CTA -->
+              <button class="w-full py-3.5 px-space-md rounded-full bg-gradient-to-r from-primary to-primary-container hover:brightness-110 text-on-primary font-headline-sm text-headline-sm font-bold flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(255,23,103,0.3)] hover:shadow-[0_4px_26px_rgba(255,23,103,0.45)] active:scale-[0.98] transition-all duration-200 cursor-pointer" id="publish-btn" type="submit">
+                <span class="material-symbols-outlined text-[20px]">send</span>
+                <span>Schedule Drop (11:59 PM)</span>
+              </button>
+              <!-- Preview on Feed CTA -->
+              <%= link_to (current_user ? profile_path(current_user.handle) : "#"), target: "_blank", class: "w-full py-3 px-space-md rounded-full bg-surface-container hover:bg-surface-container-high border border-white/[0.06] text-on-surface font-label-md text-label-md font-semibold flex items-center justify-center gap-2 transition-colors" do %>
+                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                <span>Preview on Feed</span>
+              <% end %>
+              <div class="text-center pt-1 font-label-vip text-label-vip text-outline uppercase tracking-widest text-[11px]">
+                Lossless encryption verified
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <script>
+      (function() {
+        const captionEl = document.getElementById('narrative-caption');
+        const counterEl = document.getElementById('char-counter');
+        if (captionEl && counterEl) {
+          captionEl.addEventListener('input', () => {
+            counterEl.textContent = captionEl.value.length;
+          });
+          counterEl.textContent = captionEl.value.length;
+        }
+
+        // Segmented tabs dynamic active styling & section toggles
+        const tabs = document.querySelectorAll('.post-type-tab');
+        const postTypeInput = document.getElementById('selected-post-type');
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            tabs.forEach(t => {
+              t.classList.remove('bg-secondary-container', 'text-on-secondary-container', 'font-semibold', 'shadow-sm');
+              t.classList.add('text-on-surface-variant');
+            });
+            tab.classList.add('bg-secondary-container', 'text-on-secondary-container', 'font-semibold', 'shadow-sm');
+            tab.classList.remove('text-on-surface-variant');
+            const type = tab.getAttribute('data-type');
+            if (postTypeInput) {
+              postTypeInput.value = type;
+            }
+
+            // If poll clicked, automatically open poll section
+            if (type === 'poll') {
+              openPollSection();
+            }
+          });
+        });
+
+        // Schedule / Immediate toggle sync with CTA
+        const cadenceRadios = document.querySelectorAll('input[name="cadence"]');
+        const publishBtn = document.getElementById('publish-btn');
+        cadenceRadios.forEach(radio => {
+          radio.addEventListener('change', (e) => {
+            if (e.target.value === 'now') {
+              publishBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">bolt</span><span>Publish Post Now</span>';
+            } else {
+              publishBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">send</span><span>Schedule Drop (11:59 PM)</span>';
+            }
+          });
+        });
+      })();
+
+      function handleFileChosen(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        const mosaic = document.getElementById('asset-mosaic');
+        const uploadCountText = document.getElementById('upload-count-text');
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+
+        if (uploadCountText) {
+          uploadCountText.textContent = `1 Media Attached (${sizeMb} MB)`;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          if (mosaic) {
+            mosaic.classList.remove('hidden');
+            const isImage = file.type.startsWith('image/');
+            const mediaPreview = isImage
+              ? `<img class="w-full h-full object-cover" id="asset-1-img" src="${e.target.result}"/>`
+              : `<div class="w-full h-full flex items-center justify-center text-on-surface-variant bg-black/50"><span class="material-symbols-outlined text-[48px]">movie</span></div>`;
+
+            mosaic.innerHTML = `
+              <div class="group relative rounded-lg overflow-hidden bg-surface-container border border-white/[0.06] shadow-md flex flex-col" id="attached-media-card">
+                <div class="relative w-full h-44 overflow-hidden bg-black/40">
+                  ${mediaPreview}
+                  <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/80 via-transparent to-black/30"></div>
+                  <div class="absolute top-2 left-2 flex items-center gap-1">
+                    <span class="px-2 py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-vip text-[10px] uppercase tracking-wider font-bold shadow-sm">Cover</span>
+                    <span class="px-1.5 py-0.5 rounded bg-surface-container-lowest/80 backdrop-blur-sm text-on-surface font-label-vip text-[10px] uppercase">${file.name.split('.').pop().toUpperCase()}</span>
+                  </div>
+                  <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between text-on-surface font-label-sm text-label-sm">
+                    <span class="truncate font-medium">${file.name}</span>
+                    <span class="text-outline-variant font-mono text-[11px]">${sizeMb} MB</span>
+                  </div>
+                </div>
+                <div class="p-2 bg-surface-container flex items-center justify-end">
+                  <button class="w-7 h-7 rounded hover:bg-error-container/30 flex items-center justify-center text-error hover:text-on-error-container transition-colors" title="Remove Asset" type="button" onclick="removeAttachedAsset()">
+                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                  </button>
+                </div>
+              </div>
+            `;
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function removeAttachedAsset() {
+        const fileInput = document.getElementById('media-file-input');
+        if (fileInput) fileInput.value = '';
+        const mosaic = document.getElementById('asset-mosaic');
+        if (mosaic) {
+          mosaic.innerHTML = '';
+          mosaic.classList.add('hidden');
+        }
+        const uploadCountText = document.getElementById('upload-count-text');
+        if (uploadCountText) {
+          uploadCountText.textContent = 'Ready for Upload';
+        }
+      }
+
+      function togglePollSection() {
+        const pollContent = document.getElementById('poll-content');
+        const pollChevron = document.getElementById('poll-chevron');
+        if (!pollContent) return;
+        const isHidden = pollContent.classList.contains('hidden');
+        if (isHidden) {
+          openPollSection();
+        } else {
+          pollContent.classList.add('hidden');
+          if (pollChevron) pollChevron.textContent = 'expand_more';
+        }
+      }
+
+      function openPollSection() {
+        const pollContent = document.getElementById('poll-content');
+        const pollChevron = document.getElementById('poll-chevron');
+        const activeBadge = document.getElementById('poll-active-badge');
+        if (pollContent) pollContent.classList.remove('hidden');
+        if (pollChevron) pollChevron.textContent = 'expand_less';
+        if (activeBadge) activeBadge.classList.remove('hidden');
+      }
+
+      function clearAndClosePoll() {
+        const pollContent = document.getElementById('poll-content');
+        const pollChevron = document.getElementById('poll-chevron');
+        const activeBadge = document.getElementById('poll-active-badge');
+        const pollQ = document.getElementById('poll-question-input');
+        if (pollQ) pollQ.value = '';
+        const pollOpts = document.querySelectorAll('#poll-options-grid input');
+        pollOpts.forEach(opt => opt.value = '');
+        if (pollContent) pollContent.classList.add('hidden');
+        if (pollChevron) pollChevron.textContent = 'expand_more';
+        if (activeBadge) activeBadge.classList.add('hidden');
+      }
+
+      function promptAddTag() {
+        const tag = prompt("Enter hashtag (e.g. #EditorialLuxe):");
+        if (!tag) return;
+        const clean = tag.replace(/^#+/, '').trim();
+        if (!clean) return;
+        const container = document.getElementById('tags-container');
+        const pill = document.createElement('span');
+        pill.className = "inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-highest text-primary font-label-sm text-label-sm border border-primary/20";
+        pill.innerHTML = `#${clean} <button class="hover:text-on-surface" type="button" onclick="this.parentElement.remove()"><span class="material-symbols-outlined text-[13px] leading-none">close</span></button>`;
+        container.insertBefore(pill, container.lastElementChild);
+      }
+
+      function promptAddProductTag() {
+        const item = prompt("Enter item name (e.g. Velvet Bodysuit):");
+        if (!item || !item.trim()) return;
+        const brand = prompt("Enter brand (e.g. Sabyasachi):") || "Atelier";
+        const container = document.getElementById('product-tags-container');
+        const emptyMsg = document.getElementById('empty-product-tags-msg');
+        if (emptyMsg) emptyMsg.remove();
+
+        const card = document.createElement('div');
+        card.className = "flex items-center gap-2 bg-surface-container border border-white/[0.05] px-space-md py-2 rounded-lg group";
+        card.innerHTML = `
+          <div class="w-6 h-6 rounded bg-surface-container-highest flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-[14px]">checkroom</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-label-md text-label-md text-on-surface font-medium leading-tight">${item.trim()}</span>
+            <span class="font-label-sm text-label-sm text-outline leading-tight">${brand.trim()}</span>
+          </div>
+          <button class="ml-1 text-outline hover:text-on-surface transition-colors" type="button" onclick="this.parentElement.remove()">
+            <span class="material-symbols-outlined text-[14px]">close</span>
+          </button>
+        `;
+        container.appendChild(card);
+      }
+
+      function insertEmoji(char) {
+        const textarea = document.getElementById('narrative-caption');
+        if (!textarea) return;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        textarea.setRangeText(char, start, end, 'end');
+        textarea.focus();
+        const counterEl = document.getElementById('char-counter');
+        if (counterEl) counterEl.textContent = textarea.value.length;
+      }
+
+      function formatText(type) {
+        const textarea = document.getElementById('narrative-caption');
+        if (!textarea) return;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selected = textarea.value.substring(start, end) || "text";
+        let replacement = selected;
+        if (type === 'bold') replacement = `**${selected}**`;
+        if (type === 'italic') replacement = `*${selected}*`;
+        if (type === 'strike') replacement = `~~${selected}~~`;
+        if (type === 'spoiler') replacement = `||${selected}||`;
+        if (type === 'link') replacement = `[${selected}](https://)`;
+        textarea.setRangeText(replacement, start, end, 'end');
+        textarea.focus();
+        const counterEl = document.getElementById('char-counter');
+        if (counterEl) counterEl.textContent = textarea.value.length;
+      }
+    </script>
+  </main>
+</div>
